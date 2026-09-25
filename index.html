@@ -333,6 +333,19 @@ h3{margin:14px 0 4px; font-size:17px}
   .life .in{transition-duration:.2s}
 }
 
+/* ---------- Förslaget om den enkla kartan på startsidan ---------- */
+.slowAsk{display:flex; flex-direction:column; gap:10px; padding:12px 14px; text-align:left; width:min(460px, 90vw)}
+.slowAsk p{margin:0; font-size:15px}
+.slowBtns{display:flex; gap:10px; flex-wrap:wrap}
+.slowBtns .big{flex:1 1 160px}
+
+/* ---------- Den enkla kartan: lättare gränssnitt också (inga filter och inga animationer som ritar om hela tiden) ---------- */
+body.simple .talkFace,body.simple .titleLogo{filter:none}
+body.simple #btnMain:not(:disabled){animation:none; box-shadow:4px 4px 0 var(--ink), 0 0 0 6px rgba(255,214,70,.6)}
+body.simple .card.match{animation:none; box-shadow:4px 4px 0 var(--ink), 0 0 0 6px rgba(255,196,32,.85)}
+body.simple .bKey.need{animation:none; box-shadow:0 5px 0 var(--ink), 0 0 0 6px rgba(255,214,70,.9)}
+body.simple .players{background:var(--paper)}
+
 /* ---------- Menyn: knappar och ställning ---------- */
 .pauseRow{display:flex; gap:8px; flex-wrap:wrap; justify-content:center}
 .pausePlayers{display:none}
@@ -476,6 +489,10 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
         </div>
       </div>
       <p class="titleTop" id="titleTop" hidden></p>
+      <div class="slowAsk panel" id="slowAsk" hidden>
+        <p><b>Går spelet segt?</b> Den enkla kartan är ett platt bräde utan tunga effekter. Den passar tv-apparater och äldre plattor.</p>
+        <div class="slowBtns"><button class="big small" id="btnSimple" type="button">Byt till enkel karta</button><button class="big alt small" id="btnSlowNo" type="button">Nej tack</button></div>
+      </div>
       <p class="titleNote">Ett spel för 2–4 spelare från 5 år, efter brädspelet Hugo (Alga 1993).</p>
     </div>
   </div>
@@ -553,8 +570,9 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
       <label class="check" for="optFollow"><input type="checkbox" id="optFollow"> Kameran följer den som har turen</label>
       <label class="check" for="optDof"><input type="checkbox" id="optDof"> Miniatyrkänsla (suddig bakgrund)</label>
       <label class="field" for="optQuality">Grafik
-        <select id="optQuality"><option value="auto">Automatisk</option><option value="high">Hög</option><option value="low">Snabb (för äldre plattor)</option></select>
+        <select id="optQuality"><option value="auto">Automatisk</option><option value="high">Hög</option><option value="low">Snabb (för äldre plattor)</option><option value="simple">Enkel karta (för tv)</option></select>
       </label>
+      <button class="tool" id="btnRestart" type="button" hidden>Starta om med den nya grafiken</button>
       <p class="small" id="musicInfo"></p>
       <details class="adv">
         <summary>Mobiler på svåra nätverk (TURN-server)</summary>
@@ -625,7 +643,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;',
 const reduceMotion = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 // Smart-TV (Samsung, LG, Android TV, Fire TV). Kan också tvingas med ?tv i adressen.
-const IS_TV = /SMART-TV|SmartTV|Tizen|Web0S|webOS|NetCast|BRAVIA|Android TV|GoogleTV|AFT[A-Z]|CrKey|HbbTV|Viera/i.test(navigator.userAgent) || /[?&]tv\b/.test(location.search);
+const IS_TV = /SMART-TV|SmartTV|Tizen|Web0S|webOS|NetCast|BRAVIA|Android ?TV|GoogleTV|Chromecast|AFT[A-Z]|CrKey|HbbTV|Viera|VIDAA|Hisense|MiTV|PhilipsTV|Roku/i.test(navigator.userAgent) || /[?&]tv\b/.test(location.search);
 // Slumptal med frö: samma bräde varje gång
 function seeded(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
@@ -667,6 +685,17 @@ const Settings = Object.assign({
   music: .5, sfx: .8, voice: false, speed: 'normal', quality: 'auto', dof: true, hints: true, follow: true, tracks: 4, bonus: true, turn: null
 }, Store.get('settings', {}));
 function saveSettings() { Store.set('settings', Settings); }
+
+// Enkel karta: ett platt bräde som det riktiga, utan skuggor, glöd och miniatyrskärpa, med enklare ljus och färre saker.
+// Den är mycket lättare för tv-apparater och äldre plattor. Den väljs i inställningarna (Grafik), med ?enkel i adressen,
+// eller automatiskt på tv (?tv eller när webbläsaren säger att den är en tv).
+const SIMPLE = Settings.quality === 'simple' || /[?&]enkel\b/.test(location.search) || (Settings.quality === 'auto' && IS_TV);
+// Material för 3D-sakerna: på den enkla kartan blir de MeshLambertMaterial (ljuset räknas per hörn i stället för per pixel)
+const LAMBERT_KEYS = ['color', 'map', 'emissive', 'emissiveIntensity', 'emissiveMap', 'transparent', 'opacity', 'side', 'vertexColors', 'depthWrite', 'depthTest', 'alphaTest', 'visible', 'name', 'blending'];
+function Mat(p = {}, physical = false) {
+  if (SIMPLE) { const q = {}; LAMBERT_KEYS.forEach(k => { if (p[k] !== undefined) q[k] = p[k]; }); return new THREE.MeshLambertMaterial(q); }
+  return physical ? new THREE.MeshPhysicalMaterial(p) : new THREE.MeshStandardMaterial(p);
+}
 
 // Liten händelsebuss mellan modulerna
 const Bus = {
@@ -974,14 +1003,17 @@ const Terrain = (() => {
     }
     return T;
   };
-  // höjden i meter vid en punkt på brädet (bilinjär)
-  T.at = (bx, by) => {
-    if (!H) return 0;
+  // bilinjär avläsning av ett rutnät
+  function sample(A, bx, by) {
     const fx = clamp(bx / T.step, 0, T.N - .001), fy = clamp(by / T.step, 0, T.N - .001);
     const i = Math.floor(fx), j = Math.floor(fy), dx = fx - i, dy = fy - j;
-    return H[idx(i, j)] * (1 - dx) * (1 - dy) + H[idx(i + 1, j)] * dx * (1 - dy) + H[idx(i, j + 1)] * (1 - dx) * dy + H[idx(i + 1, j + 1)] * dx * dy;
-  };
-  T.snowAt = (bx, by) => { if (!T.snow) return 0; const i = clamp(Math.round(bx / T.step), 0, T.N), j = clamp(Math.round(by / T.step), 0, T.N); return T.snow[idx(i, j)]; };
+    return A[idx(i, j)] * (1 - dx) * (1 - dy) + A[idx(i + 1, j)] * dx * (1 - dy) + A[idx(i, j + 1)] * (1 - dx) * dy + A[idx(i + 1, j + 1)] * dx * dy;
+  }
+  // Höjden i meter där saker står. På den enkla kartan (T.flat) är brädet platt, men trycket målas ändå efter höjden (T.raw).
+  T.flat = false;
+  T.raw = (bx, by) => H ? sample(H, bx, by) : 0;
+  T.at = (bx, by) => T.flat || !H ? 0 : sample(H, bx, by);
+  T.snowAt = (bx, by) => T.snow ? sample(T.snow, bx, by) : 0;
   T.grid = () => H;
   return T;
 })();
@@ -1432,7 +1464,7 @@ const Print = (() => {
       let c = mix(rgb(136, 150, 168), rgb(190, 201, 214), .5 + n * .6);
       const crack = 1 - Math.abs(Noise.v2(bx * .07 + 3, by * .07 - 5));
       if (crack > .94) c = mix(c, rgb(128, 139, 152), (crack - .94) / .06 * .7);
-      const h = Terrain.at(bx, by);
+      const h = Terrain.raw(bx, by);
       c = mix(c, rgb(206, 196, 172), smooth(.05, 0, h) * .55);          // stigens fot är lite brunare
       const sn = Terrain.snowAt(bx, by) * (.75 + .25 * fine);
       return mix(c, rgb(247, 250, 253), clamp(sn, 0, 1));
@@ -1450,7 +1482,7 @@ const Print = (() => {
       return c;
     }
     // gruvan: gångarnas golv är ljust, väggarnas ovansida är mörk jord
-    const h = Terrain.at(bx, by), wall = smooth(.015, .1, h);
+    const h = Terrain.raw(bx, by), wall = smooth(.015, .1, h);
     const floor = mix(rgb(196, 146, 92), rgb(214, 168, 112), .5 + n * .6);
     const top = mix(rgb(78, 50, 30), rgb(104, 70, 42), .5 + n * .7);
     let c = mix(floor, top, wall);
@@ -1566,7 +1598,7 @@ const Print = (() => {
     const [mx, my, mw, mh] = QR.gruvan;
     for (let i = 0; i < 140; i++) {
       const x = mx + R() * mw, y = my + R() * mh;
-      if (Terrain.at(x, y) < .1) continue;
+      if (Terrain.raw(x, y) < .1) continue;
       const s = .6 + R() * .9;
       g.fillStyle = '#FFD84A'; g.beginPath(); g.moveTo(x, y - 5 * s); g.lineTo(x + 1.3 * s, y - 1.3 * s); g.lineTo(x + 5 * s, y); g.lineTo(x + 1.3 * s, y + 1.3 * s); g.lineTo(x, y + 5 * s); g.lineTo(x - 1.3 * s, y + 1.3 * s); g.lineTo(x - 5 * s, y); g.lineTo(x - 1.3 * s, y - 1.3 * s); g.closePath(); g.fill();
     }
@@ -1684,16 +1716,65 @@ const ModelLib = (() => {
     return (geoCache[mi] = g);
   }
 
+  // Enkel karta: materialens färger bakas in i hörnen, så att en modell ritas med ett enda material
+  // (ett ritanrop i stället för ett per material). Material som lyser, är genomskinliga eller dubbelsidiga,
+  // och de som koden letar upp med namn, behålls som egna delar.
+  const KEEP = new Set(['Snurrtopp', 'Pjäsfot']);
+  const plain = d => !d.e && !(d.op < 1) && !d.ds && !KEEP.has(d.n);
+  let bakedMat = null;
+  const bakedMaterial = () => bakedMat || (bakedMat = Object.assign(new THREE.MeshLambertMaterial({color: 0xffffff, vertexColors: true}), {name: 'Bakad'}));
+  function baked(mi, opts) {
+    const key = mi + '|' + JSON.stringify(opts.colors || {});
+    if (key in geoCache) return geoCache[key];
+    const m = data.meshes[mi];
+    const groups = m.g.map(([start, count, mat]) => ({start, count, mat, d: data.materials[mat]}));
+    if (groups.filter(g => plain(g.d)).length < 2) return (geoCache[key] = null);
+    const src = geometry(mi), S = src.index.array, P = src.attributes.position.array, N = src.attributes.normal.array, C = src.attributes.color.array;
+    const UV = src.attributes.uv ? src.attributes.uv.array : null;
+    const pos = [], nrm = [], col = [], uv = [], index = [], seen = new Map();
+    // ett hörn som används av två delar med olika färg blir två hörn
+    const vert = (v, gi, c) => {
+      const k = v * 256 + gi;
+      let n = seen.get(k);
+      if (n === undefined) {
+        n = pos.length / 3; seen.set(k, n);
+        pos.push(P[v * 3], P[v * 3 + 1], P[v * 3 + 2]); nrm.push(N[v * 3], N[v * 3 + 1], N[v * 3 + 2]);
+        const a = C[v * 3];
+        if (c) col.push(a * c.r, a * c.g, a * c.b); else col.push(a, a, a);
+        if (UV) uv.push(UV[v * 2], UV[v * 2 + 1]);
+      }
+      return n;
+    };
+    const add = (g, gi) => {
+      const rc = g.d.rc && opts.colors && opts.colors[g.d.rc], c = plain(g.d) ? new THREE.Color(rc || g.d.c) : null;
+      for (let k = g.start; k < g.start + g.count; k++) index.push(vert(S[k], gi, c));
+    };
+    const out = new THREE.BufferGeometry(), mats = [null];
+    groups.forEach((g, gi) => { if (plain(g.d)) add(g, gi); });
+    out.addGroup(0, index.length, 0);
+    groups.forEach((g, gi) => { if (plain(g.d)) return; const s = index.length; add(g, gi); out.addGroup(s, index.length - s, mats.length); mats.push(g.mat); });
+    out.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    out.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
+    out.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    if (UV) out.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    out.setIndex(pos.length / 3 > 65535 ? new THREE.Uint32BufferAttribute(index, 1) : new THREE.Uint16BufferAttribute(index, 1));
+    out.userData.mats = mats;
+    out.computeBoundingSphere();
+    return (geoCache[key] = out);
+  }
+
+  // opts.hq: alltid fina material (porträtt och ikoner), även på den enkla kartan
   function material(i, opts) {
     const d = data.materials[i];
     const recolor = d.rc && opts.colors && opts.colors[d.rc];
-    const key = i + (recolor ? ':' + recolor : '');
+    const lite = SIMPLE && !opts.hq;
+    const key = i + (recolor ? ':' + recolor : '') + (lite ? ':lite' : '');
     if (matCache[key]) return matCache[key];
     const P = {color: recolor || d.c, roughness: d.r, metalness: d.m, vertexColors: true, envMapIntensity: d.m > .5 ? 1 : .55};
     if (d.e) { P.emissive = d.e; P.emissiveIntensity = d.ei; }
     if (d.op < 1) { P.transparent = true; P.opacity = d.op; P.depthWrite = false; }
     if (d.ds) P.side = THREE.DoubleSide;
-    const m = d.cc > 0 ? new THREE.MeshPhysicalMaterial(Object.assign(P, {clearcoat: d.cc * .55, clearcoatRoughness: .25})) : new THREE.MeshStandardMaterial(P);
+    const m = lite ? Mat(P) : d.cc > 0 ? new THREE.MeshPhysicalMaterial(Object.assign(P, {clearcoat: d.cc * .55, clearcoatRoughness: .25})) : new THREE.MeshStandardMaterial(P);
     m.name = d.n;
     if (d.e) m.userData.glow = d.ei;
     if (NIGHT.has(d.n)) nightMats.add(m);
@@ -1713,7 +1794,8 @@ const ModelLib = (() => {
       o.quaternion.fromArray(n.q);
       o.scale.fromArray(n.s);
       if (n.m >= 0) {
-        const g = geometry(n.m), mats = g.userData.mats.map(mi => material(mi, opts));
+        const g = (SIMPLE && !opts.hq && baked(n.m, opts)) || geometry(n.m);
+        const mats = g.userData.mats.map(mi => mi === null ? bakedMaterial() : material(mi, opts));
         const mesh = new THREE.Mesh(g, mats.length === 1 ? mats[0] : mats);
         mesh.castShadow = opts.shadow !== false;
         mesh.receiveShadow = true;
@@ -1896,27 +1978,32 @@ const S3 = (() => {
   S.toBoard = v => [v.x * 100 + 500, v.z * 100 + 500];
 
   /* ---------- Start ---------- */
+  // Den enkla kartan ritar högst i 1280 pixlars bredd (tv-apparater har ofta en svag grafikdel)
+  const simpleRatio = () => Math.min(1, 1280 / Math.max(1, window.innerWidth));
   S.init = el => {
     container = el;
-    renderer = new THREE.WebGLRenderer({antialias: true, powerPreference: 'high-performance'});
-    renderer.setPixelRatio(IS_TV ? Math.min(1, 1280 / Math.max(1, window.innerWidth)) : Math.min(window.devicePixelRatio || 1, Settings.quality === 'low' ? 1 : 2));
+    Terrain.flat = SIMPLE;
+    renderer = new THREE.WebGLRenderer({antialias: !SIMPLE, powerPreference: 'high-performance'});
+    renderer.setPixelRatio(SIMPLE || IS_TV ? simpleRatio() : Math.min(window.devicePixelRatio || 1, Settings.quality === 'low' ? 1 : 2));
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
-    renderer.shadowMap.enabled = true;
+    // den enkla kartan har inga skuggor (de ritar hela brädet en gång till varje bild) och ingen efterbehandling
+    renderer.shadowMap.enabled = !SIMPLE;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
-    Post.init(renderer);
+    if (SIMPLE) Post.enabled = false; else Post.init(renderer);
     scene = new THREE.Scene();
     const bg = new THREE.Color(0x2a1a12);
     scene.background = bg.clone().convertLinearToSRGB();
     scene.fog = new THREE.Fog(bg, 18, 46);
     camera = new THREE.PerspectiveCamera(38, 1, .05, 200);
     raycaster = new THREE.Raycaster();
-    hemi = new THREE.HemisphereLight(0xe6f0ff, 0x6b4f3a, .3);
+    // utan omgivningsbild behöver den enkla kartan mer ljus från himlen
+    hemi = new THREE.HemisphereLight(0xe6f0ff, 0x6b4f3a, SIMPLE ? .62 : .3);
     scene.add(hemi);
-    sun = new THREE.DirectionalLight(0xfff0d8, 1.12);
-    sun.castShadow = true;
+    sun = new THREE.DirectionalLight(0xfff0d8, SIMPLE ? .95 : 1.12);
+    sun.castShadow = !SIMPLE;
     const big = Settings.quality !== 'low' && renderer.capabilities.maxTextureSize >= 8192 && !IS_TV;
     sun.shadow.mapSize.set(big ? 4096 : 2048, big ? 4096 : 2048);
     sun.shadow.radius = 3;
@@ -1926,10 +2013,10 @@ const S3 = (() => {
     const sc = sun.shadow.camera;
     sc.left = -6.4; sc.right = 6.4; sc.top = 6.4; sc.bottom = -6.4; sc.near = 1; sc.far = 30;
     scene.add(sun, sun.target);
-    fill = new THREE.DirectionalLight(0xa9c8ff, .14);
+    fill = new THREE.DirectionalLight(0xa9c8ff, SIMPLE ? .22 : .14);
     fill.position.set(6, 5, 8);
     scene.add(fill);
-    scene.environment = buildEnvironment();
+    if (!SIMPLE) scene.environment = buildEnvironment();
     root = new THREE.Group();
     scene.add(root);
     new ResizeObserver(resize).observe(container);
@@ -2003,7 +2090,19 @@ const S3 = (() => {
   /* ---------- Brädet ---------- */
   S.buildBoard = () => {
     Terrain.build();
-    const printed = Print.build(Settings.quality === 'low' || IS_TV ? 2048 : 4096);
+    const printed = Print.build(Settings.quality === 'low' || IS_TV || SIMPLE ? 2048 : 4096);
+    if (SIMPLE) {
+      // Enkel karta: ett platt bräde med trycket, som det riktiga spelet (berg och gruvväggar finns målade i trycket)
+      const flat = new THREE.PlaneGeometry(10, 10, 1, 1);
+      flat.rotateX(-Math.PI / 2);
+      const board = new THREE.Mesh(flat, Mat({map: tex(printed.color, true)}));
+      board.name = 'bräde';
+      root.add(board);
+      S.boardMesh = board;
+      buildFrame();
+      buildTable();
+      return printed;
+    }
     const N = Terrain.N, geo = new THREE.PlaneGeometry(10, 10, N, N);
     geo.rotateX(-Math.PI / 2);
     const pos = geo.attributes.position;
@@ -2036,8 +2135,8 @@ const S3 = (() => {
     return printed;
   };
   function buildFrame() {
-    const lac = new THREE.MeshStandardMaterial({color: 0x46586e, roughness: .4, metalness: .05});
-    const gold = new THREE.MeshStandardMaterial({color: 0xd9a93c, roughness: .3, metalness: 1});
+    const lac = Mat({color: 0x46586e, roughness: .4, metalness: .05});
+    const gold = Mat({color: 0xd9a93c, roughness: .3, metalness: 1});
     const T = .22, TOP = .1;
     const add = (w, hh, d, x, y, z, m) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, hh, d), m); b.position.set(x, y, z); b.castShadow = b.receiveShadow = true; root.add(b); return b; };
     add(10.44, .3, 10.44, 0, -.16, 0, lac);
@@ -2063,7 +2162,7 @@ const S3 = (() => {
     return t;
   }
   function buildTable() {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), new THREE.MeshStandardMaterial({map: woodTexture(), roughness: .55}));
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), Mat({map: woodTexture(), roughness: .55}));
     m.rotation.x = -Math.PI / 2; m.position.y = -.31; m.receiveShadow = true;
     root.add(m);
   }
@@ -2083,9 +2182,13 @@ const S3 = (() => {
   /* ---------- Bildloop ---------- */
   let lastT = 0, slowFrames = 0;
   const FOCUS = new THREE.Vector3();
+  let lastDraw = 0;
   function frame(now) {
     requestAnimationFrame(frame);
     if (document.hidden) { lastT = now; return; }
+    // den enkla kartan ritar högst 30 bilder per sekund (hälften så mycket arbete för tv:n)
+    if (SIMPLE && now - lastDraw < 31) return;
+    lastDraw = now;
     const dt = Math.min(.1, (now - (lastT || now)) / 1000);
     lastT = now;
     const t = now / 1000;
@@ -2109,10 +2212,11 @@ const S3 = (() => {
       const zoom = clamp((Cam.d - Cam.dMin) / ((Cam.dFit || 12) - Cam.dMin), 0, 1);
       Post.render(scene, camera, {focusY: FOCUS.y * .5 + .5, dof: Settings.dof ? lerp(.9, .35, zoom) : 0, bloom: .3, exposure: .92 * (1 + flash * .8), night: .15});
     } else renderer.render(scene, camera);
-    if (Settings.quality === 'auto' && dt > .045) {
-      if (++slowFrames > 90) {
+    if (Settings.quality === 'auto' && dt > (SIMPLE ? .05 : .045)) {
+      if (++slowFrames > (SIMPLE ? 60 : 90)) {
         slowFrames = 0;
-        if (renderer.getPixelRatio() > 1) { renderer.setPixelRatio(1); resize(); }
+        if (SIMPLE) { const pr = renderer.getPixelRatio(); if (pr > simpleRatio() * .55) { renderer.setPixelRatio(pr * .8); resize(); } }
+        else if (renderer.getPixelRatio() > 1) { renderer.setPixelRatio(1); resize(); }
         else if (Post.enabled && !Post.cheap) Post.cheap = true;
       }
     } else slowFrames = Math.max(0, slowFrames - 1);
@@ -2452,7 +2556,7 @@ const Decor = (() => {
   const D = {};
   let root = null;
   const M4 = new THREE.Matrix4(), Q = new THREE.Quaternion(), V = new THREE.Vector3(), SC = new THREE.Vector3(), E = new THREE.Euler(), UP = new THREE.Vector3(0, 1, 0);
-  const mat = (c, r = .6, extra = {}) => new THREE.MeshStandardMaterial(Object.assign({color: c, roughness: r}, extra));
+  const mat = (c, r = .6, extra = {}) => Mat(Object.assign({color: c, roughness: r}, extra));
   // Modellens riktning: framsidan pekar mot +Z. Vinkel i brädet (atan2(dy, dx)) till rotation runt Y.
   D.yawFor = ang => Math.PI / 2 - ang;
 
@@ -2518,6 +2622,7 @@ const Decor = (() => {
     const F = Layout.forest;
     instances('tree_a', F.trees.filter(t => t.v < .55), t => ({pos: at(t.x, t.y, -.01), rot: t.rot, scale: t.r * .0145}));
     instances('tree_b', F.trees.filter(t => t.v >= .55), t => ({pos: at(t.x, t.y, -.01), rot: t.rot, scale: t.r * .0135}));
+    if (SIMPLE) return;   // den enkla kartan har bara träden
     instances('bush', F.bushes, t => ({pos: at(t.x, t.y, -.005), rot: t.rot, scale: t.r * .02}));
     instances('mushroom', F.mushrooms, t => ({pos: at(t.x, t.y), rot: t.rot, scale: t.r * .04}));
     instances('rock_a', F.rocks, t => ({pos: at(t.x, t.y, -.02), rot: t.rot, scale: t.r * .02}));
@@ -2525,6 +2630,7 @@ const Decor = (() => {
   function mountain() {
     const M = Layout.mountain;
     instances('pine_snow', M.pines, t => ({pos: at(t.x, t.y, -.01), rot: t.rot, scale: t.r * .0165}));
+    if (SIMPLE) return;   // stenarna och buskarna är målade i trycket
     const snowy = M.rocks.filter(t => Terrain.snowAt(t.x, t.y) > .4), bare = M.rocks.filter(t => Terrain.snowAt(t.x, t.y) <= .4);
     instances('rock_snow', snowy, t => ({pos: at(t.x, t.y, -.03), rot: t.rot, scale: t.r * .0175}));
     ['rock_a', 'rock_b', 'rock_c'].forEach((n, k) => instances(n, bare.filter((t, i) => i % 3 === k), t => ({pos: at(t.x, t.y, -.03), rot: t.rot, scale: t.r * .021})));
@@ -2568,8 +2674,10 @@ const Decor = (() => {
     const loop = []; for (let i = 0; i < 120; i++) { const a = i / 120 * Math.PI * 2; loop.push([c[0] + Math.cos(a) * 124, c[1] + Math.sin(a) * 124]); }
     railLine(loop, true);
     const R = Layout.rail;
-    instances('bush', R.bushes, t => ({pos: at(t.x, t.y, -.005), rot: t.rot, scale: t.r * .02}));
-    ['rock_a', 'rock_b'].forEach((n, k) => instances(n, R.rocks.filter((t, i) => i % 2 === k), t => ({pos: at(t.x, t.y, -.02), rot: t.rot, scale: t.r * .02})));
+    if (!SIMPLE) {
+      instances('bush', R.bushes, t => ({pos: at(t.x, t.y, -.005), rot: t.rot, scale: t.r * .02}));
+      ['rock_a', 'rock_b'].forEach((n, k) => instances(n, R.rocks.filter((t, i) => i % 2 === k), t => ({pos: at(t.x, t.y, -.02), rot: t.rot, scale: t.r * .02})));
+    }
     // ett litet tåg som kör runt snurran
     const cars = [D.make('loco'), D.make('wagon'), D.make('wagon')];
     cars.forEach(o => { o.scale.setScalar(.18); root.add(o); });
@@ -2639,18 +2747,23 @@ const Decor = (() => {
   const lair = {doors: [], family: [], witch: null, cauldron: null, glows: []};
   function lairWall() {
     const stone = [mat('#8A9CB0', .85), mat('#7E91A6', .85)], dark = mat('#5A6B7E', .9);
-    const R0 = 1.81, R1 = 2.0, H = .16, n = 44;
+    const R0 = 1.81, R1 = 2.0, H = .16, n = 44, w = (R0 + R1) / 2 * Math.PI * 2 / n * .92;
+    const blocks = [[], []], caps = [];
     for (let i = 0; i < n; i++) {
       const a = (i + .5) / n * Math.PI * 2, deg = (a * 180 / Math.PI) % 90;
       if (deg < 17 || deg > 73) continue;   // öppningar där stigarna kommer in
-      const w = (R0 + R1) / 2 * Math.PI * 2 / n * .92;
-      const b = new THREE.Mesh(new THREE.BoxGeometry(w, H * (.9 + (i % 3) * .08), R1 - R0), stone[i % 2]);
-      b.position.set(Math.cos(a) * (R0 + R1) / 2, H / 2, Math.sin(a) * (R0 + R1) / 2);
-      b.rotation.y = -a + Math.PI / 2;
-      b.castShadow = b.receiveShadow = true;
-      root.add(b);
-      if (i % 2 === 0) { const c = new THREE.Mesh(new THREE.BoxGeometry(w * .45, .05, (R1 - R0) * .9), dark); c.position.copy(b.position); c.position.y = H + .025; c.rotation.y = b.rotation.y; c.castShadow = true; root.add(c); }
+      const x = Math.cos(a) * (R0 + R1) / 2, z = Math.sin(a) * (R0 + R1) / 2, rot = -a + Math.PI / 2, hh = H * (.9 + (i % 3) * .08);
+      blocks[i % 2].push({x, y: hh / 2, z, rot, sx: w, sy: hh, sz: R1 - R0});
+      if (i % 2 === 0) caps.push({x, y: H + .025, z, rot, sx: w * .45, sy: .05, sz: (R1 - R0) * .9});
     }
+    const unit = new THREE.BoxGeometry(1, 1, 1);
+    [[blocks[0], stone[0]], [blocks[1], stone[1]], [caps, dark]].forEach(([list, m]) => {
+      const im = new THREE.InstancedMesh(unit, m, list.length);
+      list.forEach((b, k) => { E.set(0, b.rot, 0); Q.setFromEuler(E); M4.compose(V.set(b.x, b.y, b.z), Q, SC.set(b.sx, b.sy, b.sz)); im.setMatrixAt(k, M4); });
+      im.instanceMatrix.needsUpdate = true;
+      im.castShadow = im.receiveShadow = true; im.frustumCulled = false;
+      root.add(im);
+    });
     // facklor vid öppningarna
     [0, 1, 2, 3].forEach(k => [-1, 1].forEach(s => {
       const a = k * Math.PI / 2 + s * .33, x = Math.cos(a) * 1.9, z = Math.sin(a) * 1.9;
@@ -2684,8 +2797,9 @@ const Decor = (() => {
     lair.witch = D.make('witch'); lair.witch.scale.setScalar(.14); lair.witch.position.copy(W(632, 530)); lair.witch.rotation.y = -.5; root.add(lair.witch);
     lair.cauldron = D.make('cauldron'); lair.cauldron.scale.setScalar(.22); lair.cauldron.position.copy(W(368, 540)); root.add(lair.cauldron);
     [[392, 610], [608, 610], [470, 632], [530, 632]].forEach(([x, y]) => { const c = D.make('candle'); c.scale.setScalar(.26); c.position.copy(W(x, y)); root.add(c); c.traverse(o => { if (o.isMesh) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { if (m.emissiveIntensity > 0) lair.glows.push({m, base: m.emissiveIntensity, o: c}); }); }); });
-    const light = new THREE.PointLight(0xa070ff, .7, 3.2, 2); light.position.set(0, .8, 0); root.add(light);
-    const warm = new THREE.PointLight(0x7dff6a, .5, 1.6, 2); warm.position.copy(W(368, 540)); warm.position.y = .4; root.add(warm);
+    const light = new THREE.PointLight(0xa070ff, .7, 3.2, 2); light.position.set(0, .8, 0);
+    const warm = new THREE.PointLight(0x7dff6a, .5, 1.6, 2); warm.position.copy(W(368, 540)); warm.position.y = .4;
+    if (!SIMPLE) root.add(light, warm);
     lair.lights = {light, warm};
     // liv i borgen: häxan vinkar, grytan bubblar, ljusen fladdrar, familjen vickar
     const wn = lair.witch.userData.nodes || {}, cn = lair.cauldron.userData.nodes || {};
@@ -2741,7 +2855,7 @@ const Pieces = (() => {
   let list = [], ring = null, curId = -1;
   // Klassisk pjäs när trollmodellen saknas
   function fallback(color) {
-    const g = new THREE.Group(), m = new THREE.MeshStandardMaterial({color, roughness: .35});
+    const g = new THREE.Group(), m = Mat({color, roughness: .35});
     const body = new THREE.Group(); body.name = 'body';
     const prof = [[0, 0], [1, 0], [.95, .25], [.55, .8], [.42, 1.7], [.6, 1.9], [.45, 2.05], [0, 2.1]].map(([r, y]) => new THREE.Vector2(r, y));
     const pawn = new THREE.Mesh(new THREE.LatheGeometry(prof, 20), m);
@@ -2888,7 +3002,7 @@ const Dice = (() => {
     const lib = ModelLib.ok() && ModelLib.create('die3');
     if (lib) g.add(lib);
     else {
-      const mats = [3, 3, 1, 1, 2, 2].map(n => new THREE.MeshStandardMaterial({map: pipTexture(n), roughness: .35}));
+      const mats = [3, 3, 1, 1, 2, 2].map(n => Mat({map: pipTexture(n), roughness: .35}));
       const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mats); m.castShadow = true; g.add(m);
     }
     g.scale.setScalar(SIZE);
@@ -3024,9 +3138,9 @@ const Spinners = (() => {
   }
   function fallbackBase() {
     const g = new THREE.Group();
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .1, 48), new THREE.MeshStandardMaterial({color: 0x1e1b1c, roughness: .3}));
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, .1, 48), Mat({color: 0x1e1b1c, roughness: .3}));
     base.position.y = .05; base.castShadow = base.receiveShadow = true;
-    const top = new THREE.Mesh(new THREE.CircleGeometry(.9, 48), new THREE.MeshStandardMaterial({color: 0xffffff, roughness: .45}));
+    const top = new THREE.Mesh(new THREE.CircleGeometry(.9, 48), Mat({color: 0xffffff, roughness: .45}));
     top.material.name = 'Snurrtopp'; top.rotation.x = -Math.PI / 2; top.position.y = .101;
     // CircleGeometry har UV i planet; vrid så att norr blir uppåt i bilden
     top.rotation.z = 0;
@@ -3034,12 +3148,12 @@ const Spinners = (() => {
     return g;
   }
   function fallbackArrow() {
-    const g = new THREE.Group(), m = new THREE.MeshStandardMaterial({color: 0x141213, roughness: .25});
+    const g = new THREE.Group(), m = Mat({color: 0x141213, roughness: .25});
     const shape = new THREE.Shape([[-.04, -.22], [-.04, .62], [-.12, .62], [0, .86], [.12, .62], [.04, .62], [.04, -.22]].map(([x, y]) => new THREE.Vector2(x, y)));
     const geo = new THREE.ExtrudeGeometry(shape, {depth: .05, bevelEnabled: false});
     geo.rotateX(Math.PI / 2);          // ligger platt, pekar mot +Z
     const a = new THREE.Mesh(geo, m); a.position.y = .05; a.castShadow = true;
-    const cap = new THREE.Mesh(new THREE.SphereGeometry(.1, 16, 10, 0, 6.3, 0, 1.57), new THREE.MeshStandardMaterial({color: 0xffd43b, roughness: .3}));
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(.1, 16, 10, 0, 6.3, 0, 1.57), Mat({color: 0xffd43b, roughness: .3}));
     cap.position.y = .05;
     g.add(a, cap);
     return g;
@@ -3062,7 +3176,7 @@ const Spinners = (() => {
           g.userData.topUV = true;
         }
         const mats = Array.isArray(o.material) ? o.material : [o.material];
-        const nm = mats.map(m => m.name === 'Snurrtopp' ? new THREE.MeshStandardMaterial({map: tex, roughness: .4, metalness: 0, color: 0xffffff, vertexColors: !!m.vertexColors}) : m);
+        const nm = mats.map(m => m.name === 'Snurrtopp' ? Mat({map: tex, roughness: .4, metalness: 0, color: 0xffffff, vertexColors: !!m.vertexColors}) : m);
         o.material = Array.isArray(o.material) ? nm : nm[0];
       });
       // Blender-disken har UV (u = x, v = y i Blender); canvasens topp ska vara norr (-Z i spelet)
@@ -3242,8 +3356,8 @@ const Table = (() => {
     return t;
   }
   function buildLid() {
-    const red = new THREE.MeshStandardMaterial({color: 0xc8281d, roughness: .45});
-    const top = new THREE.MeshStandardMaterial({map: lidTexture(), roughness: .4});
+    const red = Mat({color: 0xc8281d, roughness: .45});
+    const top = Mat({map: lidTexture(), roughness: .4});
     const lid = new THREE.Mesh(new THREE.BoxGeometry(3.4, .14, 2.25), [red, red, top, red, red, red]);
     lid.position.set(7.6, -.24, 1.2); lid.rotation.y = -.35;
     lid.castShadow = lid.receiveShadow = true;
@@ -3261,7 +3375,7 @@ const Table = (() => {
     const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
   }
   function buildDeck() {
-    const side = new THREE.MeshStandardMaterial({color: 0xf4efe2, roughness: .6}), back = new THREE.MeshStandardMaterial({map: cardBack(), roughness: .45});
+    const side = Mat({color: 0xf4efe2, roughness: .6}), back = Mat({map: cardBack(), roughness: .45});
     deckStack = new THREE.Mesh(new THREE.BoxGeometry(.55, 1, .78), [side, side, back, side, side, side]);
     deckStack.position.set(6.1, -.31, -1.6); deckStack.rotation.y = .2;
     deckStack.castShadow = deckStack.receiveShadow = true;
@@ -3295,14 +3409,14 @@ const Portraits = (() => {
     return svgUrl(Art.hugoFull('x', color));
   }
   // kind: 'head' (ansiktet) eller 'full' (hela trollet)
-  P.get = (color, kind = 'head') => render(color + kind, () => ModelLib.create('troll', {colors: {body: color}}), kind, () => fallback(color, kind), ['troll']);
+  P.get = (color, kind = 'head') => render(color + kind, () => ModelLib.create('troll', {colors: {body: color}, hq: true}), kind, () => fallback(color, kind), ['troll']);
   // Familjen tillsammans (Hugolina och de tre barnen) och häxan, för resultatet och dörrarna
   P.family = () => render('family', () => {
     const g = new THREE.Group();
-    [['hugolina', 0, 0, 1], ['kid_a', -1.3, .5, .95], ['kid_b', 1.3, .5, .95], ['kid_c', 0, 1.1, .9]].forEach(([n, x, z, s]) => { const o = ModelLib.create(n); if (o) { o.position.set(x, 0, z); o.scale.setScalar(s); o.rotation.y = -x * .15; g.add(o); } });
+    [['hugolina', 0, 0, 1], ['kid_a', -1.3, .5, .95], ['kid_b', 1.3, .5, .95], ['kid_c', 0, 1.1, .9]].forEach(([n, x, z, s]) => { const o = ModelLib.create(n, {hq: true}); if (o) { o.position.set(x, 0, z); o.scale.setScalar(s); o.rotation.y = -x * .15; g.add(o); } });
     return g;
   }, 'full', () => null, ['hugolina', 'kid_a', 'kid_b', 'kid_c']);
-  P.witch = () => render('witch', () => ModelLib.create('witch'), 'full', () => null, ['witch']);
+  P.witch = () => render('witch', () => ModelLib.create('witch', {hq: true}), 'full', () => null, ['witch']);
   function render(key, make, kind, fb, needs) {
     if (cache[key]) return cache[key];
     const renderer = S3.renderer && S3.renderer();
@@ -3654,7 +3768,11 @@ const Menu = (() => {
     };
     const readers = [bind('volMusic', 'music', () => { Sound.unlock(); Sound.setVolumes(); syncTools(); }), bind('volSfx', 'sfx', () => { Sound.unlock(); Sound.setVolumes(); Sound.play('coin'); }),
       bind('optVoice', 'voice', syncTools), bind('optHints', 'hints', () => Game.state() && UI.render(Game.state())), bind('optFollow', 'follow'), bind('optDof', 'dof'),
-      bind('optBonus', 'bonus'), bind('optQuality', 'quality', () => { $('musicInfo').textContent = 'Grafiken ändras nästa gång spelet startar.'; })];
+      bind('optBonus', 'bonus'), bind('optQuality', 'quality', () => { $('musicInfo').textContent = 'Grafiken ändras när spelet startar om. Ett parti som pågår sparas och kan fortsättas.'; $('btnRestart').hidden = false; })];
+    $('btnRestart').addEventListener('click', () => M.restart());
+    // förslaget på startsidan när spelet går segt
+    $('btnSimple').addEventListener('click', () => { Settings.quality = 'simple'; saveSettings(); M.restart(); });
+    $('btnSlowNo').addEventListener('click', () => { Store.set('slowAsked', true); $('slowAsk').hidden = true; setTimeout(() => $('btnPlay').focus(), 30); });
     M.readSettings = () => {
       readers.forEach(r => r());
       const t = Settings.turn || {};
@@ -3719,9 +3837,26 @@ const Menu = (() => {
     const b = $(id).querySelector('.big'); if (b) setTimeout(() => b.focus(), 30);
   }
   function close(id) { $(id).hidden = true; }
+  // Ladda om sidan med den nya grafiken. Ett pågående parti sparas först och kan fortsättas på startsidan,
+  // och mobilerna ansluter igen av sig själva. ?enkel tas bort så att inställningen bestämmer.
+  M.restart = () => {
+    if (Game.running()) Game.save();
+    const u = new URL(location.href);
+    u.search = u.search.replace(/[?&]enkel\b[^&]*/g, '').replace(/^&/, '?');
+    location.replace(u.toString());
+  };
+  M.suggestSimple = () => {
+    if ($('title').hidden) return;
+    $('slowAsk').hidden = false;
+    setTimeout(() => $('btnSimple').focus(), 30);
+  };
   M.openSettings = () => {
     const files = typeof MUSIC_FILES !== 'undefined' ? MUSIC_FILES : [];
-    $('musicInfo').textContent = files.length ? `Musiken kommer från ${files.length} låtfiler.` : 'Musiken skapas i webbläsaren. Lägg mp3-filer från Suno i mappen music för riktig musik.';
+    $('musicInfo').textContent = (files.length ? `Musiken kommer från ${files.length} låtfiler.` : 'Musiken skapas i webbläsaren. Lägg mp3-filer från Suno i mappen music för riktig musik.')
+      + (SIMPLE ? ' Spelet visar den enkla kartan just nu.' : '');
+    // miniatyrkänslan finns inte på den enkla kartan
+    $('optDof').closest('label').hidden = SIMPLE;
+    $('btnRestart').hidden = true;
     open('settings');
   };
 
@@ -4664,7 +4799,7 @@ const Bonus = (() => {
   B.play = (p, gen) => Flow.ask(gen, res => start(p, res));
 
   /* ---------- Byggstenar ---------- */
-  const std = (color, rough = .8, extra) => new THREE.MeshStandardMaterial(Object.assign({color, roughness: rough}, extra || {}));
+  const std = (color, rough = .8, extra) => Mat(Object.assign({color, roughness: rough}, extra || {}));
   // en modell från Blender, skalad till höjden h och ställd på marken (eller en enkel form om modellen saknas)
   function model(name, h, fallback, opts) {
     let o = ModelLib.ok() && ModelLib.has(name) ? ModelLib.create(name, opts || {}) : null;
@@ -4980,8 +5115,9 @@ const Bonus = (() => {
   try { await Promise.race([document.fonts.load('40px Chewy'), new Promise(r => setTimeout(r, 1500))]); } catch (e) { /* typsnittet är valfritt */ }
   const TEST = /autotest/.test(location.hash);
   if (TEST) { Time.scale = .02; Settings.music = 0; Settings.sfx = 0; Settings.voice = false; }
+  document.body.classList.toggle('simple', SIMPLE);
   try {
-    setLoad(.08, 'Bygger brädet …');
+    setLoad(.08, SIMPLE ? 'Bygger den enkla kartan …' : 'Bygger brädet …');
     ModelLib.init();
     S3.init($('view'));
     await frameYield();
@@ -5020,6 +5156,15 @@ const Bonus = (() => {
   Menu.showTitle();
   // spelade familjen med mobilerna förra gången kan de ansluta igen direkt
   Remote.resume();
+  // Går spelet segt (till exempel på en tv som inte känns igen) föreslår startsidan den enkla kartan
+  if (!SIMPLE && Settings.quality === 'auto' && !Store.get('slowAsked')) {
+    setTimeout(() => {
+      let n = 0;
+      const t0 = performance.now();
+      const count = () => { n++; if (performance.now() - t0 < 4000) requestAnimationFrame(count); else if (n / 4 < 22 && !document.hidden) Menu.suggestSimple(); };
+      requestAnimationFrame(count);
+    }, 2500);
+  }
 })();
 })();
 </script>

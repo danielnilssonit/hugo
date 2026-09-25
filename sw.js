@@ -1,5 +1,5 @@
 // Hugo-spelet: sparar spelet i webbläsaren så att det startar även utan internet
-const CACHE = 'hugo-7d956b85fc';
+const CACHE = 'hugo-75bb196726';
 const CORE = ['./', './index.html', './kontroll.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon-32.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(async c => {
