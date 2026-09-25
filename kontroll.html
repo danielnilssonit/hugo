@@ -166,6 +166,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
 .ask b{display:block; font-family:var(--f-disp); font-weight:400; font-size:25px; line-height:1.05}
 .ask span{display:block; font-weight:700; font-size:16px}
 .ask .kc{display:inline-block; width:1.5em; height:1.5em; vertical-align:-.4em}
+.ask .tipLine{margin-top:4px; padding-top:4px; border-top:2px dashed var(--gold); font-size:15px; color:var(--ink-soft)}
 
 /* Häxans dörrar */
 .doors{display:flex; gap:10px; width:100%}
@@ -201,7 +202,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
 .key.empty .kCount{display:none}
 .key.match{background:linear-gradient(#FFF6CF,#FFE079); animation:glow .8s ease-in-out infinite alternate}
 .key.dim .kArt,.key.dim .kVerb,.key.dim .kCount{opacity:.5}
-.key.tip::after{content:"Bra att slänga"; position:absolute; left:50%; bottom:-11px; transform:translateX(-50%); white-space:nowrap; font-size:10.5px; font-weight:700; background:#fff; border:2px solid var(--ink); border-radius:99px; padding:0 6px}
+.key.tip{outline:3px dashed var(--gold); outline-offset:3px}
 .key.nudge{animation:nudge .45s ease}
 @keyframes glow{from{box-shadow:0 4px 0 var(--ink),0 0 0 0 rgba(255,214,70,.3)} to{box-shadow:0 4px 0 var(--ink),0 0 0 8px rgba(255,214,70,.95)}}
 @keyframes nudge{20%{transform:translateX(-7px) rotate(-3deg)} 45%{transform:translateX(6px) rotate(2deg)} 70%{transform:translateX(-3px)}}
@@ -790,10 +791,14 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   }
 
   // Kortet som snurran visade: vad ska läggas?
+  const kc = s => `<svg class="kc" viewBox="-18 -18 36 36" aria-label="${s}">${art.keys[s].replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg>`;
   function askBox(d) {
     const ico = d.t === 'guld' ? art.sack : art.icons[d.o] ? art.icons[d.o][d.need] : '';
-    const text = esc(d.text).replace(new RegExp(`\\b${d.need}\\b`), `<svg class="kc" viewBox="-18 -18 36 36" aria-label="${d.need}">${art.keys[d.need].replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg>`);
-    return h('div', {class: 'ask'}, h('span', {class: 'askIco', html: ico}), h('div', null, h('b', {text: d.title}), h('span', {html: text})));
+    const text = esc(d.text).replace(new RegExp(`\\b${d.need}\\b`), kc(d.need));
+    // saknas rätt kort föreslås det kort som är minst värt att spara (samma tips som på skärmen)
+    const hand = st && st.game && st.game.hand, tip = d.hints && !d.has && d.tip >= 0 && hand ? hand[d.tip] : null;
+    return h('div', {class: 'ask'}, h('span', {class: 'askIco', html: ico}), h('div', null, h('b', {text: d.title}), h('span', {html: text}),
+      tip ? h('span', {class: 'tipLine', html: `Tips: ${kc(tip)} är bra att slänga.`}) : null));
   }
   function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c])); }
 
@@ -1001,7 +1006,10 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   function offerText(o) {
     if (o.kind === 'roll') return 'Din tur! Slå tärningen!';
     if (o.kind === 'spin') return 'Snurra snurran!';
-    if (o.kind === 'card') return `${o.data.title} ${String(o.data.text || '').replace(/\b([2468])\b/, (m, s) => WORDS[s])}`;
+    if (o.kind === 'card') {
+      const hand = st && st.game && st.game.hand, tip = o.data.hints && !o.data.has && o.data.tip >= 0 && hand ? hand[o.data.tip] : null;
+      return `${o.data.title} ${String(o.data.text || '').replace(/\b([2468])\b/, (m, s) => WORDS[s])}${tip ? ` Tips: ${WORDS[tip]} är bra att slänga.` : ''}`;
+    }
     if (o.kind === 'door') return 'Välj en av häxans dörrar!';
     if (o.kind === 'ok') return o.data.card === 'fail' ? 'Oj nej, häxan lurade dig!' : 'Hurra! Familjen är fri!';
     return '';
