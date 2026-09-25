@@ -1,0 +1,1050 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7a140e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hugo-telefonen">
+<title>Hugo-telefonen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Chewy&family=VT323&display=swap">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon-32.png">
+<style>
+/* Hugo-telefonen: mobilen blir telefonen man styrde Hugo med i tv-programmet */
+:root{
+  color-scheme: light;
+  --ink:#241A15; --ink-soft:#5E4B40; --paper:#FFFDF5; --paper-2:#FFF7E4; --cream:#FFF3D6;
+  --red:#C8281D; --red-hi:#E0402F; --red-deep:#7A140E; --gold:#F6BD2C; --gold-soft:#FFF0B3; --ok:#23884A; --bad:#C9362A;
+  --lcd:#B9D38A; --lcd-ink:#1E2A12; --lcd-dim:#9DB872;
+  --f-disp:'Chewy','Chalkboard SE','Comic Sans MS',system-ui,sans-serif;
+  --f-ui:'Andika','Trebuchet MS','Segoe UI',system-ui,sans-serif;
+  --f-lcd:'VT323','Courier New',ui-monospace,monospace;
+  --pop:3px 3px 0 var(--ink);
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0; background:var(--red-deep); color:var(--ink); font-family:var(--f-ui); font-size:16px; line-height:1.35; -webkit-tap-highlight-color:transparent; overscroll-behavior:none}
+button,input{font:inherit; color:inherit}
+button{cursor:pointer; touch-action:manipulation}
+:focus-visible{outline:4px solid #FFD84A; outline-offset:2px}
+h1{font-family:var(--f-disp); font-weight:400; font-size:32px; line-height:1.05; margin:0; letter-spacing:.3px; text-wrap:balance}
+h2{font-family:var(--f-disp); font-weight:400; font-size:28px; margin:0}
+p{margin:0}
+
+/* Telefonens röda plastskal (Alga-lådans röda), med lite prickig struktur */
+#phone{position:fixed; inset:0; display:flex; flex-direction:column; padding:var(--safe-t) 0 var(--safe-b);
+  background:radial-gradient(rgba(255,255,255,.07) 1px, transparent 1.4px) 0 0/7px 7px, linear-gradient(170deg, var(--red-hi) 0%, var(--red) 40%, #A51E15 75%, var(--red-deep) 100%)}
+.bar{display:flex; align-items:center; gap:8px; padding:8px 12px 6px; color:#FFE9C9}
+.barTitle{flex:1; font-family:var(--f-disp); font-size:21px; letter-spacing:.4px; text-shadow:1px 2px 0 rgba(36,26,21,.55); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.dot{width:12px; height:12px; border-radius:50%; border:2px solid var(--ink); background:#8C7E76; flex:none}
+.dot.on{background:#6BD66B; box-shadow:0 0 8px #6BD66B}
+.dot.wait{background:var(--gold); animation:blink 1s steps(2) infinite}
+.dot.off{background:#FF6B5A}
+@keyframes blink{50%{opacity:.3}}
+.barBtn{width:42px; height:38px; display:grid; place-items:center; border:2.5px solid var(--ink); border-radius:12px; background:var(--cream); box-shadow:2px 2px 0 var(--ink); padding:0}
+.barBtn svg{width:22px; height:22px; fill:var(--ink)}
+.barBtn[aria-pressed="true"]{background:var(--gold)}
+.barBtn:active{transform:translate(1px,1px); box-shadow:1px 1px 0 var(--ink)}
+
+.view{flex:1; min-height:0; overflow:auto; padding:6px 14px 14px; display:flex; flex-direction:column; gap:10px}
+.card{background:var(--paper); border:3px solid var(--ink); border-radius:18px; box-shadow:var(--pop); padding:16px; display:flex; flex-direction:column; gap:12px}
+.card.center{align-items:center; text-align:center; margin:auto 0}
+.btn{min-height:56px; border:3px solid var(--ink); border-radius:14px; background:linear-gradient(#FFD95A,#F2A81D); box-shadow:var(--pop); font-family:var(--f-disp); font-size:24px; letter-spacing:.4px; padding:6px 16px; width:100%}
+.btn:active:not(:disabled){transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink)}
+.btn:disabled{background:#ECE4DE; color:#8C7E76; box-shadow:1px 1px 0 var(--ink)}
+.btn.ghost{background:linear-gradient(#FFFFFF,#EFE6DF); font-size:20px; min-height:48px}
+.row{display:flex; gap:10px}
+.row .btn{flex:1}
+.err{min-height:1.2em; color:var(--bad); font-weight:700; font-size:15px}
+.err:empty{display:none}
+.note{font-size:15px; color:var(--ink-soft)}
+.note:empty{display:none}
+.wait{font-weight:700; text-align:center; color:var(--ink-soft)}
+.wait:empty{display:none}
+.small{font-size:13px; color:var(--ink-soft); text-align:center}
+.big-text{font-weight:700; font-size:18px; max-width:28ch}
+.ring{width:70px; height:70px; border-radius:50%; border:7px solid var(--gold-soft); border-top-color:var(--red); animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Koden och namnet */
+.codeInput,.nameInput{width:100%; height:56px; border:3px solid var(--ink); border-radius:14px; background:#fff; padding:0 14px; font-weight:700; font-size:20px}
+.codeInput{font-family:var(--f-lcd); font-size:40px; letter-spacing:10px; text-align:center; text-transform:uppercase; background:var(--lcd); color:var(--lcd-ink)}
+.lbl{font-weight:700; font-size:15px; margin-bottom:-6px}
+
+/* Välj troll */
+.trolls{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px}
+.troll{position:relative; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 6px 8px; border:3px solid var(--ink); border-radius:16px; background:radial-gradient(circle at 50% 38%, #fff, var(--c) 120%); box-shadow:var(--pop)}
+.troll img{width:100%; max-width:120px; aspect-ratio:1; object-fit:contain}
+.troll b{font-family:var(--f-disp); font-weight:400; font-size:21px; line-height:1}
+.troll small{font-size:12px; font-weight:700; color:var(--ink-soft); min-height:1.3em; text-align:center; line-height:1.2}
+.troll[aria-pressed="true"]{outline:5px solid var(--gold); outline-offset:2px; transform:translateY(-2px)}
+.troll:disabled{filter:grayscale(.8); opacity:.55; box-shadow:1px 1px 0 var(--ink)}
+
+/* Väntar i lobbyn */
+.meBig{display:flex; align-items:center; gap:12px}
+.meBig img{width:84px; height:84px; flex:none; object-fit:contain; border:3px solid var(--ink); border-radius:16px; background:radial-gradient(circle at 50% 38%, #fff, var(--c) 120%)}
+.meBig h1{font-size:28px}
+.meBig small{display:block; font-weight:700; color:var(--ink-soft); font-size:14px}
+.list{display:flex; flex-direction:column; gap:6px}
+.pl{display:grid; grid-template-columns:40px minmax(0,1fr) auto; gap:10px; align-items:center; padding:6px 10px; border:2.5px solid var(--ink); border-radius:12px; background:var(--paper-2); text-align:left; width:100%}
+.pl img{width:40px; height:40px; object-fit:cover; border-radius:10px; border:2px solid var(--ink); background:var(--c)}
+.pl b{display:block; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pl small{display:block; font-size:12.5px; color:var(--ink-soft); font-weight:700}
+.pl .tag{justify-self:end; font-size:12px; font-weight:700; padding:2px 8px; border:2px solid var(--ink); border-radius:99px; background:#fff; white-space:nowrap}
+.pl .tag.me{background:var(--gold)}
+.pl .tag.gold{display:flex; align-items:center; gap:2px; font-family:var(--f-disp); font-weight:400; font-size:20px; border:0; background:none; padding:0}
+.pl .tag.gold svg{width:24px; height:24px}
+.pl.win{background:var(--gold-soft)}
+.pl:disabled{opacity:.5}
+button.pl:active:not(:disabled){transform:translate(1px,1px)}
+
+/* ---------- Spelet ---------- */
+#vGame{gap:8px; padding-bottom:10px}
+.me{display:grid; grid-template-columns:48px minmax(0,1fr) auto auto; gap:8px; align-items:center; padding:6px 8px; background:var(--paper); border:3px solid var(--ink); border-radius:16px; box-shadow:var(--pop)}
+.mePic{width:48px; height:48px; border-radius:12px; border:2.5px solid var(--ink); object-fit:cover; background:var(--c, #ddd)}
+.meText{min-width:0}
+.meText b{display:block; font-family:var(--f-disp); font-weight:400; font-size:22px; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.meText small{display:block; font-size:12.5px; font-weight:700; color:var(--ink-soft); line-height:1.2}
+.lives{display:flex; gap:3px}
+.life{width:20px; height:27px; border:2px solid var(--ink); border-radius:5px; overflow:hidden; background:#fff; transition:transform .5s}
+.life img{width:100%; height:100%; object-fit:cover}
+.life.lost{background:repeating-linear-gradient(45deg,#3B2B55 0 4px,#33254A 4px 8px); transform:rotateY(180deg)}
+.life.lost img{visibility:hidden}
+.lives.off{opacity:.35}
+.gold{display:flex; align-items:center; gap:2px; padding:1px 9px 1px 3px; border:2.5px solid var(--ink); border-radius:99px; background:var(--gold-soft)}
+.gold svg{width:26px; height:26px}
+.gold b{font-family:var(--f-disp); font-weight:400; font-size:24px; line-height:1; min-width:1ch; text-align:center; font-variant-numeric:tabular-nums}
+.gold.bump{animation:bump .6s ease}
+@keyframes bump{35%{transform:scale(1.25)}}
+
+/* Displayen: grön lcd som på en gammal telefon */
+.lcd{padding:8px 12px 9px; border:3px solid var(--ink); border-radius:12px; background:linear-gradient(var(--lcd),#A9C67A); box-shadow:inset 0 3px 0 rgba(0,0,0,.18), 0 0 0 5px #2B2320, 0 0 0 7px var(--ink); margin:6px 6px 2px; color:var(--lcd-ink); font-family:var(--f-lcd); min-height:78px}
+.lcdTop{font-size:27px; line-height:1; text-transform:uppercase; letter-spacing:1px}
+.lcdTop::after{content:"_"; animation:blink 1s steps(2) infinite}
+.lcdMsg{font-size:21px; line-height:1.05; margin-top:3px}
+.lcdMsg:empty{display:none}
+
+/* Scenen i mitten: tärningen, snurran, dörrarna och annat. Allt i den skalar efter hur mycket plats som finns (cqh). */
+.stage{flex:1; min-height:150px; container-type:size; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:10px; text-align:center; color:#FFF3D6; padding:4px 0}
+.stage h2{color:#fff; text-shadow:2px 2px 0 var(--ink), -1px -1px 0 var(--ink), 1px -1px 0 var(--ink), -1px 1px 0 var(--ink); font-size:30px; line-height:1.05}
+.stage .say{font-weight:700; font-size:17px; max-width:30ch; text-shadow:1px 1px 0 rgba(36,26,21,.7)}
+.hint{font-size:14px; font-weight:700; color:#FFE9C9; text-shadow:1px 1px 0 rgba(36,26,21,.6)}
+.turnPic{width:min(96px, calc(100cqh - 150px)); height:auto; aspect-ratio:1; min-width:56px; object-fit:contain; border-radius:50%; border:4px solid var(--ink); background:radial-gradient(circle at 50% 38%, #fff, var(--c) 110%); box-shadow:var(--pop)}
+.stage .btn{max-width:320px; flex:none}
+
+/* Tärningen (1–3, som i Hugo-spelet) */
+.dieBtn{--s:clamp(64px, calc(100cqh - 120px), 104px); width:calc(var(--s) * 1.45); height:calc(var(--s) * 1.45); flex:none; border:0; background:none; padding:0; perspective:600px; display:grid; place-items:center}
+.dieBtn:disabled{cursor:default}
+.die{width:var(--s); height:var(--s); position:relative; transform-style:preserve-3d; transform:rotateX(-22deg) rotateY(28deg); transition:transform 1.1s cubic-bezier(.2,1.4,.4,1)}
+.die.rolling{animation:tumble .5s linear infinite; transition:none}
+@keyframes tumble{from{transform:rotateX(0) rotateY(0) rotateZ(0)} to{transform:rotateX(360deg) rotateY(720deg) rotateZ(180deg)}}
+.face{position:absolute; inset:0; background:linear-gradient(145deg,#FFFFFF,#F3E7D3); border:3px solid var(--ink); border-radius:18%; display:grid; grid-template:repeat(3,1fr)/repeat(3,1fr); padding:13%; box-shadow:inset 0 -5px 0 rgba(36,26,21,.12)}
+.face i{width:78%; height:78%; border-radius:50%; background:var(--red); border:2px solid var(--ink); place-self:center}
+.f1{transform:translateZ(calc(var(--s) / 2))} .f1b{transform:rotateY(180deg) translateZ(calc(var(--s) / 2))}
+.f2{transform:rotateY(90deg) translateZ(calc(var(--s) / 2))} .f2b{transform:rotateY(-90deg) translateZ(calc(var(--s) / 2))}
+.f3{transform:rotateX(90deg) translateZ(calc(var(--s) / 2))} .f3b{transform:rotateX(-90deg) translateZ(calc(var(--s) / 2))}
+.dieBtn:not(:disabled) .die:not(.rolling){animation:wiggle 1.6s ease-in-out infinite}
+@keyframes wiggle{0%,100%{transform:rotateX(-22deg) rotateY(28deg)} 50%{transform:rotateX(-30deg) rotateY(40deg) translateY(-8px)}}
+
+/* Snurran */
+.spinBtn{width:min(64vw, 250px, calc(100cqh - 76px)); min-width:120px; flex:none; aspect-ratio:1; border:0; background:none; padding:0; position:relative; touch-action:none}
+.spinBtn svg{width:100%; height:100%; display:block; overflow:visible}
+.spinArrow{transform-origin:0 0; transition:none}
+.spinBtn:not(:disabled) .spinHub{animation:hub 1.2s ease-in-out infinite}
+@keyframes hub{50%{r:17}}
+
+/* Kortet som snurran visade */
+.ask{display:flex; align-items:center; gap:12px; background:var(--paper); color:var(--ink); border:3px solid var(--ink); border-radius:16px; box-shadow:var(--pop); padding:10px 12px; text-align:left; width:100%}
+.ask .askIco{width:62px; height:62px; flex:none}
+.ask .askIco svg{width:100%; height:100%}
+.ask b{display:block; font-family:var(--f-disp); font-weight:400; font-size:25px; line-height:1.05}
+.ask span{display:block; font-weight:700; font-size:16px}
+.ask .kc{display:inline-block; width:1.5em; height:1.5em; vertical-align:-.4em}
+
+/* Häxans dörrar */
+.doors{display:flex; gap:10px; width:100%}
+.door{flex:1; min-height:clamp(84px, calc(100cqh - 120px), 140px); border:3px solid var(--ink); border-radius:60px 60px 12px 12px; background:repeating-linear-gradient(90deg,#A8672F 0 22%,#8A4F22 22% 25%); box-shadow:var(--pop); font-family:var(--f-disp); font-size:44px; color:#FFE9A8; text-shadow:2px 2px 0 var(--ink); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px}
+.door small{font-family:var(--f-ui); font-size:12.5px; font-weight:700; color:#fff; text-shadow:none}
+.door:disabled{opacity:.35}
+.door:active:not(:disabled){transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink)}
+.outcome{display:flex; flex-direction:column; align-items:center; gap:6px}
+.outcome img{width:clamp(70px, calc(100cqh - 200px), 170px); height:auto; aspect-ratio:1; object-fit:contain}
+
+/* Hejarop */
+.reacts{display:flex; flex-wrap:wrap; justify-content:center; gap:7px}
+.react{width:50px; height:50px; border:3px solid var(--ink); border-radius:50%; background:var(--paper); box-shadow:var(--pop); font-size:25px; line-height:1; padding:0}
+.react:active{transform:translate(2px,2px) scale(.94); box-shadow:1px 1px 0 var(--ink)}
+.react.sent{animation:sent .6s ease}
+@keyframes sent{40%{transform:scale(1.25) rotate(-8deg)}}
+
+/* ---------- Knappsatsen: korten är knapparna 2, 4, 6 och 8 ---------- */
+.keypad{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:9px; padding:10px; border-radius:22px; background:rgba(36,26,21,.28); box-shadow:inset 0 3px 0 rgba(0,0,0,.2)}
+.key{position:relative; height:clamp(48px, 7.8vh, 70px); border:3px solid var(--ink); border-radius:16px; background:linear-gradient(#FFFDF7,#F1E4CE); box-shadow:0 4px 0 var(--ink); display:flex; align-items:center; justify-content:center; gap:6px; padding:0 6px; transition:transform .08s, box-shadow .08s}
+.key:active,.key.down{transform:translateY(3px); box-shadow:0 1px 0 var(--ink)}
+.key .kNum{font-family:var(--f-disp); font-size:28px; line-height:1}
+.key .kLet{font-size:10.5px; font-weight:700; letter-spacing:1px; color:var(--ink-soft); align-self:center}
+/* knapparna utan kort är av gråbeige plast, som på en gammal telefon */
+.key.plain,.key.empty,.key.dim{background:linear-gradient(#E6D6BD,#CDB795)}
+.key.plain .kNum{font-size:24px; color:#6E5A4C}
+.key.plain .kLet{color:#7E6A5B}
+.key.cardKey{flex-direction:column; gap:0; padding:3px 4px}
+.key.cardKey svg{width:clamp(26px, 4.6vh, 38px); height:clamp(26px, 4.6vh, 38px)}
+.key.cardKey .kVerb{font-size:11.5px; font-weight:700; line-height:1}
+.key .kCount{position:absolute; top:-9px; right:-7px; min-width:28px; height:28px; padding:0 5px; border-radius:99px; border:2.5px solid var(--ink); background:var(--gold); font-family:var(--f-disp); font-size:18px; line-height:22px; text-align:center}
+.key.empty .kArt,.key.empty .kVerb{opacity:.35}
+.key.empty .kCount{display:none}
+.key.match{background:linear-gradient(#FFF6CF,#FFE079); animation:glow .8s ease-in-out infinite alternate}
+.key.dim .kArt,.key.dim .kVerb,.key.dim .kCount{opacity:.5}
+.key.tip::after{content:"Bra att slänga"; position:absolute; left:50%; bottom:-11px; transform:translateX(-50%); white-space:nowrap; font-size:10.5px; font-weight:700; background:#fff; border:2px solid var(--ink); border-radius:99px; padding:0 6px}
+.key.nudge{animation:nudge .45s ease}
+@keyframes glow{from{box-shadow:0 4px 0 var(--ink),0 0 0 0 rgba(255,214,70,.3)} to{box-shadow:0 4px 0 var(--ink),0 0 0 8px rgba(255,214,70,.95)}}
+@keyframes nudge{20%{transform:translateX(-7px) rotate(-3deg)} 45%{transform:translateX(6px) rotate(2deg)} 70%{transform:translateX(-3px)}}
+.keypad.idle .key.cardKey{cursor:default}
+.keypad.hide{display:none}
+
+/* Titta på utan att spela */
+#vGame.watch .me{display:none}
+
+/* ---------- Slutet ---------- */
+.overArt{height:150px; display:flex; justify-content:center; gap:4px}
+.overArt img{height:100%; width:auto; max-width:50%; object-fit:contain}
+
+/* ---------- Menyn och småmeddelanden ---------- */
+.sheet{position:fixed; inset:0; z-index:20; background:rgba(30,12,8,.55); display:flex; align-items:flex-end; justify-content:center; padding:12px 12px calc(12px + var(--safe-b))}
+.sheetCard{width:min(460px,100%); background:var(--paper); border:3px solid var(--ink); border-radius:20px; box-shadow:var(--pop); padding:16px; display:flex; flex-direction:column; gap:10px; max-height:100%; overflow:auto}
+.switch{display:flex; align-items:center; justify-content:space-between; gap:12px; font-weight:700; min-height:48px}
+.tog{width:62px; height:36px; flex:none; border:3px solid var(--ink); border-radius:99px; background:#E4DAD2; padding:0; position:relative}
+.tog i{position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:#fff; border:2px solid var(--ink); transition:left .15s}
+.tog[aria-pressed="true"]{background:#6BD66B}
+.tog[aria-pressed="true"] i{left:29px}
+.toast{position:fixed; left:12px; right:12px; top:calc(12px + var(--safe-t)); z-index:30; display:flex; align-items:center; gap:10px; background:var(--paper); border:3px solid var(--ink); border-radius:16px; box-shadow:var(--pop); padding:10px 14px; font-weight:700; font-size:16px; animation:drop .35s cubic-bezier(.3,1.4,.5,1)}
+.toast small{display:block; font-weight:400; font-size:14px}
+.toast .tIco{width:40px; height:40px; flex:none}
+.toast .tIco svg,.toast .tIco img{width:100%; height:100%; object-fit:contain}
+@keyframes drop{from{transform:translateY(-30px); opacity:0}}
+.float{position:fixed; left:50%; top:30%; z-index:30; transform:translateX(-50%); font-family:var(--f-disp); font-size:44px; color:#fff; text-shadow:3px 3px 0 var(--ink), -1px -1px 0 var(--ink), 1px -1px 0 var(--ink), -1px 1px 0 var(--ink); pointer-events:none; animation:floatUp 1.6s ease-out forwards; white-space:nowrap}
+@keyframes floatUp{0%{opacity:0; transform:translate(-50%,20px) scale(.6)} 20%{opacity:1; transform:translate(-50%,0) scale(1.1)} 100%{opacity:0; transform:translate(-50%,-80px) scale(1)}}
+
+/* Låga mobiler: tätare */
+@media (max-height:700px){
+  .lcd{min-height:64px; padding:6px 10px}
+  .lcdTop{font-size:23px}
+  .lcdMsg{font-size:18px}
+  .stage{min-height:130px}
+  .stage h2{font-size:25px}
+  .keypad{gap:7px; padding:8px}
+}
+/* Mobilen på tvären eller en platta: knappsatsen bredvid */
+@media (min-width:700px) and (orientation:landscape){
+  #vGame{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,.9fr); grid-template-rows:auto auto 1fr; column-gap:14px}
+  .me{grid-column:1} .lcd{grid-column:1} .stage{grid-column:1}
+  .keypad{grid-column:2; grid-row:1 / span 3; align-self:center}
+}
+@media (prefers-reduced-motion: reduce){
+  .die.rolling,.dieBtn:not(:disabled) .die:not(.rolling),.key.match,.lcdTop::after,.dot.wait{animation:none}
+}
+</style>
+</head>
+<body><div id="phone">
+  <header class="bar">
+    <span class="dot wait" id="barDot" aria-hidden="true"></span>
+    <span class="barTitle" id="barTitle">Hugo-telefonen</span>
+    <button class="barBtn" id="bRead" type="button" aria-pressed="false" aria-label="Läs upp för mig"></button>
+    <button class="barBtn" id="bMenu" type="button" aria-label="Meny"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.4"/><circle cx="12" cy="12" r="2.4"/><circle cx="19" cy="12" r="2.4"/></svg></button>
+  </header>
+
+  <!-- Ansluter -->
+  <section class="view" id="vConnect">
+    <div class="card center">
+      <div class="ring" aria-hidden="true"></div>
+      <p class="big-text" id="connText">Ringer upp spelet …</p>
+      <button class="btn ghost" id="bChangeCode" type="button" hidden>Skriv en annan kod</button>
+    </div>
+  </section>
+
+  <!-- Koden -->
+  <section class="view" id="vCode" hidden>
+    <div class="card">
+      <h1>Slå koden</h1>
+      <p>Koden står under QR-koden på den stora skärmen.</p>
+      <input class="codeInput" id="codeInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="ABCDE" aria-label="Koden">
+      <p class="err" id="codeErr"></p>
+      <button class="btn" id="bCode" type="button">Ring upp</button>
+    </div>
+  </section>
+
+  <!-- Välj troll -->
+  <section class="view" id="vJoin" hidden>
+    <div class="card">
+      <h1>Välj ditt troll</h1>
+      <div class="trolls" id="trollGrid"></div>
+      <label class="lbl" for="nameInput">Ditt namn</label>
+      <input class="nameInput" id="nameInput" type="text" maxlength="14" autocomplete="nickname" placeholder="Skriv ditt namn">
+      <p class="err" id="joinErr"></p>
+      <button class="btn" id="bJoin" type="button" disabled>Välj ett troll</button>
+      <button class="btn ghost" id="bJoinBack" type="button" hidden>Tillbaka</button>
+    </div>
+  </section>
+
+  <!-- Väntar på att spelet ska börja -->
+  <section class="view" id="vLobby" hidden>
+    <div class="card">
+      <div class="meBig" id="lobbyMe"></div>
+      <p class="note" id="lobbyNote"></p>
+      <div class="list" id="lobbyList"></div>
+      <p class="err" id="startErr"></p>
+      <button class="btn" id="bStart" type="button" hidden>Starta spelet</button>
+      <p class="wait" id="lobbyWait"></p>
+      <div class="row"><button class="btn ghost" id="bSwitch" type="button">Byt troll</button><button class="btn ghost" id="bLeave" type="button">Lämna</button></div>
+    </div>
+  </section>
+
+  <!-- Spelet är igång och mobilen är inte med -->
+  <section class="view" id="vClaim" hidden>
+    <div class="card">
+      <h1>Vem är du?</h1>
+      <p>Spelet är redan igång. Tryck på den som du spelar.</p>
+      <div class="list" id="claimList"></div>
+      <p class="err" id="claimErr"></p>
+      <button class="btn ghost" id="bWatch" type="button">Jag vill bara titta</button>
+    </div>
+  </section>
+
+  <!-- Spelet: Hugo-telefonen -->
+  <section class="view" id="vGame" hidden>
+    <div class="me" id="meStrip">
+      <img class="mePic" id="mePic" alt="">
+      <div class="meText"><b id="meName">Hugo</b><small id="meWhere"></small></div>
+      <div class="lives" id="meLives" aria-label="Hugo-kort"></div>
+      <div class="gold" id="meGold" aria-label="Guldsäckar"><span id="goldIco"></span><b id="goldNum">0</b></div>
+    </div>
+    <div class="lcd" id="lcd" aria-live="polite"><div class="lcdTop" id="lcdTop">HUGO</div><div class="lcdMsg" id="lcdMsg"></div></div>
+    <div class="stage" id="stage"></div>
+    <div class="keypad" id="keypad" aria-label="Dina kort"></div>
+  </section>
+
+  <!-- Slutet -->
+  <section class="view" id="vOver" hidden>
+    <div class="card center">
+      <div class="overArt" id="overArt"></div>
+      <h1 id="overTitle">Spelet är slut</h1>
+      <p id="overText"></p>
+      <div class="list" id="overList"></div>
+      <div class="row" id="overBtns"><button class="btn ghost" id="bMenuEnd" type="button">Till menyn</button><button class="btn" id="bAgain" type="button">Spela igen</button></div>
+      <p class="wait" id="overWait"></p>
+    </div>
+  </section>
+
+  <div class="sheet" id="menu" hidden>
+    <div class="sheetCard" role="dialog" aria-labelledby="menuTitle">
+      <h2 id="menuTitle">Meny</h2>
+      <label class="switch"><span>Läs upp för mig</span><button class="tog" id="readToggle" type="button" aria-pressed="false"><i></i></button></label>
+      <label class="switch" id="motionRow"><span>Skaka mobilen för att slå tärningen</span><button class="tog" id="motionToggle" type="button" aria-pressed="false"><i></i></button></label>
+      <button class="btn ghost" id="mSwitch" type="button">Byt troll</button>
+      <button class="btn ghost" id="mLeave" type="button">Lämna spelet</button>
+      <button class="btn ghost" id="mCode" type="button">Anslut till ett annat spel</button>
+      <p class="small" id="menuCode"></p>
+      <button class="btn" id="mClose" type="button">Stäng</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>window.Peer||document.write('<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"><\/script>')</script>
+<script>
+/* ================= Hugo-telefonen: mobilen som handkontroll ================= */
+// Mobilen ansluter till skärmen med brädet (TV, platta eller dator) med koden i QR-koden.
+// Som i tv-programmet styr man Hugo med telefonens knappar: 2 hoppa, 4 vänster, 6 höger och 8 ducka.
+// Knapparna är spelarens kort, och de hörs med riktiga knapptoner.
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const genitive = n => /[sxz]$/i.test(n) ? n : n + 's';
+  const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+  function h(tag, attrs, ...kids) {
+    const e = document.createElement(tag);
+    if (attrs) for (const k in attrs) {
+      const v = attrs[k];
+      if (v == null || v === false) continue;
+      if (k === 'class') e.className = v;
+      else if (k === 'text') e.textContent = v;
+      else if (k === 'html') e.innerHTML = v;
+      else if (k === 'style' && typeof v === 'object') { for (const s in v) e.style.setProperty(s, v[s]); }
+      else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v === true ? '' : v);
+    }
+    kids.flat().forEach(c => { if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c))); });
+    return e;
+  }
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('hugoc.' + k); if (v != null) return JSON.parse(v); } catch (e) { /* ingen lagring */ } return d; },
+    set(k, v) { try { localStorage.setItem('hugoc.' + k, JSON.stringify(v)); } catch (e) { /* ingen lagring */ } }
+  };
+
+  const PREFIX = 'hugospelet-';
+  const dev = store.get('dev') || (() => { const id = 'h' + Math.random().toString(36).slice(2, 12); store.set('dev', id); return id; })();
+  let code = parseCode();
+  let peer = null, conn = null, connected = false, retryT = 0, openT = 0, lastMsg = 0;
+  let st = null, offer = null, art = null, pending = 0, anim = null, animSeq = 0, stageKey = '', lastGold = null;
+  const thumbs = {}, profile = store.get('profile', {name: '', read: false});
+  let picking = false, chosen = null, watching = false;
+
+  function parseCode() {
+    const m = (location.hash.slice(1) || new URLSearchParams(location.search).get('kod') || store.get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    return m.length >= 4 ? m.slice(0, 8) : null;
+  }
+
+  /* ---------- Vyer ---------- */
+  const VIEWS = ['vConnect', 'vCode', 'vJoin', 'vLobby', 'vClaim', 'vGame', 'vOver'];
+  let view = '';
+  function show(id) { if (view === id) return; view = id; VIEWS.forEach(v => { $(v).hidden = v !== id; }); $(id).scrollTop = 0; }
+
+  /* ---------- Anslutningen ---------- */
+  function setConn(s, text) {
+    $('barDot').className = 'dot ' + ({on: 'on', connecting: 'wait', off: 'off'}[s] || '');
+    if (text) $('connText').textContent = text;
+    if (s !== 'on' && !st && view !== 'vCode') show('vConnect');
+  }
+  const iceServers = () => [{urls: 'stun:stun.l.google.com:19302'}, {urls: 'stun:stun.cloudflare.com:3478'}];
+  function connect() {
+    clearTimeout(retryT);
+    if (!code) { show('vCode'); return; }
+    if (!window.Peer) { setConn('off', 'Kunde inte ladda anslutningen. Kontrollera internet och ladda om sidan.'); return; }
+    setConn('connecting', st ? 'Ringer upp igen …' : 'Ringer upp spelet …');
+    if (!peer || peer.destroyed) {
+      peer = new window.Peer({debug: 0, config: {iceServers: iceServers()}});
+      peer.on('open', openConn);
+      peer.on('disconnected', () => { try { if (!peer.destroyed) peer.reconnect(); } catch (e) { /* försöker igen */ } });
+      peer.on('error', e => {
+        const t = e && e.type;
+        if (t === 'peer-unavailable') { setConn('off', `Hittar inget spel med koden ${code}. Kolla koden på den stora skärmen.`); if (!st) $('bChangeCode').hidden = false; retry(4000); }
+        else if (['network', 'server-error', 'socket-error', 'socket-closed', 'disconnected'].includes(t)) retry(3000);
+        else if (t === 'browser-incompatible') setConn('off', 'Den här webbläsaren kan inte ansluta. Prova Safari eller Chrome.');
+      });
+    } else if (peer.open) openConn();
+    else if (peer.disconnected) { try { peer.reconnect(); } catch (e) { retry(2000); } }
+  }
+  function openConn() {
+    if (conn) { try { conn.close(); } catch (e) { /* stängd */ } }
+    const c = peer.connect(PREFIX + code, {reliable: true});
+    conn = c;
+    clearTimeout(openT);
+    openT = setTimeout(() => { if (conn === c && !connected) { setConn('off', 'Får ingen kontakt. Är mobilen på samma wifi som den stora skärmen?'); $('bChangeCode').hidden = false; try { c.close(); } catch (e) { /* stängd */ } retry(2500); } }, 14000);
+    c.on('open', () => {
+      if (conn !== c) return;
+      clearTimeout(openT);
+      connected = true; lastMsg = Date.now();
+      store.set('code', code);
+      if (location.hash.slice(1) !== code) history.replaceState(null, '', '#' + code);
+      setConn('on');
+      c.send({t: 'hello', dev});
+    });
+    c.on('data', m => { if (conn === c) { lastMsg = Date.now(); onMsg(m); } });
+    c.on('close', () => { if (conn !== c) return; connected = false; setConn('off', 'Tappade kontakten, ringer upp igen …'); retry(1200); });
+    c.on('error', () => {});
+  }
+  function retry(ms) { clearTimeout(retryT); retryT = setTimeout(connect, ms); }
+  function send(msg) { try { if (conn && connected) conn.send(msg); } catch (e) { /* ansluter igen */ } }
+  setInterval(() => {
+    if (!connected) return;
+    send({t: 'ping'});
+    if (Date.now() - lastMsg > 25000) { connected = false; try { conn.close(); } catch (e) { /* stängd */ } connect(); }
+  }, 8000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (!connected) connect(); wake(); } });
+
+  /* ---------- Meddelanden från den stora skärmen ---------- */
+  function onMsg(m) {
+    if (!m || typeof m !== 'object') return;
+    switch (m.t) {
+      case 'welcome': art = m.art; $('goldIco').innerHTML = art.sack; buildKeypad(); render(); break;
+      case 'status': st = m; render(); break;
+      case 'thumb':
+        thumbs[m.key] = m.src;
+        document.querySelectorAll(`img[data-thumb="${m.key}"]`).forEach(img => { img.src = m.src; });
+        break;
+      case 'offer':
+        offer = {id: m.id, kind: m.kind, data: m.data || {}};
+        pending = 0;
+        // en ny fråga tar över efter tärningen eller snurran
+        if (anim && anim.id !== m.id) { if (anim.kind === 'spin') cancelAnimationFrame(spinRAF); anim = null; }
+        render();
+        say(offerText(offer));
+        break;
+      case 'clear': if (offer && offer.id === m.id) { offer = null; render(); } break;
+      case 'event': onEvent(m); break;
+      case 'error': toast(m.text); ['joinErr', 'startErr', 'claimErr'].forEach(id => { $(id).textContent = m.text; }); break;
+    }
+  }
+  function onEvent(e) {
+    if (e.kind === 'turn') { buzz([90, 60, 90]); ding(); }
+    else if (e.kind === 'roll') {
+      if (!anim || anim.kind !== 'roll' || anim.v != null) anim = {kind: 'roll', id: 'e' + (++animSeq), v: null, t0: Date.now()};
+      anim.v = e.v; anim.until = Date.now() + 2600;
+      render();
+      say(`Du slog ${['', 'en etta', 'en tvåa', 'en trea'][e.v] || e.v}!`);
+      setTimeout(render, 2650);
+    }
+    else if (e.kind === 'spin') {
+      if (!anim || anim.kind !== 'spin' || anim.idx != null) anim = {kind: 'spin', id: 'e' + (++animSeq), idx: null, track: e.track, t0: Date.now()};
+      anim.idx = e.idx; anim.track = e.track; anim.until = Date.now() + 3700;
+      render();
+      setTimeout(render, 3750);
+    }
+    else if (e.kind === 'hurt') { buzz([200, 80, 200]); ouch(); toast('Aj! Ett Hugo-kort vändes.', e.lives === 1 ? 'Nu har du bara ett Hugo-kort kvar på banan.' : e.lives > 0 ? `Du har ${e.lives} Hugo-kort kvar på banan.` : 'Alla tre Hugo-korten är vända.', thumbImg('hugo')); }
+    else if (e.kind === 'sack') { buzz([30, 40, 30]); coin(); floatText(`+${e.n || 1}`); }
+    else if (e.kind === 'trackOk') { buzz([60, 40, 120]); ding(); toast('Hurra! Du klarade banan!', 'Nu går du vidare till nästa bana.'); }
+    else if (e.kind === 'trackLost') toast('Banan är slut för den här gången.', 'Guldet från banan går tillbaka, men du får tre nya Hugo-kort på nästa bana.');
+    else if (e.kind === 'door') buzz(e.card === 'fail' ? [240, 80, 240] : [60, 40, 60, 40, 200]);
+    else if (e.kind === 'won') { buzz([80, 40, 80, 40, 240]); ding(); floatText('Du vann!'); say('Grattis! Du vann!'); }
+  }
+
+  /* ---------- Rita upp rätt vy ---------- */
+  function render() {
+    if (!st) return;
+    const ph = st.phase;
+    if (ph === 'title' || ph === 'lobby') {
+      watching = false;
+      const lob = st.lobby;
+      if (lob.mine < 0 || picking) { renderJoin(lob); show('vJoin'); }
+      else { renderLobby(lob); show('vLobby'); }
+      syncMenu();
+      return;
+    }
+    picking = false;
+    const g = st.game;
+    if (ph === 'over') { renderOver(g); show('vOver'); syncMenu(); return; }
+    if (g.me == null && !watching) { renderClaim(g); show('vClaim'); syncMenu(); return; }
+    renderGame(g); show('vGame');
+    syncMenu();
+  }
+  const seatName = s => s.name;
+  const thumbImg = (key, cls, alt) => h('img', {class: cls || null, src: thumbs[key] || BLANK, alt: alt || '', 'data-thumb': key});
+
+  // Välj troll och namn
+  function renderJoin(lob) {
+    const grid = $('trollGrid');
+    grid.innerHTML = '';
+    const free = s => !(s.phone && s.online && !s.mine);
+    if (chosen == null || !lob.seats[chosen] || !free(lob.seats[chosen])) {
+      chosen = lob.mine >= 0 ? lob.mine : (lob.seats.find(s => !s.on && free(s)) || lob.seats.find(s => s.on && s.cpu && free(s)) || lob.seats.find(free) || {i: null}).i;
+    }
+    lob.seats.forEach(s => {
+      const taken = !free(s);
+      const who = s.mine ? 'Du' : taken ? `${seatName(s)} har det` : s.on ? (s.cpu ? 'Datorn nu' : `${seatName(s)} på skärmen`) : 'Ledigt';
+      grid.append(h('button', {class: 'troll', type: 'button', style: {'--c': s.color}, 'aria-pressed': String(chosen === s.i), disabled: taken,
+        onclick: () => { chosen = s.i; tap(); renderJoin(st.lobby); }},
+        thumbImg('full:' + s.i, null, s.cname + ' troll'), h('b', {text: s.cname}), h('small', {text: who})));
+    });
+    if (!$('nameInput').value && profile.name) $('nameInput').value = profile.name;
+    const s = chosen != null ? lob.seats[chosen] : null;
+    $('bJoin').disabled = !s;
+    $('bJoin').textContent = !s ? 'Välj ett troll' : lob.mine >= 0 && lob.mine !== chosen ? `Byt till ${s.cname.toLowerCase()}` : lob.mine === chosen ? 'Spara' : `Spela som ${s.cname.toLowerCase()}`;
+    $('bJoinBack').hidden = lob.mine < 0;
+  }
+  $('bJoin').onclick = () => {
+    if (chosen == null) return;
+    unlockAudio();
+    const name = $('nameInput').value.trim().slice(0, 14);
+    profile.name = name; store.set('profile', profile);
+    $('joinErr').textContent = '';
+    send({t: 'join', seat: chosen, name});
+    picking = false;
+    buzz(20);
+  };
+  $('nameInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('nameInput').blur(); $('bJoin').click(); } });
+  $('bJoinBack').onclick = () => { picking = false; render(); };
+
+  // I lobbyn: vilka är med, och spelledaren startar
+  function renderLobby(lob) {
+    const me = lob.seats[lob.mine];
+    $('lobbyMe').innerHTML = '';
+    $('lobbyMe').append(thumbImg('full:' + me.i), h('div', null, h('h1', {text: `Du är ${me.name}!`}), h('small', {text: `${me.cname} troll · börjar i ${me.track}`})));
+    $('lobbyMe').style.setProperty('--c', me.color);
+    $('lobbyNote').textContent = (st.phase === 'title' ? 'Den stora skärmen visar startsidan just nu. ' : '')
+      + 'När spelet börjar blir mobilen din Hugo-telefon. Knapparna 2, 4, 6 och 8 är dina kort, precis som när man styrde Hugo i tv:n.';
+    const list = $('lobbyList');
+    list.innerHTML = '';
+    lob.seats.filter(s => s.on).forEach(s => list.append(h('div', {class: 'pl', style: {'--c': s.color}}, thumbImg('head:' + s.i),
+      h('span', null, h('b', {text: s.name}), h('small', {text: `${s.phone ? (s.online ? 'Mobil' : 'Mobilen är borta') : s.cpu ? 'Dator' : 'Spelar på skärmen'} · ${s.track}`})),
+      s.mine ? h('span', {class: 'tag me', text: 'Du'}) : null)));
+    $('bStart').hidden = !st.leader;
+    $('bStart').disabled = lob.n < 2;
+    $('bStart').textContent = lob.n < 2 ? 'Det behövs två spelare' : 'Starta spelet';
+    $('lobbyWait').textContent = st.leader ? '' : `Väntar på att ${st.leaderName || 'spelledaren'} startar spelet.`;
+  }
+  $('bStart').onclick = () => { unlockAudio(); $('startErr').textContent = ''; send({t: 'start'}); buzz(20); };
+  $('bSwitch').onclick = () => { picking = true; chosen = null; tap(); render(); };
+  $('bLeave').onclick = () => { send({t: 'leave'}); picking = false; chosen = null; tap(); };
+
+  // Mitt i ett spel: vem är du?
+  function renderClaim(g) {
+    const list = $('claimList');
+    list.innerHTML = '';
+    g.players.filter(p => p.human).forEach(p => {
+      const busy = p.phone && p.online;
+      list.append(h('button', {class: 'pl', type: 'button', style: {'--c': p.color}, disabled: busy, onclick: () => { unlockAudio(); $('claimErr').textContent = ''; send({t: 'claim', i: p.i}); tap(); }},
+        thumbImg('head:' + p.seat), h('span', null, h('b', {text: p.name}), h('small', {text: busy ? 'Spelar redan med en mobil' : 'Tryck om det är du'})), null));
+    });
+    if (!g.players.some(p => p.human)) list.append(h('p', {class: 'note', text: 'Bara datorn spelar just nu.'}));
+  }
+  $('bWatch').onclick = () => { watching = true; tap(); render(); };
+
+  /* ---------- Spelet ---------- */
+  function renderGame(g) {
+    const me = g.me != null ? g.players[g.me] : null, cur = g.players[g.turn];
+    $('vGame').classList.toggle('watch', !me);
+    if (me) {
+      const pic = $('mePic');
+      if (pic.dataset.thumb !== 'head:' + me.seat) { pic.dataset.thumb = 'head:' + me.seat; pic.src = thumbs['head:' + me.seat] || BLANK; }
+      $('meStrip').style.setProperty('--c', me.color);
+      $('meName').textContent = me.name;
+      $('meWhere').textContent = g.where;
+      const lives = $('meLives');
+      if (lives.children.length !== 3) { lives.innerHTML = ''; for (let k = 0; k < 3; k++) lives.append(h('span', {class: 'life'}, thumbImg('hugo'))); }
+      [...lives.children].forEach((el, k) => el.classList.toggle('lost', me.status === 'track' && k >= me.lives));
+      lives.classList.toggle('off', me.status !== 'track');
+      $('goldNum').textContent = me.gold;
+      if (lastGold != null && me.gold > lastGold) { const gp = $('meGold'); gp.classList.remove('bump'); void gp.offsetWidth; gp.classList.add('bump'); }
+      lastGold = me.gold;
+    }
+    $('lcdTop').textContent = g.myTurn ? 'Din tur!' : cur ? `${genitive(cur.name)} tur` : 'Hugo';
+    $('lcdMsg').textContent = g.msg || '';
+    renderStage(g, me, cur);
+    renderKeys(g, me);
+  }
+
+  // Mitten av skärmen: det spelaren ska göra just nu
+  function setStage(key, build) {
+    if (stageKey === key) return false;
+    stageKey = key;
+    const box = $('stage');
+    box.innerHTML = '';
+    build(box);
+    return true;
+  }
+  function renderStage(g, me, cur) {
+    // tärningen och snurran visar resultatet en stund; har skärmen inte svarat efter 9 sekunder släpps de
+    if (anim && (anim.until ? Date.now() >= anim.until : Date.now() - anim.t0 > 9000)) anim = null;
+    const o = offer;
+    if (o && o.kind === 'roll') { dieStage(o.id, true); return; }
+    if (o && o.kind === 'spin') { spinStage(o.id, o.data.track || (me && me.track), true); return; }
+    if (o && o.kind === 'card') { setStage('card:' + o.id, box => box.append(askBox(o.data))); return; }
+    if (o && o.kind === 'door') { setStage('door:' + o.id + ':' + pending, box => doorStage(box, o)); return; }
+    if (o && o.kind === 'ok') { setStage('ok:' + o.id + ':' + pending, box => okStage(box, o)); return; }
+    if (anim && anim.kind === 'roll') { dieStage(anim.id, false); return; }
+    if (anim && anim.kind === 'spin') { spinStage(anim.id, anim.track, false); return; }
+    if (me && g.myTurn) {
+      const text = {moving: 'Hugo går …', rolling: 'Tärningen rullar …', spinning: 'Snurran snurrar …', resolve: 'Vi får se …', drawn: 'Du fick ett nytt kort!', wait: 'Du väntar på en ledig bana.', door: 'Häxans dörrar …'}[g.phase] || 'Din tur!';
+      setStage('mine:' + g.turn + ':' + g.phase, box => box.append(thumbImg('full:' + me.seat, 'turnPic', ''), h('h2', {text})));
+      $('stage').querySelector('.turnPic').style.setProperty('--c', me.color);
+      return;
+    }
+    if (!cur) return;
+    setStage('idle:' + g.turn + ':' + cur.i + ':' + !!me, box => {
+      const pic = thumbImg('head:' + cur.seat, 'turnPic', '');
+      pic.style.setProperty('--c', cur.color);
+      box.append(pic, h('h2', {text: `${genitive(cur.name)} tur`}));
+      if (me) box.append(reacts());
+    });
+  }
+
+  // Tärningen: tryck, svep eller skaka
+  const PIPS = {1: [5], 2: [3, 7], 3: [3, 5, 7]};
+  const FACE_ROT = {1: [0, 0], 2: [0, -90], 3: [-90, 0]};
+  function buildDie() {
+    const die = h('div', {class: 'die'});
+    [['f1', 1], ['f1b', 1], ['f2', 2], ['f2b', 2], ['f3', 3], ['f3b', 3]].forEach(([cls, v]) => {
+      const f = h('div', {class: 'face ' + cls});
+      PIPS[v].forEach(k => f.append(h('i', {style: {'grid-area': `${Math.ceil(k / 3)} / ${((k - 1) % 3) + 1}`}})));
+      die.append(f);
+    });
+    return die;
+  }
+  function dieStage(id, live) {
+    setStage('die:' + id, box => {
+      const btn = h('button', {class: 'dieBtn', type: 'button', 'aria-label': 'Slå tärningen'}, buildDie());
+      let start = null;
+      btn.addEventListener('pointerdown', e => { start = {x: e.clientX, y: e.clientY}; });
+      btn.addEventListener('pointerup', () => { start = null; throwDie(); });
+      btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); throwDie(); } });
+      box.append(h('h2', {class: 'dieTitle', text: 'Slå tärningen!'}), btn, h('p', {class: 'hint dieHint'}));
+    });
+    const btn = $('stage').querySelector('.dieBtn'), title = $('stage').querySelector('.dieTitle'), hint = $('stage').querySelector('.dieHint');
+    if (!btn) return;
+    const canThrow = live && offer && offer.kind === 'roll' && !(anim && anim.kind === 'roll');
+    btn.disabled = !canThrow;
+    if (anim && anim.kind === 'roll' && anim.v != null) { title.textContent = `Du slog ${['', 'en etta', 'en tvåa', 'en trea'][anim.v]}!`; hint.textContent = 'Hugo går så många rutor.'; }
+    else if (anim && anim.kind === 'roll') { title.textContent = 'Tärningen rullar …'; hint.textContent = ''; }
+    else { title.textContent = 'Slå tärningen!'; hint.textContent = motionOn ? 'Tryck på tärningen eller skaka mobilen!' : 'Tryck på tärningen!'; }
+    if (anim && anim.kind === 'roll' && anim.v != null && !anim.shown) { anim.shown = true; showDie(anim.v); }
+  }
+  function throwDie() {
+    if (!offer || offer.kind !== 'roll' || (anim && anim.kind === 'roll')) return;
+    unlockAudio();
+    anim = {kind: 'roll', id: offer.id, v: null, t0: Date.now()};
+    const d = document.querySelector('.die');
+    if (d) d.classList.add('rolling');
+    rattle(); buzz(60);
+    send({t: 'act', id: offer.id});
+    render();
+  }
+  function showDie(v) {
+    const d = document.querySelector('.die');
+    if (!d) return;
+    const [rx, ry] = FACE_ROT[v] || [0, 0];
+    d.classList.remove('rolling');
+    d.style.animation = 'none';
+    void d.offsetWidth;
+    d.style.transform = `rotateX(${rx + 720 - 12}deg) rotateY(${ry + 360 + 14}deg)`;
+    rattle();
+  }
+
+  // Snurran: samma sex fält som på brädet
+  const NS = 'http://www.w3.org/2000/svg';
+  let arrowDeg = 0, spinRAF = 0;
+  function nested(svg, x, y, size) { return svg.replace('<svg', `<svg x="${x - size / 2}" y="${y - size / 2}" width="${size}" height="${size}"`); }
+  function spinnerSVG(track) {
+    const t = art && art.tracks[track];
+    if (!t) return '';
+    const pt = (deg, r) => [+(Math.sin(deg * Math.PI / 180) * r).toFixed(2), +(-Math.cos(deg * Math.PI / 180) * r).toFixed(2)];
+    // Pilen är en smal visare med spetsen ute på kanten, så att den inte täcker fältets bild och siffra
+    let s = `<svg viewBox="-122 -122 244 244" aria-hidden="true"><circle r="113" fill="#241A15"/>`;
+    t.sectors.forEach((sec, i) => {
+      const [x0, y0] = pt(60 * i - 30, 100), [x1, y1] = pt(60 * i + 30, 100);
+      s += `<path class="sec" data-i="${i}" d="M0 0 L${x0} ${y0} A100 100 0 0 1 ${x1} ${y1} Z" fill="${t.fill}" stroke="#241A15" stroke-width="2.5"${i % 2 ? ' fill-opacity=".78"' : ''}/>`;
+    });
+    t.sectors.forEach((sec, i) => {
+      const [ix, iy] = pt(60 * i + 16, 70), [kx, ky] = pt(60 * i - 17, 58);
+      s += nested(sec.t === 'guld' ? art.sack : art.icons[sec.o][sec.s], ix, iy, 34);
+      s += nested(art.keys[sec.s], kx, ky, 26);
+    });
+    s += `<path class="secHit" d="" fill="none" stroke="#FFD95A" stroke-width="7" stroke-linejoin="round" opacity="0"/>`;
+    s += `<g class="spinArrow"><path d="M-3 6 L-3 -97 L3 -97 L3 6 Z" fill="#E23B2E" stroke="#241A15" stroke-width="2"/><path d="M0 -121 L11 -97 L-11 -97 Z" fill="#E23B2E" stroke="#241A15" stroke-width="2.5" stroke-linejoin="round"/></g><circle class="spinHub" r="13" fill="#F6BD2C" stroke="#241A15" stroke-width="3"/></svg>`;
+    return s;
+  }
+  // Fältet där pilen stannade lyser i guld
+  function markSector(idx) {
+    const hit = document.querySelector('.secHit'), sec = document.querySelector(`.sec[data-i="${idx}"]`);
+    if (!hit || !sec) return;
+    hit.setAttribute('d', sec.getAttribute('d'));
+    hit.setAttribute('opacity', '1');
+  }
+  function spinStage(id, track, live) {
+    setStage('spin:' + id, box => {
+      const btn = h('button', {class: 'spinBtn', type: 'button', 'aria-label': 'Snurra snurran', html: spinnerSVG(track)});
+      btn.addEventListener('click', () => spinNow());
+      box.append(h('h2', {class: 'spinTitle', text: 'Snurra!'}), btn, h('p', {class: 'hint spinHint'}));
+      setArrow(arrowDeg);
+    });
+    const btn = $('stage').querySelector('.spinBtn'), title = $('stage').querySelector('.spinTitle'), hint = $('stage').querySelector('.spinHint');
+    if (!btn) return;
+    btn.disabled = !(live && offer && offer.kind === 'spin' && !(anim && anim.kind === 'spin'));
+    const t = art && art.tracks[track];
+    if (anim && anim.kind === 'spin') { title.textContent = 'Snurran snurrar …'; hint.textContent = ''; }
+    else { title.textContent = 'Snurra!'; hint.textContent = `Tryck på snurran${t ? ' på ' + t.name : ''}.`; }
+    if (anim && anim.kind === 'spin' && anim.idx != null && !anim.spun) { anim.spun = true; spinTo(anim.idx); }
+  }
+  function setArrow(deg) { const a = document.querySelector('.spinArrow'); if (a) a.setAttribute('transform', `rotate(${deg.toFixed(1)})`); }
+  function spinNow() {
+    if (!offer || offer.kind !== 'spin' || (anim && anim.kind === 'spin')) return;
+    unlockAudio();
+    anim = {kind: 'spin', id: offer.id, idx: null, track: offer.data.track, t0: Date.now()};
+    send({t: 'act', id: offer.id});
+    buzz(30);
+    // snurrar fritt tills skärmen berättar var den stannar
+    cancelAnimationFrame(spinRAF);
+    let last = performance.now();
+    const free = now => {
+      if (!anim || anim.kind !== 'spin' || anim.idx != null) return;
+      arrowDeg += (now - last) * .75; last = now;
+      tickCheck(); setArrow(arrowDeg);
+      spinRAF = requestAnimationFrame(free);
+    };
+    spinRAF = requestAnimationFrame(free);
+    render();
+  }
+  let lastTick = 0;
+  function tickCheck() { const k = Math.floor((arrowDeg + 30) / 60); if (k !== lastTick) { lastTick = k; tick(); } }
+  function spinTo(idx) {
+    cancelAnimationFrame(spinRAF);
+    const from = arrowDeg, base = from - (((from % 360) + 360) % 360);
+    let to = base + 60 * idx + (Math.random() - .5) * 8;
+    while (to < from + 720) to += 360;
+    const t0 = performance.now(), ms = 2600;
+    const step = now => {
+      const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+      arrowDeg = from + (to - from) * e;
+      tickCheck(); setArrow(arrowDeg);
+      if (k < 1) spinRAF = requestAnimationFrame(step);
+      else { markSector(idx); buzz(40); }
+    };
+    spinRAF = requestAnimationFrame(step);
+  }
+
+  // Kortet som snurran visade: vad ska läggas?
+  function askBox(d) {
+    const ico = d.t === 'guld' ? art.sack : art.icons[d.o] ? art.icons[d.o][d.need] : '';
+    const text = esc(d.text).replace(new RegExp(`\\b${d.need}\\b`), `<svg class="kc" viewBox="-18 -18 36 36" aria-label="${d.need}">${art.keys[d.need].replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg>`);
+    return h('div', {class: 'ask'}, h('span', {class: 'askIco', html: ico}), h('div', null, h('b', {text: d.title}), h('span', {html: text})));
+  }
+  function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c])); }
+
+  // Häxans tre dörrar
+  function doorStage(box, o) {
+    const counts = o.data.counts || [1, 1, 1];
+    box.append(h('h2', {text: 'Välj en dörr!'}));
+    const row = h('div', {class: 'doors'});
+    counts.forEach((n, d) => row.append(h('button', {class: 'door', type: 'button', disabled: !n || !!pending, onclick: () => {
+      if (!offer || offer.kind !== 'door' || pending) return;
+      pending = offer.id; creak(); buzz(40);
+      send({t: 'act', id: offer.id, v: d});
+      render();
+    }}, String(d + 1), h('small', {text: `${n} kort kvar`}))));
+    box.append(row, h('p', {class: 'hint', text: 'Bakom en dörr finns Hugolina och barnen. Men häxan kan lura dig!'}));
+  }
+  function okStage(box, o) {
+    const card = o.data.card;
+    const txt = card === 'gold' ? 'Du befriade Hugolina och barnen och fick 5 guldsäckar!' : card === 'free' ? 'Du befriade Hugolina och barnen!' : 'Häxan lurade dig. Familjen blev kvar hos henne.';
+    box.append(h('div', {class: 'outcome'}, thumbImg(card === 'fail' ? 'witch' : 'family'), h('h2', {text: card === 'fail' ? 'Oj nej!' : 'Hurra!'}), h('p', {class: 'say', text: txt})),
+      h('button', {class: 'btn', type: 'button', disabled: !!pending, text: 'Fortsätt', onclick: () => { if (!offer || offer.kind !== 'ok' || pending) return; pending = offer.id; tap(); send({t: 'act', id: offer.id}); render(); }}));
+  }
+
+  // Hejarop när någon annan spelar
+  const REACTS = [['clap', '👏'], ['strong', '💪'], ['wow', '😮'], ['laugh', '😂'], ['sad', '😢'], ['party', '🎉']];
+  function reacts() {
+    const row = h('div', {class: 'reacts'});
+    REACTS.forEach(([k, e]) => row.append(h('button', {class: 'react', type: 'button', text: e, 'aria-label': 'Heja', onclick: ev => {
+      send({t: 'react', kind: k}); tap();
+      const b = ev.currentTarget; b.classList.remove('sent'); void b.offsetWidth; b.classList.add('sent');
+    }})));
+    return row;
+  }
+
+  /* ---------- Knappsatsen ---------- */
+  const KEYS = [['1', ''], ['2', 'c'], ['3', 'DEF'], ['4', 'c'], ['5', 'JKL'], ['6', 'c'], ['7', 'PQRS'], ['8', 'c'], ['9', 'WXYZ'], ['*', ''], ['0', '+'], ['#', '']];
+  function buildKeypad() {
+    const pad = $('keypad');
+    if (pad.children.length || !art) return;
+    KEYS.forEach(([k, l]) => {
+      const card = l === 'c';
+      const b = h('button', {class: 'key ' + (card ? 'cardKey empty' : 'plain'), type: 'button', 'data-k': k, 'aria-label': card ? `${k} ${art.verbs[k]}` : k},
+        card ? [h('span', {class: 'kArt', html: art.keys[k]}), h('span', {class: 'kVerb', text: art.verbs[k]}), h('span', {class: 'kCount'})] : [h('span', {class: 'kNum', text: k}), l ? h('span', {class: 'kLet', text: l}) : null]);
+      b.addEventListener('pointerdown', () => { unlockAudio(); dtmf(k); });
+      b.addEventListener('click', () => pressKey(k, b));
+      pad.append(b);
+    });
+  }
+  const nudge = b => { b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge'); };
+  function pressKey(k, b) {
+    if (!b.classList.contains('cardKey')) return;
+    const g = st && st.game, me = g && g.me != null ? g.players[g.me] : null;
+    if (!offer || offer.kind !== 'card' || pending || !me) { nudge(b); return; }
+    const i = (g.hand || []).indexOf(k);
+    if (i < 0) { nudge(b); toast(`Du har ingen ${k}.`, 'Tryck på en knapp med ett kort.'); return; }
+    if (offer.data.has && offer.data.hints && k !== offer.data.need) { nudge(b); toast(`Du har ju ${offer.data.need}! Tryck på knappen som lyser.`); buzz([30, 30, 30]); return; }
+    pending = offer.id;
+    buzz(25);
+    send({t: 'act', id: offer.id, v: i});
+    renderKeys(g, me);
+  }
+  function renderKeys(g, me) {
+    const pad = $('keypad');
+    buildKeypad();
+    // korten behövs bara på banorna; hos häxan och efteråt får dörrarna hela platsen
+    const gone = !me || me.status === 'witch' || me.status === 'finished';
+    pad.classList.toggle('hide', gone);
+    if (gone) return;
+    const hand = g.hand || [], d = offer && offer.kind === 'card' ? offer.data : null, live = !!d && !pending;
+    pad.classList.toggle('idle', !live);
+    pad.querySelectorAll('.cardKey').forEach(b => {
+      const k = b.dataset.k, n = hand.filter(x => x === k).length;
+      b.querySelector('.kCount').textContent = n > 1 ? '×' + n : n ? '1' : '';
+      b.classList.toggle('empty', !n);
+      b.classList.toggle('match', live && d.hints && d.has && k === d.need);
+      b.classList.toggle('dim', live && d.hints && d.has && k !== d.need && n > 0);
+      b.classList.toggle('tip', live && d.hints && !d.has && d.tip >= 0 && hand[d.tip] === k);
+      // tomma knappar går ändå att trycka på (de piper), men lägger inget kort
+      b.setAttribute('aria-disabled', String(!n || !live));
+    });
+  }
+
+  /* ---------- Slutet ---------- */
+  function renderOver(g) {
+    const win = g.winner != null ? g.players[g.winner] : null, me = g.me != null ? g.players[g.me] : null;
+    const artBox = $('overArt');
+    artBox.innerHTML = '';
+    if (win) artBox.append(thumbImg('full:' + win.seat), thumbImg('family'));
+    else artBox.append(thumbImg('witch'));
+    $('overTitle').textContent = win ? (me && win.i === me.i ? 'Du vann!' : `${win.name} vann!`) : 'Häxan vann!';
+    $('overText').textContent = win ? `${win.name} befriade Hugolina och barnen och har flest guldsäckar.` : 'Ingen lyckades befria Hugolina och barnen. Försök igen!';
+    const list = $('overList');
+    list.innerHTML = '';
+    (g.ranked || []).forEach((id, k) => {
+      const p = g.players[id];
+      list.append(h('div', {class: 'pl' + (win && p.i === win.i ? ' win' : ''), style: {'--c': p.color}}, thumbImg('head:' + p.seat),
+        h('span', null, h('b', {text: `${k + 1}. ${p.name}`}), h('small', {text: p.freed ? (p.door === 'gold' ? 'Befriade familjen och fick 5 säckar' : 'Befriade familjen') : 'Familjen blev kvar hos häxan'})),
+        h('span', {class: 'tag gold', html: art ? art.sack : ''}, String(p.gold))));
+    });
+    $('overBtns').hidden = !st.leader;
+    $('overWait').textContent = st.leader ? '' : `Väntar på att ${st.leaderName || 'spelledaren'} väljer vad som händer nu.`;
+  }
+  $('bAgain').onclick = () => { send({t: 'again'}); tap(); };
+  $('bMenuEnd').onclick = () => { send({t: 'menu'}); tap(); };
+
+  /* ---------- Menyn ---------- */
+  function syncMenu() {
+    const lobby = st && (st.phase === 'title' || st.phase === 'lobby');
+    $('mSwitch').hidden = !(lobby && st.lobby.mine >= 0);
+    $('mLeave').hidden = !(st && ((lobby && st.lobby.mine >= 0) || (st.game && st.game.me != null) || watching));
+    $('mLeave').textContent = watching ? 'Sluta titta' : 'Lämna spelet';
+    $('menuCode').textContent = code ? `Koden till spelet: ${code}` : '';
+    $('motionRow').hidden = !window.DeviceMotionEvent || !isTouch;
+  }
+  $('bMenu').onclick = () => { tap(); syncMenu(); $('menu').hidden = false; };
+  $('mClose').onclick = () => { $('menu').hidden = true; };
+  $('menu').addEventListener('click', e => { if (e.target === $('menu')) $('menu').hidden = true; });
+  $('mSwitch').onclick = () => { $('menu').hidden = true; picking = true; chosen = null; render(); };
+  $('mLeave').onclick = () => {
+    $('menu').hidden = true;
+    if (watching) { watching = false; render(); return; }
+    send({t: 'leave'}); picking = false; chosen = null; watching = false;
+  };
+  $('mCode').onclick = () => { $('menu').hidden = true; $('codeInput').value = code || ''; show('vCode'); };
+
+  /* ---------- Kod ---------- */
+  $('bChangeCode').onclick = () => { $('codeInput').value = code || ''; show('vCode'); };
+  $('bCode').onclick = () => {
+    const v = $('codeInput').value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (v.length < 4) { $('codeErr').textContent = 'Koden har fem tecken.'; return; }
+    $('codeErr').textContent = '';
+    code = v; history.replaceState(null, '', '#' + code);
+    st = null; offer = null; anim = null; stageKey = ''; view = '';
+    if (conn) { try { conn.close(); } catch (e) { /* stängd */ } conn = null; }
+    connected = false;
+    if (peer) { try { peer.destroy(); } catch (e) { /* stängd */ } peer = null; }
+    connect();
+  };
+  $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('bCode').click(); });
+
+  /* ---------- Känsel, ljud och skakning ---------- */
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const buzz = p => { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) { /* stöds inte */ } };
+  const tap = () => buzz(12);
+  let actx = null;
+  function unlockAudio() { try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) { /* inget ljud */ } }
+  function beep(f, t0, dur, vol = .07, type = 'sine') {
+    if (!actx) return;
+    const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + t0;
+    o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + .02);
+  }
+  // Riktiga knapptoner (DTMF), som när man ringde in till Hugo
+  const DTMF = {'1': [697, 1209], '2': [697, 1336], '3': [697, 1477], '4': [770, 1209], '5': [770, 1336], '6': [770, 1477], '7': [852, 1209], '8': [852, 1336], '9': [852, 1477], '*': [941, 1209], '0': [941, 1336], '#': [941, 1477]};
+  const dtmf = k => { const f = DTMF[k]; if (f) { beep(f[0], 0, .16, .045); beep(f[1], 0, .16, .045); } };
+  const ding = () => { beep(784, 0, .25); beep(1175, .12, .35); };
+  const rattle = () => { for (let i = 0; i < 6; i++) beep(300 + Math.random() * 500, i * .05, .05, .05, 'triangle'); };
+  const tick = () => beep(1800, 0, .03, .03, 'square');
+  const coin = () => { beep(988, 0, .1, .06, 'square'); beep(1319, .08, .25, .06, 'square'); };
+  const ouch = () => { beep(420, 0, .18, .08, 'sawtooth'); beep(260, .14, .3, .08, 'sawtooth'); };
+  const creak = () => { for (let i = 0; i < 5; i++) beep(140 + i * 22, i * .07, .09, .05, 'sawtooth'); };
+  let motionOn = false, lastShake = 0;
+  function enableMotion(on) {
+    const DME = window.DeviceMotionEvent;
+    if (!on) { window.removeEventListener('devicemotion', onMotion); motionOn = false; store.set('motion', false); syncMotion(); return; }
+    if (!DME) return;
+    const go = () => { if (!motionOn) window.addEventListener('devicemotion', onMotion); motionOn = true; store.set('motion', true); syncMotion(); render(); };
+    if (typeof DME.requestPermission === 'function') DME.requestPermission().then(r => { if (r === 'granted') go(); else toast('Skakning är avstängd. Tryck på tärningen i stället.'); }).catch(() => toast('Skakning fungerar inte här. Tryck på tärningen i stället.'));
+    else go();
+  }
+  function syncMotion() { $('motionToggle').setAttribute('aria-pressed', String(motionOn)); }
+  function onMotion(e) {
+    const a = e.accelerationIncludingGravity || e.acceleration;
+    if (!a) return;
+    const m = Math.hypot(a.x || 0, a.y || 0, a.z || 0);
+    if (m > 24 && Date.now() - lastShake > 1500 && offer && offer.kind === 'roll') { lastShake = Date.now(); throwDie(); }
+  }
+  $('motionToggle').onclick = () => { tap(); enableMotion(!motionOn); };
+  // Android kan slå på skakningen direkt; iPhone måste fråga när man trycker
+  if (store.get('motion') && window.DeviceMotionEvent && typeof window.DeviceMotionEvent.requestPermission !== 'function') enableMotion(true);
+  let lock = null;
+  async function wake() { try { if ('wakeLock' in navigator && !lock && !document.hidden) { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } } catch (e) { /* frivilligt */ } }
+  document.addEventListener('pointerdown', () => { unlockAudio(); wake(); }, {once: true});
+
+  /* ---------- Uppläsning för den som inte kan läsa än ---------- */
+  const canSpeak = 'speechSynthesis' in window;
+  const SPEAKER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12" fill="none" stroke="#241A15" stroke-width="2.4" stroke-linecap="round"/></svg>';
+  const NATURAL = /natural|neural|online|premium|enhanced|förbättrad/i;
+  const voiceScore = v => (/natural|neural|online/i.test(v.name) ? 8 : 0) + (/premium/i.test(v.name) ? 7 : 0) + (/enhanced|förbättrad/i.test(v.name) ? 5 : 0) + (/google/i.test(v.name) ? 3 : 0) + (/compact|kompakt/i.test(v.name) ? -3 : 0) + (v.default ? .5 : 0);
+  const bestVoice = () => { try { return speechSynthesis.getVoices().filter(v => /^sv/i.test(v.lang)).sort((a, b) => voiceScore(b) - voiceScore(a))[0] || null; } catch (e) { return null; } };
+  function speak(text) {
+    if (!canSpeak || !text) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(String(text).replace(/\s+/g, ' ').trim()), v = bestVoice();
+      u.lang = v ? v.lang : 'sv-SE';
+      if (v) u.voice = v;
+      u.rate = NATURAL.test(v && v.name || '') ? 1 : 1.03;
+      speechSynthesis.speak(u);
+    } catch (e) { /* uppläsning är frivillig */ }
+  }
+  const WORDS = {'2': 'tvåan', '4': 'fyran', '6': 'sexan', '8': 'åttan'};
+  const say = text => { if (profile.read) speak(text); };
+  function offerText(o) {
+    if (o.kind === 'roll') return 'Din tur! Slå tärningen!';
+    if (o.kind === 'spin') return 'Snurra snurran!';
+    if (o.kind === 'card') return `${o.data.title} ${String(o.data.text || '').replace(/\b([2468])\b/, (m, s) => WORDS[s])}`;
+    if (o.kind === 'door') return 'Välj en av häxans dörrar!';
+    if (o.kind === 'ok') return o.data.card === 'fail' ? 'Oj nej, häxan lurade dig!' : 'Hurra! Familjen är fri!';
+    return '';
+  }
+  function setRead(on) {
+    profile.read = on;
+    store.set('profile', profile);
+    ['readToggle', 'bRead'].forEach(id => $(id).setAttribute('aria-pressed', String(on)));
+    if (on) speak('Nu läser jag upp allt för dig.');
+    else if (canSpeak) speechSynthesis.cancel();
+  }
+  $('bRead').innerHTML = SPEAKER;
+  $('bRead').hidden = !canSpeak;
+  $('bRead').onclick = () => { tap(); setRead(!profile.read); };
+  $('readToggle').onclick = () => { tap(); setRead(!profile.read); };
+  ['readToggle', 'bRead'].forEach(id => $(id).setAttribute('aria-pressed', String(!!profile.read)));
+  if (!canSpeak) $('readToggle').closest('.switch').hidden = true;
+  // iPhone läser bara upp om det första ljudet kom från ett tryck
+  document.addEventListener('pointerdown', () => { if (profile.read && canSpeak) { try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch (e) { /* frivilligt */ } } }, {once: true});
+
+  /* ---------- Småmeddelanden ---------- */
+  let toastT = 0;
+  function toast(title, text, img) {
+    const t = $('toast');
+    t.innerHTML = '';
+    if (img) t.append(h('span', {class: 'tIco'}, img));
+    t.append(h('div', null, title, text ? h('small', {text}) : ''));
+    t.hidden = false;
+    t.onclick = () => { t.hidden = true; };
+    clearTimeout(toastT);
+    toastT = setTimeout(() => { t.hidden = true; }, text && text.length > 60 ? 7000 : 4000);
+  }
+  function floatText(text) {
+    const el = h('div', {class: 'float', text});
+    document.body.append(el);
+    setTimeout(() => el.remove(), 1700);
+  }
+
+  // Till testerna
+  window.HugoPhone = {state: () => st, offer: () => offer, dev: () => dev, connected: () => connected, send, throwDie, spinNow, pressKey: k => { const b = document.querySelector(`.key[data-k="${k}"]`); if (b) pressKey(k, b); }, setRead, offerText};
+  syncMotion();
+  connect();
+})();
+</script>
+</body>
+</html>
