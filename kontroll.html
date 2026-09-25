@@ -97,7 +97,7 @@ p{margin:0}
 .pl b{display:block; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .pl small{display:block; font-size:12.5px; color:var(--ink-soft); font-weight:700}
 .pl .tag{justify-self:end; font-size:12px; font-weight:700; padding:2px 8px; border:2px solid var(--ink); border-radius:99px; background:#fff; white-space:nowrap}
-.pl .tag.me{background:var(--gold)}
+.pl .tag.mine{background:var(--gold)}
 .pl .tag.gold{display:flex; align-items:center; gap:2px; font-family:var(--f-disp); font-weight:400; font-size:20px; border:0; background:none; padding:0}
 .pl .tag.gold svg{width:24px; height:24px}
 .pl.win{background:var(--gold-soft)}
@@ -106,7 +106,55 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
 
 /* ---------- Spelet ---------- */
 #vGame{gap:8px; padding-bottom:10px}
-.me{display:grid; grid-template-columns:48px minmax(0,1fr) auto auto; gap:8px; align-items:center; padding:6px 8px; background:var(--paper); border:3px solid var(--ink); border-radius:16px; box-shadow:var(--pop)}
+.me{display:grid; grid-template-columns:48px minmax(0,1fr) auto auto auto; gap:8px; align-items:center; padding:6px 8px; background:var(--paper); border:3px solid var(--ink); border-radius:16px; box-shadow:var(--pop)}
+.stars{display:flex; align-items:center; gap:2px; padding:1px 9px 1px 6px; border:2.5px solid var(--ink); border-radius:99px; background:#FFF6D2; color:#C98A00; font-size:18px; line-height:1}
+.stars b{font-family:var(--f-disp); font-weight:400; font-size:22px; color:var(--ink)}
+.fanStrip{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 12px; background:var(--paper); border:3px solid var(--ink); border-radius:16px; box-shadow:var(--pop); font-family:var(--f-disp); font-size:21px}
+
+/* Tippa medan någon annan snurrar */
+.tipBox{width:100%; max-width:360px; display:flex; flex-direction:column; gap:10px; padding:12px; background:var(--paper); color:var(--ink); border:3px solid var(--ink); border-radius:18px; box-shadow:var(--pop)}
+.tipQ{font-family:var(--f-disp); font-size:22px; line-height:1.1}
+.tipRow{display:flex; gap:10px}
+.tipBtn{flex:1; min-height:74px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border:3px solid var(--ink); border-radius:14px; background:linear-gradient(#FFFDF7,#F1E4CE); box-shadow:0 4px 0 var(--ink); font-family:var(--f-disp); font-size:20px}
+.tipBtn .tipIco{width:40px; height:40px}
+.tipBtn .tipIco svg{width:100%; height:100%}
+.tipBtn:active:not(:disabled){transform:translateY(3px); box-shadow:0 1px 0 var(--ink)}
+.tipBtn:disabled{opacity:.45}
+.tipBtn.on{opacity:1; background:linear-gradient(#FFF6CF,#FFE079)}
+.tipBox.ok{background:#E3F4DA}
+.tipBox.bad{background:#F6E1DC}
+
+/* Titta och heja */
+.watchBox{display:flex; flex-direction:column; gap:8px; padding-top:10px; border-top:2.5px dashed #CDBBAA}
+
+/* Speltiden i lobbyn */
+.lenBox{display:flex; flex-direction:column; gap:6px}
+.seg{display:flex; gap:6px}
+.seg button{flex:1; min-height:52px; border:2.5px solid var(--ink); border-radius:12px; background:#fff; font-family:var(--f-disp); font-size:19px; line-height:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px}
+.seg button small{font-family:var(--f-ui); font-size:11.5px; font-weight:700; color:var(--ink-soft)}
+.seg button[aria-pressed="true"]{background:var(--gold); box-shadow:inset 0 -3px 0 rgba(0,0,0,.15)}
+.lenBox.ro .seg button:disabled{opacity:1; cursor:default}
+.lenBox.ro .seg button[aria-pressed="false"]{opacity:.45}
+
+/* Bonusrundan */
+.keypad.bonusMode .kCount{display:none}
+.bStars{display:flex; gap:6px}
+.bStars .bStar{width:36px; height:36px; display:grid; place-items:center; border:2.5px solid var(--ink); border-radius:50%; background:#EDE3DB; color:#C4B6AA; font-size:22px; line-height:1}
+.bStars .bStar.ok{background:var(--gold); color:#fff; text-shadow:1px 1px 0 var(--ink); animation:bump .5s ease}
+.bStars .bStar.bad{background:#E9C4BD; color:var(--bad)}
+.bNeed{min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px}
+.bNeed .bKeyBig{width:74px; height:74px; display:block; animation:bumpy .6s ease-in-out infinite alternate}
+.bNeed .bKeyBig svg{width:100%; height:100%}
+@keyframes bumpy{to{transform:scale(1.12)}}
+.bNeed b{font-family:var(--f-disp); font-weight:400; font-size:30px; color:#fff; text-shadow:2px 2px 0 var(--ink)}
+.bNeed .bRun{font-family:var(--f-disp); font-size:26px; color:#FFE9C9; text-shadow:2px 2px 0 var(--ink)}
+.bNeed.res{background:var(--paper); color:var(--ink); border:3px solid var(--ink); border-radius:16px; box-shadow:var(--pop); padding:10px 18px}
+.bNeed.res b{color:var(--ink); text-shadow:none; font-size:34px}
+.bNeed.res span{font-weight:700}
+
+/* Priserna */
+.pl.award .awIco{width:40px; height:40px}
+.pl.award .awIco svg{width:100%; height:100%; display:block}
 .mePic{width:48px; height:48px; border-radius:12px; border:2.5px solid var(--ink); object-fit:cover; background:var(--c, #ddd)}
 .meText{min-width:0}
 .meText b{display:block; font-family:var(--f-disp); font-weight:400; font-size:22px; line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
@@ -153,7 +201,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
 @keyframes wiggle{0%,100%{transform:rotateX(-22deg) rotateY(28deg)} 50%{transform:rotateX(-30deg) rotateY(40deg) translateY(-8px)}}
 
 /* Snurran */
-.spinBtn{width:min(64vw, 250px, calc(100cqh - 76px)); min-width:120px; flex:none; aspect-ratio:1; border:0; background:none; padding:0; position:relative; touch-action:none}
+.spinBtn{width:min(72vw, 290px, calc(100cqh - 76px)); min-width:120px; flex:none; aspect-ratio:1; border:0; background:none; padding:0; position:relative; touch-action:none}
 .spinBtn svg{width:100%; height:100%; display:block; overflow:visible}
 .spinArrow{transform-origin:0 0; transition:none}
 .spinBtn:not(:disabled) .spinHub{animation:hub 1.2s ease-in-out infinite}
@@ -299,6 +347,10 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
       <div class="meBig" id="lobbyMe"></div>
       <p class="note" id="lobbyNote"></p>
       <div class="list" id="lobbyList"></div>
+      <div class="lenBox" id="lenBox">
+        <span class="lbl">Speltid</span>
+        <div class="seg" id="lenSeg"><button type="button" data-v="2">Kort<small>2 banor</small></button><button type="button" data-v="3">Mellan<small>3 banor</small></button><button type="button" data-v="4">Hela<small>4 banor</small></button></div>
+      </div>
       <p class="err" id="startErr"></p>
       <button class="btn" id="bStart" type="button" hidden>Starta spelet</button>
       <p class="wait" id="lobbyWait"></p>
@@ -313,7 +365,11 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
       <p>Spelet är redan igång. Tryck på den som du spelar.</p>
       <div class="list" id="claimList"></div>
       <p class="err" id="claimErr"></p>
-      <button class="btn ghost" id="bWatch" type="button">Jag vill bara titta</button>
+      <div class="watchBox">
+        <p><b>Vill du bara titta?</b> Då kan du heja och tippa vad snurran visar.</p>
+        <input class="nameInput" id="watchName" type="text" maxlength="14" autocomplete="nickname" placeholder="Ditt namn">
+        <button class="btn ghost" id="bWatch" type="button">Titta och heja</button>
+      </div>
     </div>
   </section>
 
@@ -324,7 +380,9 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
       <div class="meText"><b id="meName">Hugo</b><small id="meWhere"></small></div>
       <div class="lives" id="meLives" aria-label="Hugo-kort"></div>
       <div class="gold" id="meGold" aria-label="Guldsäckar"><span id="goldIco"></span><b id="goldNum">0</b></div>
+      <div class="stars" id="meStars" title="Stjärnor för rätt tips" hidden><span aria-hidden="true">★</span><b id="starNum">0</b></div>
     </div>
+    <div class="fanStrip" id="fanStrip" hidden><span id="fanName"></span><span class="stars"><span aria-hidden="true">★</span><b id="fanStars">0</b></span></div>
     <div class="lcd" id="lcd" aria-live="polite"><div class="lcdTop" id="lcdTop">HUGO</div><div class="lcdMsg" id="lcdMsg"></div></div>
     <div class="stage" id="stage"></div>
     <div class="keypad" id="keypad" aria-label="Dina kort"></div>
@@ -337,6 +395,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
       <h1 id="overTitle">Spelet är slut</h1>
       <p id="overText"></p>
       <div class="list" id="overList"></div>
+      <div class="list" id="overAwards"></div>
       <div class="row" id="overBtns"><button class="btn ghost" id="bMenuEnd" type="button">Till menyn</button><button class="btn" id="bAgain" type="button">Spela igen</button></div>
       <p class="wait" id="overWait"></p>
     </div>
@@ -396,12 +455,16 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   let peer = null, conn = null, connected = false, retryT = 0, openT = 0, lastMsg = 0;
   let st = null, offer = null, art = null, pending = 0, anim = null, animSeq = 0, stageKey = '', lastGold = null;
   const thumbs = {}, profile = store.get('profile', {name: '', read: false});
-  let picking = false, chosen = null, watching = false;
+  let picking = false, chosen = null, watching = false, tipState = null, tipT = 0, bonus = null, bonusT = 0;
 
+  // Adressen är kontroll.html#KOD, eller #KOD~... när skärmen har en egen TURN-server (base64-kodad efter ~)
   function parseCode() {
-    const m = (location.hash.slice(1) || new URLSearchParams(location.search).get('kod') || store.get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const m = (location.hash.slice(1).split('~')[0] || new URLSearchParams(location.search).get('kod') || store.get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
     return m.length >= 4 ? m.slice(0, 8) : null;
   }
+  let turn = null;
+  try { const t = location.hash.split('~')[1]; turn = t ? JSON.parse(decodeURIComponent(escape(atob(t)))) : store.get('turn', null); if (t) store.set('turn', turn); } catch (e) { turn = null; }
+  const hashTail = () => turn ? location.hash.slice(location.hash.indexOf('~')) : '';
 
   /* ---------- Vyer ---------- */
   const VIEWS = ['vConnect', 'vCode', 'vJoin', 'vLobby', 'vClaim', 'vGame', 'vOver'];
@@ -414,7 +477,8 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     if (text) $('connText').textContent = text;
     if (s !== 'on' && !st && view !== 'vCode') show('vConnect');
   }
-  const iceServers = () => [{urls: 'stun:stun.l.google.com:19302'}, {urls: 'stun:stun.cloudflare.com:3478'}];
+  const iceServers = () => [{urls: 'stun:stun.l.google.com:19302'}, {urls: 'stun:stun.cloudflare.com:3478'}]
+    .concat(turn && turn.url ? [{urls: turn.url, username: turn.user || undefined, credential: turn.pass || undefined}] : []);
   function connect() {
     clearTimeout(retryT);
     if (!code) { show('vCode'); return; }
@@ -444,7 +508,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
       clearTimeout(openT);
       connected = true; lastMsg = Date.now();
       store.set('code', code);
-      if (location.hash.slice(1) !== code) history.replaceState(null, '', '#' + code);
+      if (location.hash.slice(1).split('~')[0] !== code) history.replaceState(null, '', '#' + code + hashTail());
       setConn('on');
       c.send({t: 'hello', dev});
     });
@@ -465,7 +529,47 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   function onMsg(m) {
     if (!m || typeof m !== 'object') return;
     switch (m.t) {
-      case 'welcome': art = m.art; $('goldIco').innerHTML = art.sack; buildKeypad(); render(); break;
+      case 'welcome':
+        art = m.art; $('goldIco').innerHTML = art.sack; buildKeypad();
+        if (watching) send({t: 'watch', name: profile.name || ''});
+        render();
+        break;
+      // Tippa vad snurran visar medan någon annan spelar
+      case 'tip':
+        tipState = {id: m.id, name: m.name, seat: m.seat, color: m.color, track: m.track, pick: null, res: null};
+        clearTimeout(tipT); buzz(25); render();
+        say(`Tippa! Blir det guld eller ett hinder för ${m.name}?`);
+        break;
+      case 'tipOk': if (tipState && tipState.id === m.id) { tipState.pick = m.v; render(); } break;
+      // Bonusrundan: knapparna styr Hugo medan hindren kommer
+      case 'bonus':
+        if (m.on === true) {
+          clearTimeout(bonusT);
+          bonus = {track: m.track, n: m.n || 5, need: null, stars: [], res: null};
+          buzz([60, 40, 60]); ding(); say('Bonusrunda! Tryck på knappen som lyser när hindret kommer.');
+        } else if (bonus && 'need' in m) {
+          bonus.need = m.need;
+          if (m.need) { buzz(18); if (profile.read) speak({'2': 'Hoppa!', '4': 'Vänster!', '6': 'Höger!', '8': 'Ducka!'}[m.need]); }
+        } else if (bonus && 'star' in m) {
+          bonus.stars[m.star] = m.ok;
+          buzz(m.ok ? 30 : [120, 40, 120]);
+          if (m.ok) coin(); else ouch();
+        } else if (bonus && m.on === false) {
+          if (m.ok != null) {
+            bonus.res = {ok: m.ok, n: m.n, sacks: m.sacks};
+            say(`Du klarade ${m.ok} av ${m.n} hinder!`);
+            clearTimeout(bonusT); bonusT = setTimeout(() => { bonus = null; render(); }, 2600);
+          } else if (!bonus.res) bonus = null;
+        }
+        render();
+        break;
+      case 'tipRes':
+        if (!tipState || tipState.id !== m.id) break;
+        tipState.res = m;
+        if (!m.missed) { buzz(m.ok ? [40, 40, 40] : 90); if (m.ok) { ding(); floatText('+1 ★'); } }
+        render();
+        clearTimeout(tipT); tipT = setTimeout(() => { tipState = null; render(); }, 3200);
+        break;
       case 'status': st = m; render(); break;
       case 'thumb':
         thumbs[m.key] = m.src;
@@ -511,6 +615,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   function render() {
     if (!st) return;
     const ph = st.phase;
+    if (ph !== 'over') renderOver.cheered = false;
     if (ph === 'title' || ph === 'lobby') {
       watching = false;
       const lob = st.lobby;
@@ -575,12 +680,16 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     list.innerHTML = '';
     lob.seats.filter(s => s.on).forEach(s => list.append(h('div', {class: 'pl', style: {'--c': s.color}}, thumbImg('head:' + s.i),
       h('span', null, h('b', {text: s.name}), h('small', {text: `${s.phone ? (s.online ? 'Mobil' : 'Mobilen är borta') : s.cpu ? 'Dator' : 'Spelar på skärmen'} · ${s.track}`})),
-      s.mine ? h('span', {class: 'tag me', text: 'Du'}) : null)));
+      s.mine ? h('span', {class: 'tag mine', text: 'Du'}) : null)));
     $('bStart').hidden = !st.leader;
     $('bStart').disabled = lob.n < 2;
     $('bStart').textContent = lob.n < 2 ? 'Det behövs två spelare' : 'Starta spelet';
     $('lobbyWait').textContent = st.leader ? '' : `Väntar på att ${st.leaderName || 'spelledaren'} startar spelet.`;
+    // speltiden: spelledaren väljer, de andra ser vad som gäller
+    $('lenBox').classList.toggle('ro', !st.leader);
+    $('lenSeg').querySelectorAll('button').forEach(b => { b.setAttribute('aria-pressed', String(+b.dataset.v === lob.tracks)); b.disabled = !st.leader; });
   }
+  $('lenSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && !b.disabled) { tap(); send({t: 'opt', tracks: +b.dataset.v}); } });
   $('bStart').onclick = () => { unlockAudio(); $('startErr').textContent = ''; send({t: 'start'}); buzz(20); };
   $('bSwitch').onclick = () => { picking = true; chosen = null; tap(); render(); };
   $('bLeave').onclick = () => { send({t: 'leave'}); picking = false; chosen = null; tap(); };
@@ -595,8 +704,14 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
         thumbImg('head:' + p.seat), h('span', null, h('b', {text: p.name}), h('small', {text: busy ? 'Spelar redan med en mobil' : 'Tryck om det är du'})), null));
     });
     if (!g.players.some(p => p.human)) list.append(h('p', {class: 'note', text: 'Bara datorn spelar just nu.'}));
+    if (!$('watchName').value && profile.name) $('watchName').value = profile.name;
   }
-  $('bWatch').onclick = () => { watching = true; tap(); render(); };
+  $('bWatch').onclick = () => {
+    const name = $('watchName').value.trim().slice(0, 14);
+    if (name) { profile.name = name; store.set('profile', profile); }
+    send({t: 'watch', name: name || profile.name || ''});
+    watching = true; unlockAudio(); tap(); render();
+  };
 
   /* ---------- Spelet ---------- */
   function renderGame(g) {
@@ -616,6 +731,11 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
       if (lastGold != null && me.gold > lastGold) { const gp = $('meGold'); gp.classList.remove('bump'); void gp.offsetWidth; gp.classList.add('bump'); }
       lastGold = me.gold;
     }
+    // stjärnor för rätt tips (spelare) och en rad med namn och stjärnor för den som bara tittar
+    $('meStars').hidden = !g.stars; $('starNum').textContent = g.stars || 0;
+    $('fanStrip').hidden = !!me || !g.fan;
+    $('fanName').textContent = g.fan ? `${g.fan} tittar och hejar` : '';
+    $('fanStars').textContent = g.stars || 0;
     $('lcdTop').textContent = g.myTurn ? 'Din tur!' : cur ? `${genitive(cur.name)} tur` : 'Hugo';
     $('lcdMsg').textContent = g.msg || '';
     renderStage(g, me, cur);
@@ -634,6 +754,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   function renderStage(g, me, cur) {
     // tärningen och snurran visar resultatet en stund; har skärmen inte svarat efter 9 sekunder släpps de
     if (anim && (anim.until ? Date.now() >= anim.until : Date.now() - anim.t0 > 9000)) anim = null;
+    if (bonus && me) { bonusStage(); return; }
     const o = offer;
     if (o && o.kind === 'roll') { dieStage(o.id, true); return; }
     if (o && o.kind === 'spin') { spinStage(o.id, o.data.track || (me && me.track), true); return; }
@@ -649,12 +770,63 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
       return;
     }
     if (!cur) return;
-    setStage('idle:' + g.turn + ':' + cur.i + ':' + !!me, box => {
+    const tk = tipState ? `${tipState.id}:${tipState.pick || ''}:${tipState.res ? 'r' : ''}` : '';
+    setStage('idle:' + g.turn + ':' + cur.i + ':' + !!me + ':' + watching + ':' + tk, box => {
       const pic = thumbImg('head:' + cur.seat, 'turnPic', '');
       pic.style.setProperty('--c', cur.color);
       box.append(pic, h('h2', {text: `${genitive(cur.name)} tur`}));
-      if (me) box.append(reacts());
+      if (tipState) box.append(tipBox());
+      else if (me || watching) box.append(reacts());
     });
+  }
+
+  // Bonusrundan: stjärnorna, knappen som behövs och till sist resultatet
+  const DIR = {'2': 'Hoppa!', '4': 'Vänster!', '6': 'Höger!', '8': 'Ducka!'};
+  function bonusStage() {
+    const b = bonus;
+    setStage('bonus:' + (b.res ? 'res' : 'run'), box => {
+      box.append(h('h2', {class: 'bTitle', text: 'Bonusrunda!'}), h('div', {class: 'bStars'}), h('div', {class: 'bNeed'}), h('p', {class: 'hint bHint'}));
+    });
+    const st2 = $('stage').querySelector('.bStars'), nd = $('stage').querySelector('.bNeed'), hint = $('stage').querySelector('.bHint');
+    if (!st2) return;
+    st2.innerHTML = '';
+    for (let i = 0; i < b.n; i++) st2.append(h('span', {class: 'bStar' + (b.stars[i] === true ? ' ok' : b.stars[i] === false ? ' bad' : ''), text: '★'}));
+    if (b.res) {
+      nd.innerHTML = '';
+      nd.append(h('b', {text: `${b.res.ok} av ${b.res.n}`}), h('span', {text: b.res.sacks === 2 ? 'Alla hinder! Två guldsäckar!' : b.res.sacks ? 'En guldsäck till dig!' : 'Ingen guldsäck den här gången.'}));
+      nd.className = 'bNeed res';
+      hint.textContent = '';
+    } else if (b.need) {
+      nd.innerHTML = '';
+      nd.append(h('span', {class: 'bKeyBig', html: art ? art.keys[b.need] : b.need}), h('b', {text: DIR[b.need]}));
+      nd.className = 'bNeed on';
+      hint.textContent = 'Tryck på knappen som lyser!';
+    } else {
+      nd.innerHTML = ''; nd.className = 'bNeed';
+      nd.append(h('span', {class: 'bRun', text: 'Hugo springer …'}));
+      hint.textContent = 'Titta på den stora skärmen och tryck när hindret kommer.';
+    }
+  }
+
+  // Tippa: guld eller hinder? Rätt gissning ger en stjärna.
+  const resWord = r => r === 'guld' ? 'guld' : 'ett hinder';
+  function tipBox() {
+    const t = tipState, tr = art && art.tracks[t.track];
+    const ob = tr ? tr.sectors.find(s => s.t === 'hinder') : null;
+    const obIco = ob && art.icons[ob.o] ? art.icons[ob.o][ob.s] : '';
+    const box = h('div', {class: 'tipBox'});
+    if (t.res) {
+      const r = t.res;
+      box.classList.add(r.missed ? 'missed' : r.ok ? 'ok' : 'bad');
+      box.append(h('p', {class: 'tipQ', text: r.missed ? `Det blev ${resWord(r.res)}. Tippa nästa gång!` : r.ok ? `Rätt! Det blev ${resWord(r.res)}. En stjärna till dig!` : `Nej, det blev ${resWord(r.res)}.`}));
+      return box;
+    }
+    box.append(h('p', {class: 'tipQ', text: t.pick ? `Du tippade ${t.pick === 'guld' ? 'guld' : 'hinder'}. Nu snurrar ${t.name} …` : `Tippa! Vad visar snurran för ${t.name}?`}));
+    const row = h('div', {class: 'tipRow'});
+    [['guld', 'Guld', art ? art.sack : ''], ['hinder', 'Hinder', obIco]].forEach(([v, label, ico]) => row.append(h('button', {class: 'tipBtn' + (t.pick === v ? ' on' : ''), type: 'button', disabled: !!t.pick,
+      onclick: () => { if (t.pick) return; t.pick = v; unlockAudio(); tap(); send({t: 'tipPick', id: t.id, v}); render(); }}, h('span', {class: 'tipIco', html: ico}), label)));
+    box.append(row);
+    return box;
   }
 
   // Tärningen: tryck, svep eller skaka
@@ -724,8 +896,8 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     });
     t.sectors.forEach((sec, i) => {
       const [ix, iy] = pt(60 * i + 16, 70), [kx, ky] = pt(60 * i - 17, 58);
-      s += nested(sec.t === 'guld' ? art.sack : art.icons[sec.o][sec.s], ix, iy, 34);
-      s += nested(art.keys[sec.s], kx, ky, 26);
+      s += nested(sec.t === 'guld' ? art.sack : art.icons[sec.o][sec.s], ix, iy, 31);
+      s += nested(art.keys[sec.s], kx, ky, 23);
     });
     s += `<path class="secHit" d="" fill="none" stroke="#FFD95A" stroke-width="7" stroke-linejoin="round" opacity="0"/>`;
     s += `<g class="spinArrow"><path d="M-3 6 L-3 -97 L3 -97 L3 6 Z" fill="#E23B2E" stroke="#241A15" stroke-width="2"/><path d="M0 -121 L11 -97 L-11 -97 Z" fill="#E23B2E" stroke="#241A15" stroke-width="2.5" stroke-linejoin="round"/></g><circle class="spinHub" r="13" fill="#F6BD2C" stroke="#241A15" stroke-width="3"/></svg>`;
@@ -850,6 +1022,8 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   const nudge = b => { b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge'); };
   function pressKey(k, b) {
     if (!b.classList.contains('cardKey')) return;
+    // i bonusrundan styr knapparna Hugo i stället för att lägga kort
+    if (bonus && !bonus.res) { send({t: 'bkey', k}); buzz(15); return; }
     const g = st && st.game, me = g && g.me != null ? g.players[g.me] : null;
     if (!offer || offer.kind !== 'card' || pending || !me) { nudge(b); return; }
     const i = (g.hand || []).indexOf(k);
@@ -867,6 +1041,13 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     const gone = !me || me.status === 'witch' || me.status === 'finished';
     pad.classList.toggle('hide', gone);
     if (gone) return;
+    const bmode = !!(bonus && !bonus.res);
+    pad.classList.toggle('bonusMode', bmode);
+    if (bmode) {
+      pad.classList.remove('idle');
+      pad.querySelectorAll('.cardKey').forEach(b => { b.classList.remove('dim', 'tip', 'empty'); b.classList.toggle('match', b.dataset.k === bonus.need); b.setAttribute('aria-disabled', 'false'); });
+      return;
+    }
     const hand = g.hand || [], d = offer && offer.kind === 'card' ? offer.data : null, live = !!d && !pending;
     pad.classList.toggle('idle', !live);
     pad.querySelectorAll('.cardKey').forEach(b => {
@@ -898,6 +1079,13 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
         h('span', null, h('b', {text: `${k + 1}. ${p.name}`}), h('small', {text: p.freed ? (p.door === 'gold' ? 'Befriade familjen och fick 5 säckar' : 'Befriade familjen') : 'Familjen blev kvar hos häxan'})),
         h('span', {class: 'tag gold', html: art ? art.sack : ''}, String(p.gold))));
     });
+    // priserna, och de som är ens egna först med en markering
+    const and = n => n.length > 1 ? n.slice(0, -1).join(', ') + ' och ' + n[n.length - 1] : n[0];
+    const aw = $('overAwards');
+    aw.innerHTML = '';
+    [...(g.awards || [])].sort((a, b) => b.mine - a.mine).forEach(a => aw.append(h('div', {class: 'pl award' + (a.mine ? ' win' : '')}, h('span', {class: 'awIco', html: a.svg}),
+      h('span', null, h('b', {text: a.title}), h('small', {text: `${and(a.names)} ${a.text}`})), a.mine ? h('span', {class: 'tag mine', text: 'Du!'}) : null)));
+    if (g.awards && g.awards.some(a => a.mine) && !renderOver.cheered) { renderOver.cheered = true; say(`Du fick priset ${g.awards.filter(a => a.mine).map(a => a.title).join(' och ')}!`); }
     $('overBtns').hidden = !st.leader;
     $('overWait').textContent = st.leader ? '' : `Väntar på att ${st.leaderName || 'spelledaren'} väljer vad som händer nu.`;
   }
@@ -919,7 +1107,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   $('mSwitch').onclick = () => { $('menu').hidden = true; picking = true; chosen = null; render(); };
   $('mLeave').onclick = () => {
     $('menu').hidden = true;
-    if (watching) { watching = false; render(); return; }
+    if (watching) { watching = false; send({t: 'unwatch'}); render(); return; }
     send({t: 'leave'}); picking = false; chosen = null; watching = false;
   };
   $('mCode').onclick = () => { $('menu').hidden = true; $('codeInput').value = code || ''; show('vCode'); };
@@ -1049,7 +1237,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   }
 
   // Till testerna
-  window.HugoPhone = {state: () => st, offer: () => offer, dev: () => dev, connected: () => connected, send, throwDie, spinNow, pressKey: k => { const b = document.querySelector(`.key[data-k="${k}"]`); if (b) pressKey(k, b); }, setRead, offerText};
+  window.HugoPhone = {state: () => st, offer: () => offer, bonus: () => bonus, tip: () => tipState, dev: () => dev, connected: () => connected, send, throwDie, spinNow, pressKey: k => { const b = document.querySelector(`.key[data-k="${k}"]`); if (b) pressKey(k, b); }, setRead, offerText};
   syncMotion();
   connect();
 })();
