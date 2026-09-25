@@ -332,6 +332,85 @@ h3{margin:14px 0 4px; font-size:17px}
   .card.match,.card.nudge,.goldPill.bump,#btnMain:not(:disabled),.titleLogo img{animation:none}
   .life .in{transition-duration:.2s}
 }
+
+/* ---------- Menyn: knappar och ställning ---------- */
+.pauseRow{display:flex; gap:8px; flex-wrap:wrap; justify-content:center}
+.pausePlayers{display:none}
+
+/* ---------- Kompakt läge: telefoner (stående och liggande) ---------- */
+/* Så lite som möjligt ovanpå brädet: en slank rad överst, en menyknapp, en kort pratbubbla och små kort. */
+body.compact .who{left:calc(8px + var(--safe-l)); top:calc(8px + var(--safe-t)); width:auto; max-width:calc(100vw - 92px - var(--safe-l) - var(--safe-r)); padding:4px 10px 4px 4px; flex-direction:row; align-items:center; gap:8px; border-radius:14px; box-shadow:3px 3px 0 var(--ink)}
+body.compact .whoTop{gap:7px; min-width:0; flex:1}
+body.compact .whoPic{width:38px; height:38px; border-radius:10px; border-width:2.5px}
+body.compact .whoName{font-size:18px}
+body.compact .whoWhere{font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+body.compact .goldPill{padding:0 7px 0 2px; border-width:2.5px}
+body.compact .goldPill svg{width:24px; height:24px}
+body.compact .goldPill b{font-size:21px}
+body.compact .livesRow{gap:3px; flex:none}
+body.compact .livesLabel,body.compact .risk{display:none}
+body.compact .life{width:17px; height:23px}
+body.compact .life .fr,body.compact .life .bk{border-width:2px; border-radius:4px}
+body.compact .players{display:none}
+body.compact .tools{top:calc(8px + var(--safe-t)); bottom:auto; right:calc(8px + var(--safe-r)); flex-direction:row; max-width:none}
+body.compact .tool:not(#tMenu){display:none}
+body.compact #tMenu{min-height:48px; padding:0 12px; font-size:15px; border-radius:14px}
+body.compact .banner{top:18%}
+body.compact .banner img{width:52px; height:52px}
+body.compact .banner span{font-size:30px}
+body.compact .bottom{width:calc(100vw - 16px - var(--safe-l) - var(--safe-r)); bottom:calc(8px + var(--safe-b)); gap:6px}
+body.compact .talk{align-self:stretch; max-width:none}
+body.compact .talkFace{display:none}
+body.compact .bubble{font-size:14px; line-height:1.25; padding:6px 10px; min-height:0; border-radius:12px; box-shadow:3px 3px 0 var(--ink); gap:8px; width:100%}
+body.compact .bubble::before,body.compact .bubble::after{display:none}
+body.compact .bubble p{display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
+body.compact.land .bubble p{-webkit-line-clamp:2}
+body.compact .titleSub{font-size:16px; background:rgba(30,12,8,.55); padding:8px 12px; border-radius:14px}
+body.compact .titleLogo{width:min(420px, 80vw)}
+body.compact .bubble .bIco{width:28px; height:28px}
+body.compact .play{gap:8px; justify-content:space-between; align-items:stretch}
+body.compact .hand{gap:6px}
+body.compact .card{width:74px; height:98px; border-radius:11px; box-shadow:3px 3px 0 var(--ink); padding:4px}
+body.compact .card svg{width:44px; height:44px}
+body.compact .card .verb{font-size:12px}
+body.compact .card .corner{font-size:14px; top:3px; left:6px}
+body.compact .card.tip::after{font-size:9.5px; bottom:-9px; padding:0 5px}
+body.compact .backLogo{font-size:22px}
+body.compact .handNote{font-size:10px; bottom:-10px}
+body.compact #btnMain{min-width:0; flex:1; max-width:170px; min-height:98px; font-size:20px; line-height:1.05; padding:4px 8px}
+body.compact .doorBar{padding:8px 10px; gap:6px}
+body.compact .doorAsk{font-size:19px}
+body.compact .doorBtn{min-height:64px; font-size:26px}
+body.compact .outcome svg,body.compact .outArt{width:80px; height:80px}
+body.compact .outcome p{font-size:15px}
+body.compact .pausePlayers{display:flex; flex-direction:column; gap:3px; padding:6px 8px; border:2.5px solid var(--ink); border-radius:12px; background:var(--paper-2)}
+body.compact #hud.cpuTurn .play{display:none}
+/* liggande telefon: pratbubblan bredvid korten, så att brädet får så mycket höjd som möjligt */
+body.compact.land .bottom{flex-direction:row; align-items:flex-end}
+body.compact.land .talk{flex:1; min-width:0; align-self:flex-end}
+body.compact.land .play{flex:none}
+body.compact.land .card{width:64px; height:84px}
+body.compact.land .card svg{width:38px; height:38px}
+body.compact.land #btnMain{min-height:84px; width:128px; flex:none}
+body.compact.land .doorBar{order:0; flex:1}
+/* bonusrundan på telefon: en smal rad överst och knapparna i ett kors längst ner */
+body.compact .bonusTop{left:calc(8px + var(--safe-l)); right:calc(8px + var(--safe-r)); top:calc(8px + var(--safe-t)); transform:none; max-width:none; flex-wrap:nowrap; justify-content:flex-start; gap:8px; padding:4px 8px 4px 4px; border-radius:14px}
+body.compact .bonusPic{width:36px; height:36px; border-radius:10px; border-width:2.5px}
+body.compact .bonusTop b{font-size:18px; white-space:nowrap}
+body.compact .bonusTop small{display:none}
+body.compact .bonusTop > div:nth-child(2){flex:1; min-width:0}
+body.compact .bonusStars{margin-left:0; gap:3px}
+body.compact .bStar{width:24px; height:24px; font-size:14px; border-width:2px}
+body.compact .bonusMid{top:24%; font-size:36px}
+body.compact .bonusMid.count{font-size:56px}
+body.compact .bonusMid.result{top:38%}
+body.compact .bonusPad{left:50%; right:auto; bottom:calc(10px + var(--safe-b)); transform:translateX(-50%); grid-template-columns:repeat(3, 72px); grid-template-rows:repeat(3, 72px); gap:4px}
+body.compact .bKey{border-radius:16px; font-size:12px}
+body.compact .bKey svg{width:38px; height:38px}
+body.compact.land .bonusPad{left:auto; right:calc(12px + var(--safe-r)); transform:none; grid-template-columns:repeat(3, 62px); grid-template-rows:repeat(3, 62px)}
+body.compact.land .bKey svg{width:32px; height:32px}
+body.compact.land .bonusTop{right:auto; max-width:calc(100vw - 24px)}
+body.compact.land .bonusTop small{display:block; font-size:11px}
 </style>
 </head>
 <body><div id="app">
@@ -511,6 +590,8 @@ h3{margin:14px 0 4px; font-size:17px}
         <button class="big alt" id="btnPausePhones" type="button">Spela med mobilerna</button>
         <button class="big alt" id="btnQuit" type="button">Avsluta till startsidan</button>
       </div>
+      <div class="pauseRow"><button class="tool" id="pMusic" type="button" aria-pressed="true">Musik</button><button class="tool" id="pVoice" type="button" aria-pressed="false">Läs upp</button><button class="tool" id="pView" type="button">Hela brädet</button></div>
+      <div class="pausePlayers" id="pausePlayers"></div>
       <div class="phoneBox" id="pausePhoneBox" hidden></div>
       <p class="small">Spelet sparas efter varje tur, så du kan fortsätta senare.</p>
     </div>
@@ -1875,12 +1956,43 @@ const S3 = (() => {
   }
   function resize() {
     const w = container.clientWidth || 1, h = container.clientHeight || 1;
+    // Telefoner (kompakt läge) får en enklare skärm och en kamera som ramar in trollet i den fria delen av skärmen.
+    // Stående skärmar får en vidare vinkel, annars ser man bara en smal remsa av brädet.
+    const compact = Math.min(innerWidth, innerHeight) < 600;
+    document.body.classList.toggle('compact', compact);
+    document.body.classList.toggle('land', compact && innerWidth > innerHeight);
     renderer.setSize(w, h, false);
     Post.setSize(w * renderer.getPixelRatio(), h * renderer.getPixelRatio());
     camera.aspect = w / h;
+    camera.fov = w / h < .8 ? 50 : 38;
     camera.updateProjectionMatrix();
     Cam.limits();
+    Bus.emit('resize');
   }
+  S.compact = () => document.body.classList.contains('compact');
+  // Den fria delen av skärmen (utan knappar och rutor), i pixlar. Sätts av gränssnittet i kompakt läge.
+  let safe = null;
+  S.setSafe = r => { safe = r; };
+  // Så långt bort kameran ska vara för att ett område (bredd w och djup h i meter) ska få plats i den fria delen
+  S.fitDist = (w, h) => {
+    const el = renderer.domElement.getBoundingClientRect(), W = el.width || 1, H = el.height || 1;
+    const fw = safe ? (safe.r - safe.l) / W : 1, fh = safe ? (safe.b - safe.t) / H : 1;
+    const vt = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2), ht = vt * camera.aspect;
+    let d = Math.max(w / (2 * ht * fw), h * .78 / (2 * vt * fh));
+    for (let i = 0; i < 2; i++) d = Math.max(w / (2 * ht * fw), h * Math.sin(Cam.tilt(d)) / (2 * vt * fh));
+    return clamp(d, Cam.dMin, Cam.dMax);
+  };
+  // Var kameran ska titta för att punkten p ska hamna mitt i den fria delen av skärmen på avståndet d
+  S.frameTarget = (p, d, yaw = Cam.yaw) => {
+    if (!safe) return {x: p.x, z: p.z + d * .13};
+    const el = renderer.domElement.getBoundingClientRect(), W = el.width || 1, H = el.height || 1;
+    const cx = ((safe.l + safe.r) / 2 - el.left) / W * 2 - 1, cy = 1 - ((safe.t + safe.b) / 2 - el.top) / H * 2;
+    const vt = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2), ht = vt * camera.aspect;
+    const tl = Cam.tilt(d), hgt = d * Math.sin(tl), g0 = hgt / Math.tan(tl);
+    const ga = hgt / Math.tan(Math.max(.08, tl - Math.atan(cy * vt)));
+    const away = {x: -Math.sin(yaw), z: -Math.cos(yaw)}, right = {x: Math.cos(yaw), z: -Math.sin(yaw)}, lat = d * cx * ht;
+    return {x: p.x - away.x * (ga - g0) - right.x * lat, z: p.z - away.z * (ga - g0) - right.z * lat};
+  };
   const tex = (src, srgb) => {
     const t = new THREE.CanvasTexture(src);
     if (srgb) t.encoding = THREE.sRGBEncoding;
@@ -2011,7 +2123,7 @@ const S3 = (() => {
   /* ---------- Kameran ---------- */
   const Cam = S.cam = {
     tx: 0, tz: .3, d: 14, yaw: 0, dMin: 1.6, dMax: 16, dFit: 14, anim: null, userT: 0, followFn: null, attract: false,
-    tilt() { const k = clamp((this.d - this.dMin) / (this.dMax - this.dMin), 0, 1); return lerp(.62, 1.2, Math.pow(k, .8)); },
+    tilt(d = this.d) { const k = clamp((d - this.dMin) / (this.dMax - this.dMin), 0, 1); return lerp(.62, 1.2, Math.pow(k, .8)); },
     limits() {
       if (!camera) return;
       const v = THREE.MathUtils.degToRad(camera.fov) / 2, hfov = Math.atan(Math.tan(v) * camera.aspect);
@@ -2060,8 +2172,17 @@ const S3 = (() => {
       this.apply();
     }
   };
-  // lite närmare kameran än punkten, så att den hamnar ovanför korten längst ner
-  S.focus = (v, d, ms, yaw) => Cam.to(v.x, v.z + d * .13, d, ms, yaw);
+  // Stora skärmar: lite närmare kameran än punkten, så att den hamnar ovanför korten längst ner.
+  // Kompakt läge: området (span meter) ska få plats i den fria delen av skärmen och punkten hamna mitt i den.
+  // Området runt trollet och snurran som ska synas: smalare på en stående skärm, bredare på en liggande
+  const turnSpan = () => camera.aspect < 1 ? [2.6, 3.2] : [3.6, 2.8];
+  S.focus = (v, d, ms, yaw, span) => {
+    if (!safe) return Cam.to(v.x, v.z + d * .13, d, ms, yaw);
+    const [sw, sh] = span ? [span, span] : turnSpan(), dd = S.fitDist(sw, sh), t = S.frameTarget(v, dd, yaw == null ? Cam.yaw : yaw);
+    return Cam.to(t.x, t.z, dd, ms, yaw);
+  };
+  // Avståndet när kameran följer den som har turen
+  S.turnDist = () => safe ? S.fitDist(...turnSpan()) : 5.2;
   S.overview = ms => Cam.overview(ms);
   S.follow = fn => { Cam.followFn = fn; };
   S.setAttract = on => { Cam.attract = on; if (!on) Cam.yaw = Cam.yaw || 0; };
@@ -3245,7 +3366,20 @@ const UI = (() => {
       if (input.kind === 'door' && /^[123]$/.test(k)) { e.preventDefault(); input.handle(+k - 1); }
     });
   };
-  U.showHUD = on => { $('hud').hidden = !on; };
+  U.showHUD = on => { $('hud').hidden = !on; U.updateSafe(); };
+  // Den fria delen av skärmen i kompakt läge (telefoner): mellan raden överst och korten längst ner.
+  // Kameran ramar in trollet där i stället för mitt på skärmen, där det skulle hamna bakom knapparna.
+  U.updateSafe = () => {
+    if (!S3.compact() || $('hud').hidden) { S3.setSafe(null); return; }
+    const W = innerWidth, H = innerHeight, land = document.body.classList.contains('land');
+    let top = 0, bottom = H;
+    [$('who'), document.querySelector('.tools')].forEach(el => { const r = el.getBoundingClientRect(); if (r.height && r.top < H * .4) top = Math.max(top, r.bottom + 6); });
+    [...document.querySelectorAll('.bottom > *')].filter(e => !e.hidden && !e.classList.contains('talk')).forEach(e => {
+      const r = e.getBoundingClientRect(); if (r.height) bottom = Math.min(bottom, r.top - (land ? 8 : 52));
+    });
+    S3.setSafe({l: 0, t: top, r: W, b: Math.max(top + 100, bottom)});
+  };
+  Bus.on('resize', () => U.updateSafe());
 
   /* ---------- Den som har turen ---------- */
   U.where = p => {
@@ -3276,6 +3410,9 @@ const UI = (() => {
       return `<div class="prow ${S.phase !== 'over' && q === p ? 'cur' : ''}" style="--c:${q.color}"><img src="${Portraits.get(q.color, 'head')}" alt=""><span class="pname">${esc(q.name)}${ph}<small>${esc(sub)}</small></span><span class="ptracks">${tr}</span><span class="pgold">${Art.sack()}${q.gold}</span></div>`;
     }).join('');
     U.hand(S);
+    // på telefoner döljs datorns kort och knapp under datorns tur, så att brädet får mer plats
+    $('hud').classList.toggle('cpuTurn', !p.human && S.phase !== 'over');
+    U.updateSafe();
     Bus.emit('hud');
   };
   // En mobil kom eller gick: rita om spelarlistan och korten (korten döljs när de finns i mobilen)
@@ -3365,6 +3502,7 @@ const UI = (() => {
     $('hand').hidden = true;
     $('doorAsk').textContent = pickable ? 'Välj en av häxans dörrar!' : 'Dörren öppnas …';
     $('doorBtns').innerHTML = [0, 1, 2].map(d => `<button class="doorBtn" type="button" data-d="${d}" ${pickable && S.doors[d].length ? '' : 'disabled'}>${d + 1}<small>${S.doors[d].length} kort kvar</small></button>`).join('');
+    U.updateSafe();
   };
   U.doorOutcome = (card, name) => {
     const fam = Portraits.family(), witch = Portraits.witch();
@@ -3377,7 +3515,7 @@ const UI = (() => {
     $('doorBtns').innerHTML = '';
     return msg;
   };
-  U.hideDoors = () => { $('doorBar').hidden = true; $('hand').hidden = false; };
+  U.hideDoors = () => { $('doorBar').hidden = true; $('hand').hidden = false; U.updateSafe(); };
 
   /* ---------- Resultat ---------- */
   U.results = S => {
@@ -3491,6 +3629,10 @@ const Menu = (() => {
     $('tMusic').addEventListener('click', e => { Sound.unlock(); Settings.music = Settings.music > 0 ? 0 : (Settings.musicWas || .5); if (Settings.music > 0) Settings.musicWas = Settings.music; saveSettings(); Sound.setVolumes(); syncTools(); });
     $('tVoice').addEventListener('click', () => { Settings.voice = !Settings.voice; saveSettings(); syncTools(); if (Settings.voice) Sound.speak('Nu läser jag upp vad som händer.', true); });
     $('btnContinue').addEventListener('click', () => close('pause'));
+    // samma knappar som i verktygsraden, för telefoner där raden bara är en menyknapp
+    $('pMusic').addEventListener('click', () => $('tMusic').click());
+    $('pVoice').addEventListener('click', () => $('tVoice').click());
+    $('pView').addEventListener('click', () => { close('pause'); $('tView').click(); });
     $('btnPauseSettings').addEventListener('click', () => { close('pause'); M.openSettings(); });
     $('btnPauseRules').addEventListener('click', () => { close('pause'); open('rules'); });
     $('btnQuit').addEventListener('click', () => { close('pause'); Game.stop(); M.showTitle(); });
@@ -3566,12 +3708,13 @@ const Menu = (() => {
     return true;
   }
   function syncTools() {
-    $('tMusic').setAttribute('aria-pressed', String(Settings.music > 0));
-    $('tVoice').setAttribute('aria-pressed', String(!!Settings.voice));
+    ['tMusic', 'pMusic'].forEach(id => $(id).setAttribute('aria-pressed', String(Settings.music > 0)));
+    ['tVoice', 'pVoice'].forEach(id => $(id).setAttribute('aria-pressed', String(!!Settings.voice)));
   }
   function open(id) {
     if (id === 'settings') M.readSettings();
-    if (id === 'pause') syncPhones();
+    // i menyn syns också ställningen (spelarlistan får inte plats på telefoner)
+    if (id === 'pause') { syncPhones(); syncTools(); $('pausePlayers').innerHTML = $('players').innerHTML; }
     $(id).hidden = false; Sound.play('click');
     const b = $(id).querySelector('.big'); if (b) setTimeout(() => b.focus(), 30);
   }
@@ -3807,15 +3950,23 @@ const Game = (() => {
   }
 
   /* ---------- Kameran ---------- */
+  // Punkten kameran ska titta på: mellan trollet och snurran på banan, annars trollet självt
+  function viewPoint(p) {
+    const pp = Pieces.worldPos(p.id);
+    return p.status === 'track' ? pp.clone().lerp(Spinners.center(p.track), .45) : pp;
+  }
   function focusTurn(p) {
     if (!Settings.follow) return Promise.resolve();
-    if (p.status === 'witch' || p.status === 'finished') return S3.focus(Decor.lairFocus(), 4.4, 900, 0);
-    const pp = Pieces.worldPos(p.id);
-    if (p.status === 'track') {
-      const c = Spinners.center(p.track), m = pp.clone().lerp(c, .45);
-      return S3.focus(m, 5.2, 900, 0);
-    }
-    return S3.focus(pp, 5, 900, 0);
+    if (p.status === 'witch' || p.status === 'finished') return S3.focus(Decor.lairFocus(), 4.4, 900, 0, 4);
+    return S3.focus(viewPoint(p), p.status === 'track' ? 5.2 : 5, 900, 0);
+  }
+  // Kameran följer den som har turen medan trollet går (om man inte själv har flyttat kameran nyss)
+  function followTurn(p) {
+    S3.follow(() => {
+      if (!Settings.follow || !running || !S || S.players[S.turn] !== p || p.status === 'witch' || p.status === 'finished' || Bonus.active()) return null;
+      const d = S3.turnDist(), t = S3.frameTarget(viewPoint(p), d, 0);
+      return {x: t.x, z: t.z, d};
+    });
   }
 
   /* ---------- Spelets slinga ---------- */
@@ -3854,7 +4005,9 @@ const Game = (() => {
     Sound.play('turn');
     Bus.emit('turn', p);
     if (S.players.filter(q => q.status !== 'finished').length > 1 || p.human) UI.banner(p);
+    S3.follow(() => null);
     await focusTurn(p);
+    followTurn(p);
     Flow.alive(gen);
     if (p.status === 'waiting') {
       const t = Rules.pickNext(S, p, p.waitFrom);
@@ -4010,7 +4163,7 @@ const Game = (() => {
     if (p.done.length >= all) {
       say(`${nm(p)} har gått ${all === 1 ? 'sin bana' : all === 2 ? 'båda banorna' : `alla ${['', 'en', 'två', 'tre', 'fyra'][all]} banorna`}. Nu går vi in till häxan!`);
       const j = JUNC[nextOf(from)];
-      if (Settings.follow) S3.focus(Decor.lairFocus(), 4.6, 1200, 0);
+      if (Settings.follow) S3.focus(Decor.lairFocus(), 4.6, 1200, 0, 4);
       await Pieces.walk(p.id, [...GEO.lairEntry(j), GEO.lairSlot(p.id)], D(330));
       Flow.alive(gen);
       p.status = 'witch'; p.at = null; p.witchAt = S.witchN = (S.witchN || 0) + 1;
@@ -4043,7 +4196,7 @@ const Game = (() => {
     S.phase = 'door'; UI.render(S);
     Sound.mood('witch');
     Spinners.setActive(null);
-    await S3.focus(Decor.lairFocus().add(new THREE.Vector3(0, 0, .15)), 4.0, 900, 0);
+    await S3.focus(Decor.lairFocus().add(new THREE.Vector3(0, 0, .15)), 4.0, 900, 0, 3.8);
     Flow.alive(gen);
     say(p.human ? `${nm(p)}, välj en av häxans tre dörrar!` : `${nm(p)} ska välja en av häxans dörrar.`);
     Decor.pickDoors(true);
@@ -4614,7 +4767,9 @@ const Bonus = (() => {
     scene.environment = S3.scene().environment;
     scene.add(new THREE.HemisphereLight(th.tunnel ? 0xffd7a8 : 0xeaf4ff, th.tunnel ? 0x3a2a20 : 0x6b5a45, th.tunnel ? .75 : .85));
     const sun = new THREE.DirectionalLight(th.tunnel ? 0xffc27a : 0xfff1dc, th.tunnel ? .7 : 1.1); sun.position.set(-3, 8, 4); scene.add(sun);
-    cam.position.set(0, 2.35, 4.7); cam.lookAt(0, .95, -5);
+    // Stående telefon: vidare vinkel och Hugo högre upp i bilden, så att knapparna längst ner inte täcker honom
+    const view = () => cam.aspect < .8 ? {y: 2.6, z: 5.4, ly: .35, lz: -3, fov: 60} : {y: 2.35, z: 4.7, ly: .95, lz: -5, fov: 52};
+    cam.position.set(0, view().y, view().z); cam.lookAt(0, view().ly, view().lz);
     // marken rullar mot kameran
     const gtex = groundTexture(th);
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(7, 160), std('#ffffff', .92, {map: gtex}));
@@ -4773,7 +4928,10 @@ const Bonus = (() => {
       if (nodes.tail) nodes.tail.rotation.y = Math.sin(t * 14) * .6;
       shadow.position.set(H.x, .016, 0); shadow.scale.setScalar(1 - H.y * .35);
       cam.position.x += (H.x * .35 - cam.position.x) * Math.min(1, dt * 4);
-      cam.lookAt(cam.position.x * .5, .95, -5);
+      const vw = view();
+      if (cam.fov !== vw.fov) cam.fov = vw.fov;
+      cam.position.y = vw.y; cam.position.z = vw.z;
+      cam.lookAt(cam.position.x * .5, vw.ly, vw.lz);
       for (let i = fx.length - 1; i >= 0; i--) { const f = fx[i]; f.t += dt; f.m.scale.setScalar(1 + f.t * 5); f.m.material.opacity = Math.max(0, .95 - f.t * 2.2); if (f.t > .5) { f.m.parent && f.m.parent.remove(f.m); fx.splice(i, 1); } }
     }};
 
