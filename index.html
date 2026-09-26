@@ -4438,9 +4438,11 @@ const UI = (() => {
   // Dörrpanelen göms medan dörren knackar och öppnas, så att hela skärmen visar vad som händer
   U.doorsOff = () => { $('doorBar').hidden = true; U.updateSafe(); };
   // Häxans final: spelarlistan, Hugo-korten och korten i handen göms, så att kameran får plats
+  // Korten göms under finalen och berättelsen och kommer tillbaka efteråt (utom när dörrarna visas i stället)
   U.finale = on => {
     document.body.classList.toggle('finale', !!on);
     if (on) $('hand').hidden = true;
+    else if ($('doorBar').hidden) $('hand').hidden = false;
     U.updateSafe();
   };
 
