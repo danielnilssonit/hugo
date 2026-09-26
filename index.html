@@ -335,6 +335,50 @@ h3{margin:14px 0 4px; font-size:17px}
   .life .in{transition-duration:.2s}
 }
 
+/* ---------- Online ---------- */
+.phoneBtn svg,.onlineAsk svg{flex:none}
+.onlineBox{display:flex; flex-direction:column; align-items:flex-start; gap:6px; padding:10px 14px; border:3px solid var(--ink); border-radius:14px; background:#fff}
+.inviteTop{display:flex; align-items:baseline; justify-content:space-between; gap:10px; width:100%; flex-wrap:wrap}
+.onlineBox .qrBig{font-size:24px}
+.onlineBox .qrText{font-size:14px}
+.onlineBox .qrText .code{font-size:19px; letter-spacing:2px}
+.linkBtn{display:inline-flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink)}
+.inviteRow{display:flex; gap:8px; width:100%; align-items:center}
+.inviteLink{flex:1; min-width:0; height:42px; border:2.5px solid var(--ink); border-radius:10px; padding:0 10px; font:inherit; font-size:14px; background:var(--paper-2); color:var(--ink)}
+.inviteRow .tool{flex:none}
+.phoneTag.net{background:#D6ECFA}
+.netChip{display:inline-flex; align-items:center; gap:7px; min-height:40px; padding:0 12px; border:3px solid var(--ink); border-radius:99px; background:#fff; box-shadow:2px 2px 0 var(--ink); font-size:13px}
+.netChip i{width:11px; height:11px; border-radius:50%; background:#3BB54A; box-shadow:0 0 6px #3BB54A}
+.netChip.fast i{background:var(--gold); box-shadow:0 0 6px var(--gold)}
+.netChip.bad i{background:#E0402F; box-shadow:0 0 6px #E0402F; animation:netBlink 1s steps(2) infinite}
+@keyframes netBlink{50%{opacity:.3}}
+body.compact .netChip{min-height:34px; padding:0 9px; font-size:11.5px}
+.onlineCard{width:min(700px,100%)}
+.onStatus{margin:0; font-weight:700; color:var(--ok)}
+.onStatus.bad{color:var(--bad)}
+.onSeats{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px}
+.onSeat{display:flex; align-items:center; gap:10px; padding:8px 10px; border:3px solid var(--ink); border-radius:14px; background:#fff; min-width:0}
+.onSeat img{width:66px; height:66px; flex:none; object-fit:contain; border-radius:12px; background:var(--paper-2); border:3px solid var(--c)}
+.onSeat.mine{background:var(--gold-soft); box-shadow:0 0 0 3px var(--c)}
+.onSeat.taken{opacity:.62}
+.onWho{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px}
+.onWho b{font-size:16px}
+.onWho small{font-size:13px; color:var(--ink-soft)}
+.onName{width:100%; height:38px; border:2.5px solid var(--ink); border-radius:10px; padding:0 9px; font:inherit; font-size:16px; font-weight:700; background:#fff; color:var(--ink)}
+.onSeat .tool{flex:none}
+.tool.on{background:var(--gold)}
+.onInfo{margin:0; font-size:15px}
+.err{margin:0; color:var(--bad); font-weight:700; font-size:15px}
+.err:empty{display:none}
+.onPhones summary{cursor:pointer; font-weight:700; padding:4px 0}
+.onPhones .phoneBox{margin-top:6px}
+.joinCard{width:min(470px,100%); padding:18px 20px 20px; display:flex; flex-direction:column; gap:10px}
+.joinCard p{margin:0}
+.codeIn{height:66px; width:100%; border:3px solid var(--ink); border-radius:14px; background:#fff; color:var(--ink); font-family:var(--f-disp); font-size:36px; letter-spacing:8px; text-align:center; text-transform:uppercase}
+#resNote{margin:0; text-align:center}
+body.compact .onSeats{grid-template-columns:1fr}
+body.compact .onSeat img{width:52px; height:52px}
+
 /* ---------- Häxans final ---------- */
 .bubble[data-who="witch"]{background:#EADCFF; box-shadow:4px 4px 0 var(--ink), 0 0 0 4px rgba(154,112,255,.45)}
 .bubble[data-who="witch"]::after{border-right-color:#EADCFF}
@@ -495,6 +539,7 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
     </section>
     <section class="players panel" id="players" aria-label="Spelare"></section>
     <div class="tools">
+      <span class="netChip" id="netChip" hidden><i></i><b id="netText">Online</b></span>
       <button class="tool" id="tRules" type="button">Regler</button>
       <button class="tool" id="tMusic" type="button" aria-pressed="true">Musik</button>
       <button class="tool" id="tVoice" type="button" aria-pressed="false">Läs upp</button>
@@ -531,6 +576,7 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
         <button class="big" id="btnPlay" type="button">Spela</button>
         <button class="big alt" id="btnResume" type="button" hidden>Fortsätt förra spelet</button>
         <button class="big alt small phoneBtn" id="btnPhones" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="1" width="9" height="14" rx="2" fill="#241A15"/><rect x="5" y="3" width="6" height="8" rx=".6" fill="#B9D38A"/><circle cx="8" cy="13" r=".9" fill="#FFFDF5"/></svg>Spela med mobilerna</button>
+        <button class="big alt small phoneBtn" id="btnJoinOnline" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="#7FC4F0" stroke="#241A15" stroke-width="1.5"/><path d="M4.2 5.2c1.4.3 2 1.3 1.6 2.4-.4 1 .7 1.6 1.4 2.3.6.6.2 1.8-.4 2.6M9.4 1.8c-.4 1.2.3 2 1.4 2.1 1.2.1 1.6 1.2 1 2.1-.5.8.3 1.7 1.4 1.6" fill="none" stroke="#2F9E4F" stroke-width="1.6" stroke-linecap="round"/></svg>Spela online</button>
         <div class="titleRow">
           <button class="big alt small" id="btnRules" type="button">Så spelar man</button>
           <button class="big alt small" id="btnSettings" type="button">Inställningar</button>
@@ -556,6 +602,12 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
         <button class="tool" id="btnSetupPhones" type="button">Visa QR-kod</button>
       </div>
       <div class="phoneBox" id="phoneBox" hidden></div>
+      <div class="phoneAsk onlineAsk" id="onlineAsk">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="#7FC4F0" stroke="#241A15" stroke-width="1.5"/><path d="M4.2 5.2c1.4.3 2 1.3 1.6 2.4-.4 1 .7 1.6 1.4 2.3.6.6.2 1.8-.4 2.6M9.4 1.8c-.4 1.2.3 2 1.4 2.1 1.2.1 1.6 1.2 1 2.1-.5.8.3 1.7 1.4 1.6" fill="none" stroke="#2F9E4F" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <p><b>Spela online!</b> Bjud in någon som är någon annanstans. De spelar på sin egen tv, dator eller platta.</p>
+        <button class="tool" id="btnInvite" type="button">Bjud in</button>
+      </div>
+      <div class="onlineBox" id="onlineBox" hidden></div>
       <p class="hint" id="setupHint"></p>
       <div class="setupRow">
         <label class="field" for="lengthSel">Speltid
@@ -573,6 +625,32 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
         <button class="big alt" id="btnBack" type="button">Tillbaka</button>
         <button class="big" id="btnStart" type="button">Starta spelet</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Online hos någon annan: välj troll och vänta på att spelet börjar -->
+  <div id="online" class="screen" hidden>
+    <div class="setupCard onlineCard panel" role="dialog" aria-labelledby="onTitle">
+      <h2 id="onTitle">Hugo online</h2>
+      <p class="onStatus" id="onStatus">Ansluter …</p>
+      <div class="onSeats" id="onSeats"></div>
+      <p class="onInfo" id="onInfo"></p>
+      <p class="err" id="onNote"></p>
+      <details class="onPhones"><summary>Spela med mobilerna här också</summary><div class="phoneBox" id="onPhoneBox"></div></details>
+      <div class="btnRow"><button class="big alt" id="btnOnlineLeave" type="button">Lämna</button></div>
+    </div>
+  </div>
+
+  <!-- Gå med i ett onlinespel med koden från inbjudan -->
+  <div id="joinOnline" class="overlay" hidden>
+    <div class="joinCard panel" role="dialog" aria-labelledby="joinTitle">
+      <h2 id="joinTitle">Spela online</h2>
+      <p>Har någon bjudit in dig? Öppna länken du fick, eller skriv koden här.</p>
+      <input class="codeIn" id="joinCode" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="KOD" aria-label="Koden från inbjudan">
+      <p class="err" id="joinErr"></p>
+      <p class="small" id="joinWebNote" hidden>Online fungerar när spelet är öppnat på webben. Knappen öppnar det där, med koden.</p>
+      <p class="small">Vill du själv bjuda in någon? Tryck på Spela och sedan på Bjud in.</p>
+      <div class="btnRow"><button class="big alt" id="btnJoinBack" type="button">Tillbaka</button><button class="big" id="btnJoinGo" type="button">Gå med</button><a class="big linkBtn" id="joinWeb" href="#" target="_blank" rel="noopener" hidden>Öppna och gå med</a></div>
     </div>
   </div>
 
@@ -599,6 +677,8 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
       <p>Klarar du en bana går du direkt till nästa. Bara en spelare åt gången får vara på en bana. Är nästa bana upptagen tar du en annan som är ledig, och är alla upptagna får du vänta.</p>
       <h3>Bonusrundan</h3>
       <p>När du klarar en bana springer Hugo en bonusrunda. Tryck på rätt knapp när hindren kommer: 2 hoppa, 8 ducka, 4 vänster och 6 höger. Klarar du tre av fem hinder får du en guldsäck, och klarar du alla fem får du två.</p>
+      <h3>Spela online</h3>
+      <p>Bor mormor någon annanstans? Tryck på Spela och sedan på Bjud in, och skicka länken. Hon öppnar den på sin tv, dator eller platta och väljer ett troll. Alla ser samma bräde och samma tärning, och var och en spelar på sin egen skärm. Mobilerna kan anslutas från båda hemmen.</p>
       <h3>Häxan</h3>
       <p>När du har gått alla banorna går du in till häxan och öppnar en av hennes tre dörrar. I spelarvalet väljer ni hur långt spelet är: kort (två banor), mellan (tre banor) eller hela spelet (fyra banor).</p>
       <p>Bakom dörren kan du befria familjen och få 5 guldsäckar, befria familjen utan guld, eller misslyckas så att familjen blir kvar hos häxan.</p>
@@ -644,6 +724,7 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
       <p id="resText"></p>
       <div class="resList" id="resList"></div>
       <div class="awards" id="resAwards"></div>
+      <p class="small" id="resNote" hidden></p>
       <div class="btnRow"><button class="big alt" id="btnResMenu" type="button">Till menyn</button><button class="big" id="btnAgain" type="button">Spela igen</button></div>
     </div>
   </div>
@@ -662,7 +743,7 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
       <div class="pauseRow"><button class="tool" id="pMusic" type="button" aria-pressed="true">Musik</button><button class="tool" id="pVoice" type="button" aria-pressed="false">Läs upp</button><button class="tool" id="pView" type="button">Hela brädet</button></div>
       <div class="pausePlayers" id="pausePlayers"></div>
       <div class="phoneBox" id="pausePhoneBox" hidden></div>
-      <p class="small">Spelet sparas efter varje tur, så du kan fortsätta senare.</p>
+      <p class="small" id="pauseNote">Spelet sparas efter varje tur, så du kan fortsätta senare.</p>
     </div>
   </div>
 
@@ -1074,12 +1155,12 @@ const Terrain = (() => {
 /* ================= Reglerna: spelets läge, kortlek, dörrar och datorspelarna ================= */
 const Rules = (() => {
   const R = {};
-  // seats: [{seat (färgens nummer), name, cpu, track, dev (mobilen som spelaren styr med)}]
+  // seats: [{seat (färgens nummer), name, cpu, track, dev (mobilen som spelaren styr med), board (skärmen online)}]
   // opts.tracks: hur många banor man går innan häxan (2, 3 eller 4). opts.die: tärningen, 3 (1-3) eller 6 (1-6).
   R.newState = (seats, opts = {}) => {
     const deck = shuffle(DECK());
     const players = seats.map((s, i) => ({
-      id: i, seat: s.seat, name: s.name, color: COLORS[s.seat], human: !s.cpu, dev: !s.cpu && s.dev || null,
+      id: i, seat: s.seat, name: s.name, color: COLORS[s.seat], human: !s.cpu, dev: !s.cpu && s.dev || null, board: !s.cpu && s.board || null,
       track: s.track, pos: 0, status: 'track', done: [], res: {}, lives: 3, gold: 0, trackGold: 0,
       hand: [], waitFrom: null, freed: null, freedAt: null, door: null, stats: {jumps: 0, sacks: 0, hurts: 0}
     }));
@@ -4043,6 +4124,9 @@ const UI = (() => {
   let input = null;        // {kind, handle(v)} för det spelaren ska göra nu
   let lastHandKey = '', secret = false, faceHTML = '';
   const PHONE = '<svg class="phoneIco" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="1" width="9" height="14" rx="2" fill="#241A15"/><rect x="5" y="3" width="6" height="8" rx=".6" fill="#B9D38A"/><circle cx="8" cy="13" r=".9" fill="#FFFDF5"/></svg>';
+  // jordglob: spelaren sitter vid en annan skärm (online)
+  const GLOBE = '<svg class="globeIco" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="#7FC4F0" stroke="#241A15" stroke-width="1.5"/><path d="M4.2 5.2c1.4.3 2 1.3 1.6 2.4-.4 1 .7 1.6 1.4 2.3.6.6.2 1.8-.4 2.6M9.4 1.8c-.4 1.2.3 2 1.4 2.1 1.2.1 1.6 1.2 1 2.1-.5.8.3 1.7 1.4 1.6" fill="none" stroke="#2F9E4F" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  U.GLOBE = GLOBE;
   const genitive = n => /[sxz]$/i.test(n) ? n : n + 's';
 
   U.init = () => {
@@ -4119,7 +4203,9 @@ const UI = (() => {
     $('players').innerHTML = S.players.map(q => {
       const tr = ORDER.map(t => { const st = q.res[t] || (q.track === t && q.status === 'track' ? 'now' : ''); return `<span class="ptr ${st}" title="${TR[t].name}">${Art.TRICON[t]}</span>`; }).join('');
       const sub = q.status === 'track' ? `${TR[q.track].name} · ruta ${q.pos}` : q.status === 'waiting' ? 'Väntar' : q.status === 'witch' ? 'Hos häxan' : q.status === 'finished' ? (q.freed ? 'Befriade familjen' : 'Fast hos häxan') : 'På väg';
-      const ph = q.dev ? `<span class="pphone ${Remote.online(q.dev) ? '' : 'away'}" title="${Remote.online(q.dev) ? 'Spelar med mobilen' : 'Mobilen är inte ansluten'}">${PHONE}</span>` : '';
+      const pon = Remote.online(q.dev) || Online.phoneOn(q), bon = Online.guest() || Online.boardOnline(q.board);
+      const ph = (q.dev ? `<span class="pphone ${pon ? '' : 'away'}" title="${pon ? 'Spelar med mobilen' : 'Mobilen är inte ansluten'}">${PHONE}</span>` : '')
+        + (q.board ? `<span class="pphone ${bon ? '' : 'away'}" title="${bon ? 'Spelar online' : 'Skärmen är inte ansluten'}">${GLOBE}</span>` : '');
       return `<div class="prow ${S.phase !== 'over' && q === p ? 'cur' : ''}" style="--c:${q.color}"><img src="${Portraits.get(q.color, 'head')}" alt=""><span class="pname">${esc(q.name)}${ph}<small>${esc(sub)}</small></span><span class="ptracks">${tr}</span><span class="pgold">${Art.sack()}${q.gold}</span></div>`;
     }).join('');
     U.hand(S);
@@ -4188,15 +4274,15 @@ const UI = (() => {
     const sec = S.last && (S.phase === 'play' || S.phase === 'resolve') ? SPIN[S.last.track][S.last.idx] : null;
     const has = sec && p.hand.includes(sec.s), can = input && input.kind === 'card';
     const tip = sec && !has && p.human && Settings.hints ? Rules.discardHint(p) : -1;
-    // spelar någon med mobilen är korten hemliga på skärmen, som i riktiga spelet
-    secret = Remote.has(p);
+    // spelar någon med mobilen (eller online vid en annan skärm) är korten hemliga här, som i riktiga spelet
+    secret = !Online.canSee(p);
     const key = p.id + ':' + p.hand.join('') + ':' + (sec ? sec.s : '') + ':' + can + ':' + tip + ':' + Settings.hints + ':' + secret;
     if (key === lastHandKey) return;
     lastHandKey = key;
     $('hand').classList.toggle('secret', secret);
     if (secret) {
       $('hand').innerHTML = p.hand.map((s, i) => `<button class="card back" type="button" data-i="${i}" disabled aria-label="Hemligt kort"><span class="backLogo">Hugo</span></button>`).join('')
-        + `<span class="handNote">${PHONE}Korten finns i ${esc(genitive(p.name))} mobil</span>`;
+        + (Remote.has(p) ? `<span class="handNote">${PHONE}Korten finns i ${esc(genitive(p.name))} mobil</span>` : `<span class="handNote">${GLOBE}${esc(p.name)} spelar på en annan skärm</span>`);
       return;
     }
     $('hand').innerHTML = p.hand.map((s, i) => {
@@ -4239,6 +4325,8 @@ const UI = (() => {
     if (S) { lastHandKey = ''; U.hand(S); }
   };
   U.idleCpu = (S, p) => { const btn = $('btnMain'); btn.disabled = true; btn.textContent = `${p.name} spelar …`; };
+  // Någon vid en annan skärm (online) har turen: knappen visar vem vi väntar på
+  U.waitFor = (S, p) => { const btn = $('btnMain'); btn.disabled = true; btn.textContent = `Väntar på ${p.name} …`; lastHandKey = ''; U.hand(S); return () => {}; };
 
   /* ---------- Dörrarna ---------- */
   U.doors = (S, pickable) => {
@@ -4284,9 +4372,15 @@ const UI = (() => {
     const aw = Rules.awards(S), and = n => n.length > 1 ? n.slice(0, -1).join(', ') + ' och ' + n[n.length - 1] : n[0];
     $('resAwards').innerHTML = aw.map(a => `<div class="award"><span class="awIco">${Art.AWARD[a.icon] || ''}</span><span class="awText"><b>${esc(a.title)}</b><span>${esc(and(a.names))} ${esc(a.text)}</span></span></div>`).join('');
     $('resAwards').hidden = !aw.length;
+    // online: bara den som bjöd in kan starta en ny omgång
+    const g = Online.guest();
+    $('btnAgain').hidden = g;
+    $('btnResMenu').textContent = g ? 'Lämna spelet' : 'Till menyn';
+    $('resNote').hidden = !g;
+    $('resNote').textContent = g ? 'Den som bjöd in kan starta en ny omgång. Då börjar den här också.' : '';
     $('results').hidden = false;
     // tangentbord och tv-fjärrkontroll: "Spela igen" är valt direkt
-    if (!isTouch || IS_TV) setTimeout(() => $('btnAgain').focus({preventScroll: true}), 60);
+    if (!isTouch || IS_TV) setTimeout(() => (g ? $('btnResMenu') : $('btnAgain')).focus({preventScroll: true}), 60);
     if (win) U.confetti();
   };
   /* ---------- Bonusrundan ---------- */
@@ -4364,6 +4458,7 @@ const Menu = (() => {
     {on: false, name: '', cpu: true, track: 'gruvan'}
   ];
   // En plats kan ha en mobil (dev). byPhone betyder att mobilen själv tog med trollet, så att det tas bort igen när mobilen går.
+  // Online kan en plats spelas från en annan skärm (board, med byBoard på samma sätt).
   let seats = (() => { const s = Store.get('seats', null); return Array.isArray(s) && s.length === 4 ? s : DEFAULT.map(x => Object.assign({}, x)); })();
   let titleTrolls = [], seatsStale = false;
   const saveSeats = () => { Store.set('seats', seats); Remote.changed(); };
@@ -4381,7 +4476,7 @@ const Menu = (() => {
     $('btnRulesClose').addEventListener('click', () => close('rules'));
     $('btnSettingsClose').addEventListener('click', () => close('settings'));
     $('btnAgain').addEventListener('click', () => M.again());
-    $('btnResMenu').addEventListener('click', () => { $('results').hidden = true; M.showTitle(); });
+    $('btnResMenu').addEventListener('click', () => { $('results').hidden = true; if (Online.guest()) { Online.leave(); return; } M.showTitle(); });
     $('tRules').addEventListener('click', () => open('rules'));
     $('tMenu').addEventListener('click', () => open('pause'));
     $('tView').addEventListener('click', () => { S3.userMoved(); S3.overview(700); });
@@ -4394,7 +4489,7 @@ const Menu = (() => {
     $('pView').addEventListener('click', () => { close('pause'); $('tView').click(); });
     $('btnPauseSettings').addEventListener('click', () => { close('pause'); M.openSettings(); });
     $('btnPauseRules').addEventListener('click', () => { close('pause'); open('rules'); });
-    $('btnQuit').addEventListener('click', () => { close('pause'); Game.stop(); M.showTitle(); });
+    $('btnQuit').addEventListener('click', () => { close('pause'); if (Online.guest()) { Online.leave(); return; } Game.stop(); M.showTitle(); });
     $('speedSel').addEventListener('change', e => { Settings.speed = e.target.value; saveSettings(); });
     $('lengthSel').addEventListener('change', e => { Settings.tracks = +e.target.value; saveSettings(); Remote.changed(); });
     $('dieSel').addEventListener('change', e => { Settings.die = +e.target.value === 6 ? 6 : 3; saveSettings(); Remote.changed(); });
@@ -4427,6 +4522,7 @@ const Menu = (() => {
     M.wireSeats();
     Remote.render($('phoneBox'));
     Remote.render($('pausePhoneBox'));
+    Online.initUI();
     // Escape och tv-fjärrkontrollens tillbaka-knapp (Samsung skickar 10009, andra GoBack eller BrowserBack)
     document.addEventListener('keydown', e => {
       const back = e.key === 'Escape' || e.key === 'GoBack' || e.key === 'BrowserBack' || e.keyCode === 10009 || e.keyCode === 461;
@@ -4488,6 +4584,7 @@ const Menu = (() => {
     if (o) { close(o.id); return true; }
     if (!$('hud').hidden) { open('pause'); return true; }
     if (!$('setup').hidden) { M.showTitle(); return true; }
+    if (!$('online').hidden) { Online.leave(); return true; }
     if (!$('slowAsk').hidden) { $('btnSlowNo').click(); return true; }
     return false;
   };
@@ -4499,7 +4596,13 @@ const Menu = (() => {
   function open(id) {
     if (id === 'settings') M.readSettings();
     // i menyn syns också ställningen (spelarlistan får inte plats på telefoner)
-    if (id === 'pause') { syncPhones(); syncTools(); $('pausePlayers').innerHTML = $('players').innerHTML; }
+    if (id === 'pause') {
+      syncPhones(); syncTools(); $('pausePlayers').innerHTML = $('players').innerHTML;
+      // online hos någon annan: spelet sparas där, och här lämnar man bara
+      const g = Online.guest();
+      $('btnQuit').textContent = g ? 'Lämna onlinespelet' : 'Avsluta till startsidan';
+      $('pauseNote').textContent = g ? 'Spelet sparas hos den som bjöd in.' : 'Spelet sparas efter varje tur, så du kan fortsätta senare.';
+    }
     $(id).hidden = false; Sound.play('click');
     const b = $(id).querySelector('.big'); if (b) setTimeout(() => b.focus(), 30);
   }
@@ -4539,11 +4642,38 @@ const Menu = (() => {
   M.lobbyOpen = () => !$('setup').hidden;
   M.lobby = dev => ({
     seats: seats.map((s, i) => ({i, color: COLORS[i], cname: COLOR_NAMES[i], on: s.on, name: (s.name || '').trim() || COLOR_NAMES[i], cpu: s.cpu, track: TR[s.track].name,
-      phone: !!s.dev, online: Remote.online(s.dev), mine: !!dev && s.dev === dev})),
+      phone: !!s.dev, online: Remote.online(s.dev), board: !!s.board, mine: !!dev && s.dev === dev})),
     mine: M.seatOf(dev),
     n: seats.filter(s => s.on).length,
     tracks: Settings.tracks,
     die: Settings.die === 6 ? 6 : 3
+  });
+  // Online: en annan skärm väljer troll (samma regler som för mobilerna)
+  const seatName = i => (seats[i].name || '').trim() || COLOR_NAMES[i];
+  M.boardJoin = (bdev, name, i) => {
+    const s = seats[i];
+    if (!s) return 'Välj ett troll först.';
+    if (s.board && s.board !== bdev && Online.boardOnline(s.board)) return `${seatName(i)} spelar redan online. Välj ett annat troll.`;
+    if (s.dev && Remote.online(s.dev)) return `${seatName(i)} spelar redan med en mobil. Välj ett annat troll.`;
+    if (s.on && !s.cpu && !s.board && !s.dev) return `${seatName(i)} spelar redan på den andra skärmen. Välj ett annat troll.`;
+    if (!s.on) { s.on = true; s.byBoard = true; uniqueTrack(i); }
+    s.board = bdev; s.cpu = false; s.dev = null; s.byPhone = false;
+    if (name) s.name = name;
+    saveSeats();
+    Sound.play('pop');
+    if ($('setup').hidden && !Game.running() && !$('title').hidden) M.showSetup(); else M.remoteChanged();
+    return null;
+  };
+  // trollet går tillbaka till det det var innan skärmen tog det: avstängt, eller datorn
+  function releaseBoard(i) { const s = seats[i]; if (s.byBoard) s.on = false; else s.cpu = true; s.board = null; s.byBoard = false; }
+  M.boardLeave = (bdev, i) => { const s = seats[i]; if (s && s.board === bdev) { releaseBoard(i); saveSeats(); M.remoteChanged(); } return null; };
+  M.boardGone = bdev => { let n = 0; seats.forEach((s, i) => { if (s.board === bdev) { releaseBoard(i); n++; } }); if (n) { saveSeats(); M.remoteChanged(); } };
+  M.boardName = (bdev, i, name) => { const s = seats[i]; if (s && s.board === bdev) { s.name = name; saveSeats(); M.remoteChanged(); } };
+  // Lobbyn som den andra skärmen ser
+  M.boardLobby = bdev => ({
+    seats: seats.map((s, i) => ({i, color: COLORS[i], cname: COLOR_NAMES[i], on: s.on, name: seatName(i), cpu: s.cpu, track: TR[s.track].name,
+      phone: !!s.dev && Remote.online(s.dev), board: s.board && s.board !== bdev ? true : null, mine: !!s.board && s.board === bdev})),
+    n: seats.filter(s => s.on).length, tracks: Settings.tracks, die: Settings.die === 6 ? 6 : 3
   });
   // spelledarens mobil ändrar speltiden och tärningen
   M.remoteOpt = o => {
@@ -4637,12 +4767,13 @@ const Menu = (() => {
   function renderSeats() {
     seatsStale = false;
     $('seats').innerHTML = seats.map((s, i) => {
-      const phone = !!s.dev, live = phone && Remote.online(s.dev);
-      const tag = phone ? `<span class="phoneTag ${live ? '' : 'away'}" title="${live ? 'Spelar med mobilen' : 'Mobilen är inte ansluten'}">${PHONE}${live ? 'Mobil' : 'Borta'}</span>` : '';
-      return `<div class="seat ${s.on ? '' : 'off'} ${phone ? 'phone' : ''}" data-i="${i}">
+      const phone = !!s.dev, live = phone && Remote.online(s.dev), board = !!s.board && !phone, blive = board && Online.boardOnline(s.board);
+      const tag = phone ? `<span class="phoneTag ${live ? '' : 'away'}" title="${live ? 'Spelar med mobilen' : 'Mobilen är inte ansluten'}">${PHONE}${live ? 'Mobil' : 'Borta'}</span>`
+        : board ? `<span class="phoneTag net ${blive ? '' : 'away'}" title="${blive ? 'Spelar online från en annan skärm' : 'Skärmen är inte ansluten'}">${UI.GLOBE}${blive ? 'Online' : 'Borta'}</span>` : '';
+      return `<div class="seat ${s.on ? '' : 'off'} ${phone || board ? 'phone' : ''}" data-i="${i}">
       <button class="seatPic" type="button" style="--c:${COLORS[i]}" aria-pressed="${s.on}" aria-label="${s.on ? 'Ta bort' : 'Lägg till'} ${COLOR_NAMES[i].toLowerCase()} troll"><img src="${Portraits.get(COLORS[i], 'full')}" alt=""><span class="onoff">${s.on ? '✓' : '+'}</span></button>
-      <input class="seatName" id="seatName${i}" type="text" maxlength="14" placeholder="${COLOR_NAMES[i]}" value="${esc(s.name)}" aria-label="Namn för ${COLOR_NAMES[i].toLowerCase()} troll" ${s.on && !phone ? '' : 'disabled'}>
-      <div class="seatOpts">${phone ? tag : `<button class="seatCpu" type="button" aria-pressed="${s.cpu}" ${s.on ? '' : 'disabled'}>${s.cpu ? 'Dator' : 'Människa'}</button>`}
+      <input class="seatName" id="seatName${i}" type="text" maxlength="14" placeholder="${COLOR_NAMES[i]}" value="${esc(s.name)}" aria-label="Namn för ${COLOR_NAMES[i].toLowerCase()} troll" ${s.on && !phone && !board ? '' : 'disabled'}>
+      <div class="seatOpts">${phone || board ? tag : `<button class="seatCpu" type="button" aria-pressed="${s.cpu}" ${s.on ? '' : 'disabled'}>${s.cpu ? 'Dator' : 'Människa'}</button>`}
       <select class="seatTrack" id="seatTrack${i}" aria-label="Börjar på banan" title="Börjar på banan" ${s.on ? '' : 'disabled'}>${ORDER.map(t => `<option value="${t}" ${s.track === t ? 'selected' : ''}>${innerWidth < 560 ? '' : 'Börjar i '}${TR[t].name}</option>`).join('')}</select></div>
     </div>`;
     }).join('');
@@ -4671,8 +4802,8 @@ const Menu = (() => {
       if (e.target.closest('.seatPic')) {
         if (s.on && seats.filter(x => x.on).length <= 2) { $('setupHint').textContent = 'Det behövs minst två spelare.'; return; }
         s.on = !s.on; $('setupHint').textContent = '';
-        // tar skärmen bort ett troll som en mobil spelar med följer mobilen med ut
-        if (!s.on) { s.dev = null; s.byPhone = false; }
+        // tar skärmen bort ett troll som en mobil (eller en annan skärm) spelar med följer mobilen med ut
+        if (!s.on) { s.dev = null; s.byPhone = false; s.board = null; s.byBoard = false; }
         if (s.on) uniqueTrack(i);
         Sound.play(s.on ? 'pop' : 'click'); renderSeats(); saveSeats();
       } else if (e.target.closest('.seatCpu')) { s.cpu = !s.cpu; Sound.play('click'); renderSeats(); saveSeats(); }
@@ -4703,15 +4834,24 @@ const Game = (() => {
   const D = ms => ms * (S && cur() && !cur().human ? (SPEED[Settings.speed] || 1) : 1);
   const wait = (ms, gen) => Flow.wait(D(ms), gen);
   const say = (html, speech, icon) => UI.say(html, speech, icon);
-  // Människan svarar på skärmen eller i sin mobil (data berättar för mobilen vad frågan gäller)
+  // "Du" bara på skärmen där spelaren sitter (online står de andra skärmarnas troll med namn)
+  const you = p => p.human && Online.local(p);
+  // Den som har turen svarar på skärmen, i sin mobil eller (online) på sin egen skärm (data berättar för mobilen vad
+  // frågan gäller). Svaret blir ett beslut som alla skärmar följer: en gäst väntar på värdens beslut och visar under
+  // tiden knapparna bara för sina egna troll. Tappar en annan skärm kontakten kan man svara på den här i stället.
   function ask(kind, p, gen, cpu, data) {
-    if (!p.human) return wait(CPU[kind] || 700, gen).then(cpu);
-    return Flow.ask(gen, res => {
-      const a = UI.enable(kind, S, p, res), b = Remote.offer(p, kind, data || {}, res);
-      return () => { a(); b(); };
-    });
+    const mine = you(p);
+    return Online.decide(S, kind, gen, () => {
+      if (!p.human) return wait(CPU[kind] || 700, gen).then(cpu);
+      return Flow.ask(gen, res => {
+        const a = mine ? UI.enable(kind, S, p, res) : UI.waitFor(S, p), b = Remote.offer(p, kind, data || {}, res);
+        let f = null;
+        const c = Online.offer(S, p, kind, res, () => { f = UI.enable(kind, S, p, res); });
+        return () => { a(); b(); c(); if (f) f(); };
+      });
+    }, mine ? send => UI.enable(kind, S, p, send) : p.human ? () => UI.waitFor(S, p) : null);
   }
-  const save = () => { if (S && S.phase !== 'over') Store.set('save', S); };
+  const save = () => { if (S && S.phase !== 'over' && !Online.guest()) Store.set('save', S); };
   G.save = save;
 
   /* ---------- Start och stopp ---------- */
@@ -4734,11 +4874,12 @@ const Game = (() => {
     S3.setAttract(false);
     Sound.mood('game');
     S3.follow(() => null);
-    say(resumed ? 'Välkommen tillbaka! Vi fortsätter där vi slutade.' : 'Hej kompis! Nu börjar äventyret.');
+    say(resumed === 'online' ? 'Hej! Nu spelar vi online.' : resumed ? 'Välkommen tillbaka! Vi fortsätter där vi slutade.' : 'Hej kompis! Nu börjar äventyret.');
+    Online.gameStart(S);
     Bus.emit('gameStart', S);
     loop(Flow.gen);
   };
-  G.stop = () => { if (!running) return; running = false; Flow.cancelAll(); Dice.clear(); UI.hideDoors(); UI.finale(false); Spinners.setActive(null); Spinners.hideBadges(); Pieces.clear(); Table.clear(); Decor.resetDoors(); S3.dim(0, 0); Bus.emit('gameStop'); };
+  G.stop = () => { if (!running) return; running = false; Flow.cancelAll(); Online.gameStop(); Dice.clear(); UI.hideDoors(); UI.finale(false); Spinners.setActive(null); Spinners.hideBadges(); Pieces.clear(); Table.clear(); Decor.resetDoors(); S3.dim(0, 0); Bus.emit('gameStop'); };
 
   /* ---------- Var pjäserna står ---------- */
   function spot(p) {
@@ -4793,6 +4934,9 @@ const Game = (() => {
     try {
       while (true) {
         Flow.alive(gen);
+        // varje tur börjar med samma läge på alla skärmar (online jämförs en kontrollsumma)
+        if (!Online.guest()) S.bonus = !!Settings.bonus;
+        await Online.checkpoint(S, gen);
         if (S.players.every(p => p.status === 'finished')) { await finish(gen); return; }
         const p = cur();
         if (p.status !== 'finished') { save(); await turn(p, gen); }
@@ -4803,15 +4947,18 @@ const Game = (() => {
     } catch (e) { if (!(e instanceof Cancel)) console.error(e); }
   }
 
+  // Tärningen: kastet räknas fram en gång (online av värden) och spelas upp likadant på alla skärmar.
+  // Syns inte spelet (autotest eller dold flik) räcker talet.
   async function roll(p, gen) {
-    const sides = Rules.die(S);
-    if (Time.scale < .2 || document.hidden) return Dice.quick(sides);
+    const sides = Rules.die(S), fast = () => Time.scale < .2 || document.hidden;
     const target = Pieces.worldPos(p.id), cam = S3.camera();
     const toCam = cam.position.clone().sub(target).setY(0).normalize();
     target.addScaledVector(toCam, .28);
-    const n = await Promise.race([Dice.throw(target, sides), new Promise(r => setTimeout(() => r(0), 5000))]);
+    const rec = await Online.decide(S, 'roll', gen, () => fast() ? {v: Dice.quick(sides), s: sides} : Dice.record(target, sides));
+    if (fast() || !rec.f) return rec.v;
+    await Promise.race([Dice.play(rec), new Promise(r => setTimeout(r, 5000))]);
     Flow.alive(gen);
-    return n || Dice.quick(sides);
+    return rec.v;
   }
 
   async function turn(p, gen) {
@@ -4821,7 +4968,7 @@ const Game = (() => {
     layoutPieces();
     UI.render(S);
     Spinners.setActive(p.status === 'track' ? p.track : null);
-    if (!p.human) UI.idleCpu(S, p); else UI.lock(S);
+    if (!p.human) UI.idleCpu(S, p); else if (you(p)) UI.lock(S); else UI.waitFor(S, p);
     Sound.play('turn');
     Bus.emit('turn', p);
     if (S.players.filter(q => q.status !== 'finished').length > 1 || p.human) UI.banner(p);
@@ -4842,12 +4989,12 @@ const Game = (() => {
 
     // 1. Tärningen
     S.phase = 'roll'; UI.render(S);
-    say(p.human ? `${nm(p)}, slå tärningen!` : `${nm(p)} slår tärningen.`);
+    say(you(p) ? `${nm(p)}, slå tärningen!` : `${nm(p)} slår tärningen.`);
     await ask('roll', p, gen, () => true);
     S.phase = 'rolling'; UI.lock(S);
     const n = await roll(p, gen);
     Bus.emit('rolled', p, n);
-    say(`${p.human ? 'Du' : nm(p)} slog ${NUMW[n]}.`);
+    say(`${you(p) ? 'Du' : nm(p)} slog ${NUMW[n]}.`);
     await wait(350, gen);
     S.phase = 'moving'; UI.lock(S);
     for (let k = 0; k < n && p.pos < N_SQ; k++) { p.pos++; await Pieces.hopTo(p.id, GEO[p.track].pts[p.pos], D(310)); Flow.alive(gen); }
@@ -4857,24 +5004,25 @@ const Game = (() => {
     // 2. Snurran. Mobilerna som väntar får tippa vad den visar; datorn väntar en stund så att alla hinner.
     S.phase = 'spin'; UI.render(S);
     Bus.emit('spinAsk', p);
-    if (p.human) say(`Snurra snurran på ${TR[p.track].name}!`, `Snurra snurran!`);
+    if (you(p)) say(`Snurra snurran på ${TR[p.track].name}!`, `Snurra snurran!`);
+    else if (p.human) say(`${nm(p)} snurrar snurran på ${TR[p.track].name}.`);
     else { const t0 = Date.now(); while (Remote.tipOpen() && Date.now() - t0 < 4500) await Flow.wait(250, gen); }
     await ask('spin', p, gen, () => true, {track: p.track});
     S.phase = 'spinning'; UI.lock(S);
-    const idx = Math.floor(Math.random() * 6);
+    const idx = await Online.decide(S, 'spin', gen, () => Math.floor(Math.random() * 6));
     Bus.emit('spun', p, idx);
     await Spinners.spin(p.track, idx);
     Flow.alive(gen);
     S.last = {track: p.track, idx};
     const sec = SPIN[p.track][idx], has = p.hand.includes(sec.s);
     S.phase = 'play'; UI.render(S);
-    const who = p.human ? 'du' : nm(p);
+    const who = you(p) ? 'du' : nm(p);
     if (sec.t === 'guld') {
       say(has ? `En guldsäck! Lägg ${Art.kc(sec.s)} så får du den.` : `En guldsäck, men ${who} har ingen ${Art.kc(sec.s)}. Lägg ett annat kort.`,
         has ? `En guldsäck! Lägg ${WORD[sec.s]} så får du den.` : `En guldsäck, men ingen ${WORD[sec.s]} på handen.`, Art.sack());
     } else {
       const ob = OBST[sec.o];
-      say(has ? `${ob.name}! Lägg ${Art.kc(sec.s)} för att ${txt(ob.need, sec.s)}.` : `${ob.name}! ${p.human ? 'Du' : nm(p)} saknar ${Art.kc(sec.s)}, så Hugo klarar inte hindret. Lägg ett annat kort.`,
+      say(has ? `${ob.name}! Lägg ${Art.kc(sec.s)} för att ${txt(ob.need, sec.s)}.` : `${ob.name}! ${you(p) ? 'Du' : nm(p)} saknar ${Art.kc(sec.s)}, så Hugo klarar inte hindret. Lägg ett annat kort.`,
         has ? `${ob.name}! Lägg ${WORD[sec.s]} för att ${txt(ob.need, sec.s)}.` : `${ob.name}! Ingen ${WORD[sec.s]} på handen.`, Art.icon(sec.o, sec.s));
     }
 
@@ -4887,7 +5035,7 @@ const Game = (() => {
     let i;
     for (;;) {
       i = await ask('card', p, gen, () => Rules.aiCard(S, p), cardData);
-      if (p.human && has && p.hand[i] !== sec.s) { UI.nudge(i); say(`Du har ju ${Art.kc(sec.s)}! Leta efter kortet som lyser.`, `Du har ju ${WORD[sec.s]}! Leta efter kortet som lyser.`); continue; }
+      if (p.human && has && p.hand[i] !== sec.s) { UI.nudge(i); say(`${you(p) ? 'Du' : nm(p)} har ju ${Art.kc(sec.s)}! Leta efter kortet som lyser.`, `${you(p) ? 'Du' : nm(p)} har ju ${WORD[sec.s]}! Leta efter kortet som lyser.`); continue; }
       break;
     }
     S.phase = 'resolve'; UI.lock(S);
@@ -4938,21 +5086,30 @@ const Game = (() => {
       Sound.play('fanfare');
       say(`Hurra! ${nm(p)} klarade ${TR[p.track].name}!`);
       await Pieces.cheer(p.id, 1100);
-      if (Settings.bonus) await bonusRound(p, gen);
+      if (S.bonus !== false) await bonusRound(p, gen);
       await leaveTrack(p, true, gen);
     }
     Sound.mood('game');
   }
 
-  // Bonusrundan när en bana är klar: människor springer själva, datorn får ett slumpat resultat
+  // Bonusrundan när en bana är klar: människor springer själva, datorn får ett slumpat resultat.
+  // Online springer spelaren på sin egen skärm och de andra skärmarna visar rundan med trycken som kommer in.
+  // Alla använder värdens resultat.
   async function bonusRound(p, gen) {
-    let r;
-    if (p.human && Time.scale >= .2 && !document.hidden) {
-      say(`Bonusrunda! Hjälp Hugo förbi hindren. Tryck ${Art.kc('2')} hoppa, ${Art.kc('8')} ducka, ${Art.kc('4')} vänster och ${Art.kc('6')} höger.`, 'Bonusrunda! Tryck på rätt knapp när hindren kommer.');
+    const fast = () => Time.scale < .2 || document.hidden;
+    const mode = await Online.decide(S, 'bonus', gen, () => p.human && !fast() && Online.canRun(p) ? {play: true, seed: (Math.random() * 2147483647) | 0} : {sim: Bonus.simulate()});
+    const bseq = S.seq;
+    let r = null;
+    if (mode.play) {
+      const mine = you(p);
+      say(mine ? `Bonusrunda! Hjälp Hugo förbi hindren. Tryck ${Art.kc('2')} hoppa, ${Art.kc('8')} ducka, ${Art.kc('4')} vänster och ${Art.kc('6')} höger.` : `Bonusrunda för ${nm(p)}! Heja!`,
+        mine ? 'Bonusrunda! Tryck på rätt knapp när hindren kommer.' : `Bonusrunda för ${p.name}!`);
       await wait(1200, gen);
-      r = await Bonus.play(p, gen);
+      if (mine) r = await Bonus.play(p, gen, {seed: mode.seed, onEvent: ev => Online.bonusEvent(bseq, ev)});
+      else if (!fast()) r = await Bonus.play(p, gen, {seed: mode.seed, feed: Online.bonusFeed(bseq), hold: () => Online.canRun(p) ? 40 : 3});
+      r = await Online.decide(S, 'bonusRes', gen, () => r || {ok: 0, n: 5});
     } else {
-      r = Bonus.simulate();
+      r = mode.sim;
       say(`${nm(p)} springer bonusrundan och klarar ${r.ok} av ${r.n} hinder.`);
       await wait(1200, gen);
     }
@@ -4963,7 +5120,7 @@ const Game = (() => {
       say(sacks === 2 ? `Alla hinder! ${nm(p)} får två guldsäckar.` : `${nm(p)} får en guldsäck för bonusrundan.`, undefined, Art.sack());
       const from = Pieces.worldPos(p.id); from.y += .1;
       await celebrateGold(p, from, sacks, gen, {label: sacks === 2 ? 'Bonus! Två säckar!' : 'Bonus!', quiet: true});
-    } else say(p.human ? 'Ingen guldsäck den här gången, men bra kämpat!' : `Ingen guldsäck för ${nm(p)} den här gången.`);
+    } else say(you(p) ? 'Ingen guldsäck den här gången, men bra kämpat!' : `Ingen guldsäck för ${nm(p)} den här gången.`);
     await wait(1100, gen);
   }
 
@@ -5104,9 +5261,9 @@ const Game = (() => {
       await slow(2000);
     }
     // 2. Välj en dörr
-    say(p.human ? `${nm(p)}, vilken dörr vågar du öppna?` : `${nm(p)} funderar på vilken dörr …`);
+    say(you(p) ? `${nm(p)}, vilken dörr vågar du öppna?` : `${nm(p)} funderar på vilken dörr …`);
     Decor.pickDoors(true); Decor.doorLabels(true);
-    UI.doors(S, p.human);
+    UI.doors(S, you(p));
     await cam(Decor.lairFocus().add(new THREE.Vector3(0, 0, -.45)), 2.4, 800);
     const d = await ask('door', p, gen, () => Rules.aiDoor(S), {counts: S.doors.map(x => x.length)});
     Decor.pickDoors(false); Decor.doorLabels(false);
@@ -5133,11 +5290,11 @@ const Game = (() => {
       Flow.alive(gen);
       Decor.witchLaugh(); Decor.witchTalk(); Pieces.sad(p.id); Pieces.tint(p.id, 0x8a4dff, 3400);
       Sound.play('ohno');
-      UI.bigNews(p.human ? 'Häxan lurade dig!' : `Häxan lurade ${p.name}!`, 'bad');
+      UI.bigNews(you(p) ? 'Häxan lurade dig!' : `Häxan lurade ${p.name}!`, 'bad');
       sayAs('witch', pick(WITCH_WINS));
       cam([above(Decor.doorFront(d)), hugoAt()], 0, 900);
       await wait(fast ? 0 : 3000, gen);
-      say(p.human ? 'Buhu! Familjen blev kvar hos häxan. Men du har kvar allt ditt guld!' : `Buhu! Familjen blev kvar hos häxan. Men ${nm(p)} har kvar sitt guld.`);
+      say(you(p) ? 'Buhu! Familjen blev kvar hos häxan. Men du har kvar allt ditt guld!' : `Buhu! Familjen blev kvar hos häxan. Men ${nm(p)} har kvar sitt guld.`);
       await wait(fast ? 0 : 1600, gen);
     } else {
       p.freed = true; p.freedAt = ++S.freedN;
@@ -5190,7 +5347,7 @@ const Game = (() => {
   async function finish(gen) {
     S.phase = 'over';
     UI.finale(false);
-    Store.del('save');
+    if (!Online.guest()) Store.del('save');
     Pieces.setCurrent(-1);
     Spinners.setActive(null);
     UI.render(S);
@@ -5200,10 +5357,12 @@ const Game = (() => {
     Sound.mood('win');
     const win = Rules.winner(S);
     if (win) { Sound.play('win'); Pieces.spin(win.id, 1600); } else Decor.witchLaugh();
-    // familjens topplista
-    const top = Store.get('top', {games: 0, wins: {}});
-    top.games++; if (win && win.human) top.wins[win.name] = (top.wins[win.name] || 0) + 1;
-    Store.set('top', top);
+    // familjens topplista (bara på skärmen där spelet sparas)
+    if (!Online.guest()) {
+      const top = Store.get('top', {games: 0, wins: {}});
+      top.games++; if (win && win.human) top.wins[win.name] = (top.wins[win.name] || 0) + 1;
+      Store.set('top', top);
+    }
     await wait(900, gen);
     UI.results(S);
     Bus.emit('gameOver', S);
@@ -5249,9 +5408,12 @@ const Remote = (() => {
     })());
   }
   // STUN räcker på de flesta hemnätverk. En egen TURN-server (inställningarna) hjälper när mobilerna inte kommer fram.
-  const turn = () => Settings.turn && Settings.turn.url ? Settings.turn : null;
-  const iceServers = () => [{urls: 'stun:stun.l.google.com:19302'}, {urls: 'stun:stun.cloudflare.com:3478'}]
-    .concat(turn() ? [{urls: turn().url, username: turn().user || undefined, credential: turn().pass || undefined}] : []);
+  // (En gäst i ett onlinespel använder värdens TURN-server, som följer med i inbjudan.)
+  const turn = () => Online.guest() ? Online.hostTurn() : Settings.turn && Settings.turn.url ? Settings.turn : null;
+  const iceServers = t => { t = t === undefined ? turn() : t; return [{urls: 'stun:stun.l.google.com:19302'}, {urls: 'stun:stun.cloudflare.com:3478'}]
+    .concat(t && t.url ? [{urls: t.url, username: t.user || undefined, credential: t.pass || undefined}] : []); };
+  R.iceServers = iceServers;
+  R.loadPeer = () => loadLib('peer', () => !!window.Peer);
 
   /* ---------- Starta ---------- */
   // Mobilerna kan bara ansluta när spelet ligger på en riktig webbsida (inte i en förhandsvisning eller från disken)
@@ -5259,7 +5421,11 @@ const Remote = (() => {
   R.active = () => status === 'on';
   R.status = () => status;
   R.code = () => code;
+  // En gäst i ett onlinespel visar värdens kod: mobilerna ansluter alltid till värden
+  const shownCode = () => Online.guest() ? Online.hostCode() : code;
+  const shownStatus = () => Online.guest() ? (Online.connected() ? 'on' : 'starting') : status;
   R.start = () => {
+    if (Online.guest()) { draw(); return Promise.resolve(); }
     if (starting) return starting;
     status = 'starting'; err = '';
     draw();
@@ -5310,9 +5476,12 @@ const Remote = (() => {
 
   /* ---------- Mobilerna ---------- */
   function attach(conn) {
-    let d = null;
+    let d = null, handed = false;
     conn.on('data', m => {
       if (!m || typeof m !== 'object') return;
+      if (handed) return;
+      // en annan skärm som vill spela online: Online tar hand om anslutningen
+      if (m.t === 'hello' && m.board) { handed = true; Online.attach(conn, m); return; }
       if (m.t === 'hello') {
         const id = String(m.dev || '').replace(/[^\w-]/g, '').slice(0, 32);
         if (!id) return;
@@ -5345,7 +5514,7 @@ const Remote = (() => {
   function online() { Menu.remoteChanged(); UI.remoteMarks(); changed(); }
   R.online = dev => { const d = dev && devs.get(dev); return !!(d && d.online); };
   // Har spelaren en mobil som är ansluten just nu? Då ligger korten i mobilen.
-  R.has = p => !!(p && p.human && p.dev && R.online(p.dev));
+  R.has = p => !!(p && p.human && p.dev && (R.online(p.dev) || Online.phoneOn(p)));
   R.count = () => [...devs.values()].filter(d => d.online).length;
 
   function handle(d, m) {
@@ -5380,7 +5549,11 @@ const Remote = (() => {
       }
       case 'opt': if (boss && !running) Menu.remoteOpt(m); break;
       // bonusrundan: knapparna i mobilen styr Hugo
-      case 'bkey': if (me && Bonus.active() && Bonus.player() === me.id) Bonus.key(String(m.k)); break;
+      // (springs rundan på spelarens egen skärm online skickas trycket dit)
+      case 'bkey':
+        if (me && me.board && Online.boardOnline(me.board)) Online.sendKey(me.board, String(m.k));
+        else if (me && Bonus.active() && Bonus.player() === me.id) Bonus.key(String(m.k));
+        break;
       case 'claim': {
         // mitt i ett spel: mobilen tar över en människa som saknar mobil
         if (!running) return;
@@ -5404,7 +5577,7 @@ const Remote = (() => {
       }
       case 'react': {
         const now = Date.now(), who = me || (d.fan && {name: d.fan.name, color: '#8C7E76', fan: true});
-        if (running && who && now - (d.reactT || 0) > 1200) { d.reactT = now; UI.react(who, String(m.kind)); }
+        if (running && who && now - (d.reactT || 0) > 1200) { d.reactT = now; UI.react(who, String(m.kind)); Online.react(who, String(m.kind)); }
         break;
       }
       case 'start': if (boss && !running) { const e = Menu.remoteStart(); if (e) send(d, {t: 'error', text: e}); } break;
@@ -5434,7 +5607,7 @@ const Remote = (() => {
   R.eventAll = (p, ev) => devs.forEach(d => { if (d.online) send(d, Object.assign({t: 'event', mine: !!p && d.dev === p.dev, who: p ? p.name : ''}, ev)); });
   R.fans = () => [...devs.values()].filter(d => d.fan).map(d => ({dev: d.dev, name: d.fan.name, online: d.online}));
   // Bonusrundan i spelarens mobil: på/av, vilken knapp som behövs och stjärnorna
-  R.bonus = (p, info) => { if (p && p.dev) send(devs.get(p.dev), Object.assign({t: 'bonus'}, info)); };
+  R.bonus = (p, info) => { if (Online.guest()) { if (p && p.dev) Online.fwdBonus(p, info); return; } if (p && p.dev) send(devs.get(p.dev), Object.assign({t: 'bonus'}, info)); };
 
   /* ---------- Tippa medan någon annan snurrar ---------- */
   // Alla andra mobiler (spelare som väntar och de som bara tittar) gissar om snurran visar guld eller ett hinder.
@@ -5472,6 +5645,7 @@ const Remote = (() => {
   /* ---------- Läget till alla mobiler ---------- */
   let pushT = 0;
   function changed() {
+    Online.lobbyChanged();
     if (pushT || !devs.size) return;
     pushT = setTimeout(() => { pushT = 0; devs.forEach(d => { if (d.online) pushTo(d); }); drawList(); }, 60);
   }
@@ -5499,7 +5673,7 @@ const Remote = (() => {
       awards: over ? Rules.awards(S).map(a => Object.assign({}, a, {svg: Art.AWARD[a.icon] || '', mine: (me && a.who.includes(me.id)) || (a.devs || []).includes(d.dev)})) : null,
       turn: S.turn, phase: S.phase, msg: lastMsg, me: me ? me.id : null, myTurn: !!me && !over && cur === me,
       players: S.players.map(p => ({i: p.id, seat: p.seat, name: p.name, color: p.color, gold: p.gold, lives: p.lives, status: p.status,
-        track: p.track, pos: p.pos, freed: p.freed, door: p.door, human: p.human, phone: !!p.dev, online: R.online(p.dev), done: p.done.length, res: p.res})),
+        track: p.track, pos: p.pos, freed: p.freed, door: p.door, human: p.human, phone: !!p.dev, online: R.online(p.dev), board: !!p.board, done: p.done.length, res: p.res})),
       hand: me ? me.hand.slice() : null,
       where: me ? UI.where(me) : '',
       ranked: over ? Rules.ranking(S).map(p => p.id) : null,
@@ -5545,7 +5719,7 @@ const Remote = (() => {
   function joinUrl() {
     // en egen TURN-server följer med i adressen efter ~ så att mobilerna också använder den
     const t = turn(), extra = t ? '~' + btoa(unescape(encodeURIComponent(JSON.stringify({url: t.url, user: t.user || '', pass: t.pass || ''})))) : '';
-    return (R.possible() ? new URL('kontroll.html', location.href).href : SITE + 'kontroll.html') + '#' + (code || '') + extra;
+    return (R.possible() ? new URL('kontroll.html', location.href).href : SITE + 'kontroll.html') + '#' + (shownCode() || '') + extra;
   }
   R.joinUrl = joinUrl;
   function qrSVG(text) {
@@ -5559,6 +5733,8 @@ const Remote = (() => {
   // el visar QR-koden och hur många mobiler som är anslutna (i spelarvalet och i menyn)
   R.render = el => { hosts.add(el); draw(); };
   function draw() {
+    const status = shownStatus(), code = shownCode();
+    if (Online.guest() && !window.qrcode) loadLib('qr', () => !!window.qrcode).then(draw, () => {});
     hosts.forEach(el => {
       el.innerHTML = '';
       el.classList.toggle('on', status === 'on');
@@ -5584,7 +5760,8 @@ const Remote = (() => {
   function drawList() {
     hosts.forEach(el => {
       const list = el.querySelector('.qrList');
-      if (!list || status !== 'on') { if (list) list.textContent = ''; return; }
+      if (!list || shownStatus() !== 'on') { if (list) list.textContent = ''; return; }
+      if (Online.guest()) { list.textContent = 'Mobilen ansluter till spelet hos den som bjöd in, över internet.'; return; }
       const n = R.count();
       list.textContent = n ? `${n} ${n === 1 ? 'mobil är ansluten' : 'mobiler är anslutna'}.` : 'Mobilen ska vara på samma wifi som den här skärmen.';
     });
@@ -5592,6 +5769,487 @@ const Remote = (() => {
   // Användes mobilerna förra gången startar anslutningen direkt, så att de kan komma tillbaka efter en omladdning
   R.resume = () => { if (Store.get('remoteOn') && R.possible()) R.start(); };
   return R;
+})();
+
+/* ---- 10g-online.js ---- */
+/* ================= Online: spela med någon som är någon annanstans ================= */
+// Skärmen som bjuder in är värd. En annan skärm (en tv eller dator hos mormor) öppnar inbjudningslänken (#spela-KOD)
+// och ansluter över internet på samma sätt som mobilerna (WebRTC via PeerJS). Alla skärmar kör samma spel: värden
+// bestämmer allt som slumpas och allt som spelarna väljer, och besluten numreras (S.seq). Gästerna tar besluten i tur och
+// ordning och visar samma sak med egna animationer. En gäst spelar sina egna troll på sin skärm: valet skickas till
+// värden, som gör det till ett beslut för alla. Mobiler ansluter alltid till värden, också från gästens soffa.
+// Varje tur börjar med en kontrollsumma från värden. Stämmer den inte, eller om en gäst kommer in mitt i ett parti,
+// får gästen läget från turens början och besluten sedan dess, och spelar ikapp i snabb fart.
+const Online = (() => {
+  const O = {};
+  const PREFIX = 'hugospelet-';
+  const SITE = typeof SITE_URL !== 'undefined' ? SITE_URL : '';
+  let role = 'off';            // 'off', 'host' (andra skärmar ansluter hit) eller 'guest' (följer någon annans spel)
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const plain = s => String(s || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  // "ett troll": Rött, Grönt, Blått och Gult troll
+  const trollOf = c => ({Röd: 'Rött', Grön: 'Grönt', Blå: 'Blått', Gul: 'Gult'}[c] || c) + ' troll';
+  const fnv = s => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
+  // Kontrollsumma över det som ska vara lika på alla skärmar (inte mobilerna, tipsen eller det som bara syns)
+  const sum = S => fnv(JSON.stringify([S.turn, S.turns, S.seq || 0, S.rng, S.deck, S.discard, S.doors, S.freedN || 0, S.witchN || 0,
+    S.players.map(p => [p.track, p.pos, p.status, p.done, p.res, p.lives, p.gold, p.trackGold, p.hand, p.freed, p.door, p.stats, p.streak || 0, p.waitFrom || null, p.witchAt || 0])]));
+  O.sum = sum;
+  O.role = () => role;
+  O.guest = () => role === 'guest';
+  O.host = () => role === 'host';
+  // för testerna: kontrollsummorna som har stämt och hur många gånger en gäst har fått synka om
+  O.stats = {cps: [], resyncs: 0};
+
+  /* ---------- Vem spelar var ---------- */
+  // Spelas trollet från den här skärmen? Värden: allt utom de andra skärmarnas troll så länge de är anslutna
+  // (tappar en skärm kontakten kan någon vid värdens skärm spela åt den, så att spelet inte fastnar).
+  O.local = p => role === 'guest' ? !!p && !!p.board && p.board === me() : !p || !p.board || !O.boardOnline(p.board);
+  // Syns spelarens kort här? Inte när de ligger i en mobil eller spelaren sitter vid en annan skärm.
+  O.canSee = p => !Remote.has(p) && (!p.human || O.local(p));
+  // Kan rundan springas på riktigt? Den som spelar måste finnas vid en skärm som är ansluten.
+  O.canRun = p => role !== 'host' || !p.board || O.boardOnline(p.board);
+
+  /* ================= Värden ================= */
+  const boards = new Map();     // skärmens id -> {dev, conn, online, name, last}
+  let snap = null, log = [], lastCp = null;
+  const waits = new Map();      // spelarens nummer -> fråga som väntar på svar från en annan skärm
+  const bsend = (b, m) => { try { if (b && b.conn && b.online) b.conn.send(m); } catch (e) { /* skärmen har gått */ } };
+  const broadcast = (m, except) => boards.forEach(b => { if (b !== except) bsend(b, m); });
+  O.boardOnline = dev => { const b = dev && boards.get(dev); return !!(b && b.online); };
+  O.boardCount = () => [...boards.values()].filter(b => b.online).length;
+  // En skärm har anslutit: Remote lämnar över anslutningen när den säger hej som skärm (board)
+  O.attach = (conn, m) => {
+    const id = String(m.dev || '').replace(/[^\w-]/g, '').slice(0, 32);
+    if (!id || role === 'guest') { try { conn.close(); } catch (e) { /* stängd */ } return; }
+    role = 'host';
+    const b = boards.get(id) || {dev: id};
+    if (b.conn && b.conn !== conn) { try { b.conn.close(); } catch (e) { /* stängd */ } }
+    Object.assign(b, {conn, online: true, name: plain(m.name).slice(0, 20), last: Date.now()});
+    boards.set(id, b);
+    conn.on('data', x => { if (b.conn !== conn) return; b.last = Date.now(); try { hostMsg(b, x); } catch (e) { console.error(e); } });
+    conn.on('close', () => { if (b.conn === conn) { b.conn = null; b.online = false; changed(); } });
+    bsend(b, {t: 'welcome', code: Remote.code(), you: id});
+    bsend(b, Game.running() && snap ? stateMsg() : lobbyMsg(b));
+    Sound.play('pop');
+    changed();
+  };
+  // skärmar som inte har hörts av på länge räknas som borta
+  setInterval(() => boards.forEach(b => { if (b.online && Date.now() - b.last > 25000) { b.online = false; try { b.conn.close(); } catch (e) { /* stängd */ } b.conn = null; changed(); } }), 5000);
+  function changed() {
+    waits.forEach(w => w.check());
+    Menu.remoteChanged();
+    UI.remoteMarks();
+    O.lobbyChanged();
+    draw();
+  }
+  function hostMsg(b, m) {
+    if (!m || typeof m !== 'object') return;
+    const S = Game.state(), running = Game.running();
+    switch (m.t) {
+      case 'seat': {
+        if (running) return;
+        const e = m.take ? Menu.boardJoin(b.dev, plain(m.name).slice(0, 14), +m.i) : Menu.boardLeave(b.dev, +m.i);
+        if (e) bsend(b, {t: 'error', text: e});
+        break;
+      }
+      case 'name': if (!running) Menu.boardName(b.dev, +m.i, plain(m.name).slice(0, 14)); break;
+      // svaret från en av skärmens spelare (samma kontroller som för mobilerna)
+      case 'in': {
+        const w = [...waits.values()].find(x => x.seq === m.seq), p = w && S && S.players[w.pid];
+        if (!p || p.board !== b.dev || m.k !== w.kind) return;
+        let v = true;
+        if (w.kind === 'card') { v = +m.v; if (!(v >= 0 && v < p.hand.length)) return; }
+        else if (w.kind === 'door') { v = +m.v; if (!(v >= 0 && v < 3) || !S.doors[v].length) return; }
+        w.res(v);
+        break;
+      }
+      case 'bev': broadcast({t: 'bev', b: m.b, ev: m.ev}, b); bonusIn(m); break;
+      // bonusrundan på en annan skärm: spelarens mobil får veta vilken knapp som behövs
+      case 'rb': { const p = S && S.players[+m.pid]; if (p && p.board === b.dev) Remote.bonus(p, m.info || {}); break; }
+      case 'sync': bsend(b, running && snap ? stateMsg() : lobbyMsg(b)); break;
+      case 'bye': b.online = false; b.conn = null; if (!running) Menu.boardGone(b.dev); changed(); break;
+      case 'ping': bsend(b, {t: 'pong'}); break;
+    }
+  }
+  const stateMsg = () => ({t: 'state', S: snap, log: log.slice(), cp: lastCp});
+  const lobbyMsg = b => ({t: 'lobby', lobby: Menu.boardLobby(b.dev)});
+  // Lobbyn har ändrats (troll, namn, speltid eller tärning): alla skärmar får den nya
+  let lobbyT = 0;
+  O.lobbyChanged = () => {
+    if (role !== 'host' || lobbyT) return;
+    lobbyT = setTimeout(() => { lobbyT = 0; if (!Game.running()) boards.forEach(b => bsend(b, lobbyMsg(b))); }, 80);
+  };
+
+  /* ---------- Besluten ---------- */
+  // Ett beslut i spelet. Värden (och ett spel utan gäster) räknar fram det med make() och skickar det till gästerna.
+  // En gäst väntar i stället på värdens beslut med samma nummer; show(send) visar under tiden gästens egna knappar,
+  // och send(v) skickar det spelaren valde till värden.
+  O.decide = async (S, kind, gen, make, show) => {
+    if (role === 'guest') return follow(S, kind, gen, show);
+    const v = await make();
+    Flow.alive(gen);
+    S.seq = (S.seq || 0) + 1;
+    const d = {t: 'd', seq: S.seq, k: kind, v};
+    log.push(d);
+    if (role === 'host') broadcast(d);
+    return v;
+  };
+  // Början av varje tur: värden sparar läget och skickar en kontrollsumma, gästen jämför med sin egen
+  O.checkpoint = (S, gen) => {
+    if (role === 'guest') return guestCheckpoint(S, gen);
+    snap = clone(S); log = [];
+    lastCp = {t: 'cp', n: S.turns, seq: S.seq || 0, sum: sum(S), tips: S.tips || {}, bonus: S.bonus !== false,
+      ph: S.players.filter(p => Remote.has(p)).map(p => p.id), bd: S.players.map(p => p.board || null)};
+    if (role === 'host') { broadcast(lastCp); O.stats.cps.push([S.turns, lastCp.sum]); }
+    return Promise.resolve();
+  };
+  O.gameStart = S => {
+    if (role === 'guest') return;
+    snap = clone(S); log = []; lastCp = null; O.stats.cps = [];
+    if (role === 'host') broadcast({t: 'go', S: snap});
+  };
+  O.gameStop = () => {
+    waits.clear();
+    if (role === 'guest') return;
+    if (role === 'host') broadcast({t: 'stop'});
+    snap = null; log = []; lastCp = null;
+  };
+  // Frågan till en spelare som sitter vid en annan skärm: svaret kommer därifrån. Tappar skärmen kontakten anropas
+  // fallback(), så att någon vid den här skärmen kan svara i stället och spelet aldrig fastnar.
+  // (Frågan registreras också innan skärmen har hunnit ansluta, till exempel när värden fortsätter ett sparat spel.)
+  O.offer = (S, p, kind, res, fallback) => {
+    if (role === 'guest' || !p.board) return () => {};
+    const w = {pid: p.id, seq: (S.seq || 0) + 1, kind, res, fell: !O.boardOnline(p.board)};
+    w.check = () => { if (!w.fell && !O.boardOnline(p.board)) { w.fell = true; fallback(); } };
+    waits.set(p.id, w);
+    return () => { if (waits.get(p.id) === w) waits.delete(p.id); };
+  };
+  // Hejarop från mobilerna syns på alla skärmar
+  O.react = (who, kind) => { if (role === 'host') broadcast({t: 'react', who: {id: who.id, name: who.name, color: who.color, fan: !!who.fan}, kind}); };
+  // Knapparna i en mobil styr bonusrundan som springs på spelarens egen skärm
+  O.sendKey = (dev, k) => bsend(boards.get(dev), {t: 'bkey', k});
+
+  /* ---------- Bonusrundan ---------- */
+  // Den som springer skickar varje tryck och varje klarat hinder; de andra skärmarna visar rundan med dem.
+  // b är numret på beslutet som startade rundan, så att händelser från en gammal runda inte blandas in.
+  let bbuf = [], bfeed = null;
+  O.bonusEvent = (b, ev) => {
+    if (role === 'guest') hsend({t: 'bev', b, ev});
+    else if (role === 'host') broadcast({t: 'bev', b, ev});
+  };
+  O.bonusFeed = b => ({on: fn => { bfeed = {b, fn}; const mine = bbuf.filter(x => x.b === b); bbuf = bbuf.filter(x => x.b !== b); mine.forEach(x => fn(x.ev)); }});
+  function bonusIn(m) {
+    if (bfeed && bfeed.b === m.b) bfeed.fn(m.ev);
+    else { bbuf.push(m); if (bbuf.length > 80) bbuf.shift(); }
+  }
+  // gästens bonusrunda: det som ska till spelarens mobil går via värden
+  O.fwdBonus = (p, info) => hsend({t: 'rb', pid: p.id, info});
+
+  /* ================= Gästen ================= */
+  const me = () => { let id = Store.get('onlineDev', null); if (!id) { id = 'b' + Math.random().toString(36).slice(2, 12); Store.set('onlineDev', id); } return id; };
+  let gpeer = null, gconn = null, gcode = null, gturn = null, gOn = false, gLast = 0, retryT = 0, openT = 0, gLobby = null, gNote = '', gErr = '';
+  let dq = new Map(), cps = new Map(), maxSeq = 0, wake = null, cpWake = null, fast = false, base = 1, syncT = 0;
+  let phones = new Set();
+  const hsend = m => { try { if (gconn && gOn) gconn.send(m); } catch (e) { /* ansluter igen */ } };
+  O.hostCode = () => gcode;
+  O.hostTurn = () => gturn;
+  O.connected = () => role === 'guest' && gOn;
+  O.phoneOn = p => role === 'guest' && !!p && phones.has(p.id);
+  // för testerna: gästens vanliga fart (1 = som vanligt)
+  O.setBase = k => { base = k; pace(); };
+
+  // Gå med i ett spel som någon annan har bjudit in till (länken #spela-KOD eller koden på startsidan)
+  O.join = (code, turn) => {
+    code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+    if (code.length < 4) return false;
+    if (Game.running()) Game.stop();
+    role = 'guest'; gcode = code; gturn = turn || null; gLobby = null; gNote = ''; gErr = '';
+    Store.set('onlineLast', {code, turn: gturn});
+    if (location.hash.slice(1).split('~')[0] !== 'spela-' + code) history.replaceState(null, '', '#spela-' + code + (gturn ? '~' + btoa(unescape(encodeURIComponent(JSON.stringify(gturn)))) : ''));
+    showLobby();
+    connect();
+    return true;
+  };
+  // Lämna onlinespelet och gå till startsidan
+  O.leave = () => {
+    if (role !== 'guest') return;
+    hsend({t: 'bye'});
+    role = 'off';
+    clearTimeout(retryT); clearTimeout(openT);
+    const c = gconn, p = gpeer;
+    gconn = null; gpeer = null; gOn = false;
+    setTimeout(() => { try { if (c) c.close(); } catch (e) { /* stängd */ } try { if (p) p.destroy(); } catch (e) { /* stängd */ } }, 300);
+    if (Game.running()) Game.stop();
+    Time.scale = 1; fast = false;
+    history.replaceState(null, '', location.pathname + location.search);
+    $('online').hidden = true;
+    draw();
+    Menu.showTitle();
+  };
+  function status(text, bad) { gErr = text || ''; const el = $('onStatus'); if (el) { el.textContent = gErr || (gOn ? 'Ansluten!' : 'Ansluter …'); el.classList.toggle('bad', !!bad); } netChip(); }
+  function connect() {
+    clearTimeout(retryT);
+    if (role !== 'guest') return;
+    status(gLobby ? 'Ansluter igen …' : 'Ansluter till spelet …');
+    Remote.loadPeer().then(() => {
+      if (role !== 'guest') return;
+      if (!gpeer || gpeer.destroyed) {
+        const pr = new window.Peer({debug: 0, config: {iceServers: Remote.iceServers(gturn)}});
+        gpeer = pr;
+        pr.on('open', () => { if (gpeer === pr) openConn(); });
+        pr.on('disconnected', () => { try { if (gpeer === pr && !pr.destroyed) pr.reconnect(); } catch (e) { /* försöker igen */ } });
+        pr.on('error', e => {
+          if (gpeer !== pr) return;
+          const t = e && e.type;
+          if (t === 'peer-unavailable') { status(`Hittar inget spel med koden ${gcode}. Är spelet öppet hos den som bjöd in? Försöker igen …`, true); retry(4000); }
+          else if (['network', 'server-error', 'socket-error', 'socket-closed', 'disconnected'].includes(t)) retry(3000);
+          else if (t === 'browser-incompatible') status('Den här webbläsaren kan inte spela online. Prova Chrome, Safari eller Edge.', true);
+        });
+      } else if (gpeer.open) openConn();
+      else if (gpeer.disconnected) { try { gpeer.reconnect(); } catch (e) { retry(2000); } }
+    }, () => { status('Kunde inte ladda anslutningen. Är den här skärmen ansluten till internet?', true); retry(6000); });
+  }
+  function openConn() {
+    if (gconn) { try { gconn.close(); } catch (e) { /* stängd */ } }
+    const c = gpeer.connect(PREFIX + gcode, {reliable: true});
+    gconn = c;
+    clearTimeout(openT);
+    openT = setTimeout(() => { if (gconn === c && !gOn) { status('Får ingen kontakt med spelet. Försöker igen …', true); try { c.close(); } catch (e) { /* stängd */ } retry(2500); } }, 15000);
+    c.on('open', () => {
+      if (gconn !== c) return;
+      clearTimeout(openT);
+      gOn = true; gLast = Date.now();
+      c.send({t: 'hello', dev: me(), board: true, name: Store.get('onlineName', '')});
+      status('');
+      draw();
+    });
+    c.on('data', m => { if (gconn !== c) return; gLast = Date.now(); try { guestMsg(m); } catch (e) { console.error(e); } });
+    c.on('close', () => { if (gconn !== c) return; gOn = false; status('Tappade kontakten med spelet. Ansluter igen …', true); draw(); retry(1500); });
+    c.on('error', () => {});
+  }
+  function retry(ms) { clearTimeout(retryT); retryT = setTimeout(connect, ms); }
+  setInterval(() => {
+    if (role !== 'guest' || !gOn) return;
+    hsend({t: 'ping'});
+    if (Date.now() - gLast > 25000) { gOn = false; try { gconn.close(); } catch (e) { /* stängd */ } status('Tappade kontakten med spelet. Ansluter igen …', true); connect(); }
+  }, 8000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && role === 'guest' && !gOn) connect(); });
+
+  function guestMsg(m) {
+    if (!m || typeof m !== 'object') return;
+    switch (m.t) {
+      case 'welcome': gErr = ''; break;
+      case 'lobby': gLobby = m.lobby; if (!Game.running()) { showLobby(); drawLobby(); } break;
+      case 'go': startFollow(m.S, [], null); break;
+      case 'state': startFollow(m.S, m.log || [], m.cp || null); break;
+      case 'd': if (!dq.has(m.seq)) { dq.set(m.seq, m); maxSeq = Math.max(maxSeq, m.seq); } pace(); if (wake) wake(); break;
+      case 'cp': cps.set(m.n, m); if (cpWake) cpWake(); break;
+      case 'bev': bonusIn(m); break;
+      case 'react': if (m.who && Game.running()) UI.react(m.who, String(m.kind)); break;
+      case 'stop': if (Game.running()) Game.stop(); gNote = 'Spelet avslutades hos den som bjöd in.'; showLobby(); drawLobby(); break;
+      case 'bkey': if (Bonus.active()) Bonus.key(String(m.k)); break;
+      case 'error': gNote = String(m.text || ''); drawLobby(); break;
+    }
+  }
+  // Ett parti börjar (eller gästen kommer in mitt i): spela från läget S och ta besluten som redan har fattats
+  function startFollow(S, list, cp) {
+    if (!S || !Array.isArray(S.players)) return;
+    if (Game.running()) Game.stop();
+    dq = new Map(); cps = new Map(); wake = null; cpWake = null; fast = false;
+    maxSeq = S.seq || 0;
+    list.forEach(d => { dq.set(d.seq, d); maxSeq = Math.max(maxSeq, d.seq); });
+    if (cp) cps.set(cp.n, cp);
+    bbuf = []; bfeed = null;
+    gNote = '';
+    $('online').hidden = true;
+    ['results', 'pause', 'rules', 'settings'].forEach(id => { $(id).hidden = true; });
+    Game.start(S, 'online');
+    pace();
+  }
+  // Gästen tar värdens beslut nummer S.seq + 1 (kommer det inte direkt visas gästens egna knappar under tiden)
+  function follow(S, kind, gen, show) {
+    const seq = (S.seq || 0) + 1;
+    let cleanup = null;
+    return new Promise((res, rej) => {
+      const done = () => { Flow.pending.delete(cancel); if (wake === take) wake = null; if (cleanup) { const c = cleanup; cleanup = null; c(); } };
+      const take = () => {
+        const d = dq.get(seq);
+        if (!d) return false;
+        dq.delete(seq); done();
+        if (d.k !== kind) { rej(new Cancel()); resync(`beslut ${seq} är ${d.k}, inte ${kind}`); return true; }
+        S.seq = seq; pace(); res(d.v);
+        return true;
+      };
+      const cancel = () => { done(); rej(new Cancel()); };
+      if (take()) return;
+      Flow.pending.add(cancel);
+      wake = take;
+      if (show) cleanup = show(v => hsend({t: 'in', seq, k: kind, v})) || null;
+    }).then(v => { Flow.alive(gen); return v; });
+  }
+  function guestCheckpoint(S, gen) {
+    return new Promise((res, rej) => {
+      const done = () => { Flow.pending.delete(cancel); if (cpWake === take) cpWake = null; };
+      const take = () => {
+        const cp = cps.get(S.turns);
+        if (!cp) return false;
+        done();
+        cps.forEach((x, n) => { if (n <= S.turns) cps.delete(n); });
+        S.tips = cp.tips || {};
+        S.bonus = cp.bonus !== false;
+        phones = new Set(cp.ph || []);
+        if (cp.bd) S.players.forEach((p, i) => { p.board = cp.bd[i] || null; });
+        const mine = sum(S);
+        if (cp.seq !== (S.seq || 0) || cp.sum !== mine) { rej(new Cancel()); resync(`tur ${S.turns}: ${cp.sum} hos värden, ${mine} här`); return true; }
+        O.stats.cps.push([S.turns, mine]);
+        UI.remoteMarks();
+        res();
+        return true;
+      };
+      const cancel = () => { done(); rej(new Cancel()); };
+      if (take()) return;
+      Flow.pending.add(cancel);
+      cpWake = take;
+    }).then(() => Flow.alive(gen));
+  }
+  // Något skiljer sig från värden: be om läget igen (och spela ikapp därifrån)
+  function resync(why) {
+    console.warn('Online: synkar om,', why);
+    O.stats.resyncs++;
+    if (syncT) return;
+    syncT = setTimeout(() => { syncT = 0; }, 2500);
+    hsend({t: 'sync'});
+  }
+  // Ligger gästen efter (flera beslut väntar) spelas det ikapp i snabb fart, annars i vanlig fart
+  function pace() {
+    if (role !== 'guest') return;
+    const S = Game.state(), behind = Game.running() && S ? maxSeq - (S.seq || 0) : 0;
+    if (!fast && behind >= 5) fast = true;
+    else if (fast && behind <= 1) fast = false;
+    const want = fast ? .04 : base;
+    if (Time.scale !== want) Time.scale = want;
+    netChip();
+  }
+
+  /* ---------- Gästens lobby ---------- */
+  function showLobby() {
+    if (role !== 'guest') return;
+    $('title').hidden = true; $('setup').hidden = true;
+    ['results', 'pause', 'joinOnline'].forEach(id => { $(id).hidden = true; });
+    UI.showHUD(false);
+    $('online').hidden = false;
+    Menu.hideTitleTrolls();
+    S3.setAttract(true);
+    Sound.mood('menu');
+    drawLobby();
+  }
+  function drawLobby() {
+    if (role !== 'guest') return;
+    status(gErr, !!gErr);
+    $('onNote').textContent = gNote;
+    const L = gLobby, box = $('onSeats');
+    if (!L) { box.innerHTML = ''; $('onInfo').textContent = gOn ? 'Hämtar spelarna …' : ''; return; }
+    const focused = document.activeElement && box.contains(document.activeElement) && document.activeElement.matches('input') ? document.activeElement.dataset.i : null;
+    box.innerHTML = '';
+    L.seats.forEach(s => {
+      const taken = !s.mine && (s.board || s.phone || (s.on && !s.cpu));
+      const who = s.mine ? 'Spelar här' : s.board ? `${s.name} spelar online` : s.phone ? `${s.name} spelar med mobil` : s.on && !s.cpu ? `${s.name} spelar hos värden` : s.on ? 'Datorn nu' : 'Ledig';
+      const row = h('div', {class: 'onSeat' + (s.mine ? ' mine' : '') + (taken ? ' taken' : ''), style: {'--c': s.color}},
+        h('img', {src: Portraits.get(s.color, 'full'), alt: ''}),
+        h('div', {class: 'onWho'}, s.mine ? h('input', {class: 'onName', type: 'text', maxlength: '14', value: s.name, 'aria-label': `Namn för ${trollOf(s.cname).toLowerCase()}`, 'data-i': String(s.i)}) : h('b', {text: trollOf(s.cname)}), h('small', {text: `${who} · ${s.track}`})),
+        s.mine ? h('button', {class: 'tool', type: 'button', text: 'Släpp', onclick: () => { Sound.play('click'); hsend({t: 'seat', i: s.i, take: false}); }})
+          : taken ? null : h('button', {class: 'tool on', type: 'button', text: 'Välj', onclick: () => { Sound.unlock(); Sound.play('pop'); gNote = ''; hsend({t: 'seat', i: s.i, take: true, name: Store.get('onlineName', '')}); }}));
+      box.append(row);
+    });
+    box.querySelectorAll('.onName').forEach(inp => {
+      inp.addEventListener('input', () => { Store.set('onlineName', inp.value.trim().slice(0, 14)); clearTimeout(inp._t); inp._t = setTimeout(() => hsend({t: 'name', i: +inp.dataset.i, name: inp.value}), 400); });
+      if (focused != null && inp.dataset.i === focused) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+    });
+    const mine = L.seats.filter(s => s.mine).length;
+    $('onInfo').textContent = `${L.tracks === 2 ? 'Kort spel: 2 banor' : L.tracks === 3 ? 'Mellanlångt spel: 3 banor' : 'Hela spelet: 4 banor'} · tärning ${L.die === 6 ? '1–6' : '1–3'}. `
+      + (mine ? 'Väntar på att den som bjöd in startar spelet.' : 'Välj ett troll för att vara med, eller titta bara på när spelet börjar.');
+    Remote.render($('onPhoneBox'));
+  }
+
+  /* ---------- Inbjudan på värdens skärm ---------- */
+  const turnTail = () => { const t = Settings.turn && Settings.turn.url ? Settings.turn : null; return t ? '~' + btoa(unescape(encodeURIComponent(JSON.stringify({url: t.url, user: t.user || '', pass: t.pass || ''})))) : ''; };
+  O.inviteUrl = () => (Remote.possible() ? location.origin + location.pathname : SITE) + '#spela-' + (Remote.code() || '') + turnTail();
+  // Bjud in: anslutningen startas (samma kod som mobilerna) och länken visas
+  O.invite = () => {
+    if (role === 'guest') return;
+    inviting = true;
+    draw();
+    Remote.start().then(draw, draw);
+  };
+  let inviting = false;
+  function draw() {
+    netChip();
+    const box = $('onlineBox'), ask = $('onlineAsk');
+    if (!box || !ask) return;
+    const on = inviting || boards.size > 0;
+    box.hidden = !on; ask.hidden = on;
+    if (!on) return;
+    box.innerHTML = '';
+    const st = Remote.status();
+    if (!Remote.possible()) {
+      box.append(h('p', {class: 'qrBig', text: 'Online fungerar på webben'}), h('p', {class: 'qrText', text: SITE ? `Öppna spelet på ${SITE.replace(/^https?:\/\//, '')} för att bjuda in någon.` : 'Spelet måste ligga på en webbsida för att kunna spela online.'}));
+      if (SITE) box.append(h('a', {class: 'tool siteLink', href: SITE, target: '_blank', rel: 'noopener', text: 'Öppna spelet på webben'}));
+      return;
+    }
+    if (st !== 'on') { box.append(h('p', {class: 'qrBig', text: st === 'error' ? 'Kunde inte starta' : 'Startar …'})); if (st === 'error') box.append(h('p', {class: 'qrText', text: 'Är den här skärmen ansluten till internet?'}), h('button', {class: 'tool', type: 'button', text: 'Försök igen', onclick: () => O.invite()})); return; }
+    const url = O.inviteUrl();
+    const link = h('input', {class: 'inviteLink', type: 'text', readonly: true, value: url, 'aria-label': 'Inbjudningslänk'});
+    link.addEventListener('focus', () => link.select());
+    const copy = h('button', {class: 'tool', type: 'button', text: 'Kopiera', onclick: async () => {
+      let ok = false;
+      try { await navigator.clipboard.writeText(url); ok = true; } catch (e) { link.focus(); link.select(); try { ok = document.execCommand('copy'); } catch (x) { ok = false; } }
+      copy.textContent = ok ? 'Kopierad!' : 'Markerad'; setTimeout(() => { copy.textContent = 'Kopiera'; }, 1800);
+    }});
+    const row = h('div', {class: 'inviteRow'}, link, copy);
+    if (navigator.share) row.append(h('button', {class: 'tool', type: 'button', text: 'Dela', onclick: () => navigator.share({title: 'Hugo', text: 'Spela Hugo med oss!', url}).catch(() => {})}));
+    const n = O.boardCount();
+    box.append(h('div', {class: 'inviteTop'}, h('p', {class: 'qrBig', text: 'Skicka länken'}), h('p', {class: 'qrList', text: n ? `${n} ${n === 1 ? 'skärm är ansluten' : 'skärmar är anslutna'}` : 'Ingen annan skärm har anslutit än'})), row,
+      h('p', {class: 'qrText', html: `Den som får länken öppnar den på sin tv, dator eller platta och väljer ett troll. Eller: tryck på <b>Spela online</b> i spelet och skriv koden <b class="code">${esc(Remote.code())}</b>.`}));
+  }
+  O.draw = draw;
+  // Den lilla lappen uppe till höger under spelet: är vi online?
+  function netChip() {
+    const el = $('netChip');
+    if (!el) return;
+    const g = role === 'guest', n = O.boardCount();
+    el.hidden = !(g || (role === 'host' && boards.size));
+    el.classList.toggle('bad', g && !gOn);
+    el.classList.toggle('fast', g && fast);
+    $('netText').textContent = g ? (gOn ? (fast ? 'Spelar ikapp …' : 'Online') : 'Ansluter …') : `${n} ${n === 1 ? 'skärm' : 'skärmar'} online`;
+  }
+  // Startsidan: skriv koden från en inbjudan
+  O.initUI = () => {
+    $('btnJoinOnline').addEventListener('click', () => { Sound.unlock(); Sound.play('click'); const last = Store.get('onlineLast', null); $('joinCode').value = last && last.code || ''; $('joinErr').textContent = ''; $('joinOnline').hidden = false; syncJoin(); setTimeout(() => $('joinCode').focus(), 40); });
+    $('btnJoinBack').addEventListener('click', () => { $('joinOnline').hidden = true; });
+    // Här går det inte att spela online (en förhandsvisning): länken öppnar spelet på webben med koden
+    const webJoin = () => SITE + '#spela-' + $('joinCode').value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const syncJoin = () => {
+      const web = !Remote.possible() && !!SITE;
+      $('btnJoinGo').hidden = web; $('joinWeb').hidden = !web; $('joinWebNote').hidden = !web;
+      if (web) $('joinWeb').href = webJoin();
+    };
+    $('joinCode').addEventListener('input', syncJoin);
+    const go = () => { const c = $('joinCode').value; if (!O.join(c)) { $('joinErr').textContent = 'Skriv koden från inbjudan (fem tecken).'; return; } $('joinOnline').hidden = true; };
+    $('btnJoinGo').addEventListener('click', go);
+    $('joinCode').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (Remote.possible()) go(); } });
+    $('btnInvite').addEventListener('click', () => { Sound.unlock(); Sound.play('click'); O.invite(); });
+    $('btnOnlineLeave').addEventListener('click', () => O.leave());
+    draw();
+  };
+  // Öppnades spelet med en inbjudan (#spela-KOD)? Då går vi med direkt.
+  O.fromHash = () => {
+    const m = location.hash.match(/^#spela-([A-Za-z0-9]{4,8})(?:~(.+))?$/);
+    if (!m) return false;
+    let turn = null;
+    try { if (m[2]) turn = JSON.parse(decodeURIComponent(escape(atob(m[2])))); } catch (e) { turn = null; }
+    return O.join(m[1], turn);
+  };
+  return O;
 })();
 
 /* ---- 10k-bonus.js ---- */
@@ -5884,11 +6542,13 @@ const Bonus = (() => {
         hud.count(introT > 1.6 ? 'Klara' : introT > .8 ? 'Färdiga' : 'Spring!');
         if (introT <= 0) { phase = cur.phase = 'run'; hud.count(''); }
       }
-      // Visar man någon annans runda väntar hindret vid Hugo tills resultatet har kommit (högst sex sekunder)
+      // Visar man någon annans runda väntar hindret vid Hugo tills resultatet har kommit (högst opts.hold sekunder,
+      // som standard sex; värden väntar längre på en skärm som springer rundan och inte har tappat kontakten)
       let v = phase === 'intro' ? 0 : speed;
       if (puppet && phase === 'run') {
         const at = obst.find(o => (o.state === 'wait' || o.state === 'armed') && o.z + v * dt >= HIT);
-        if (at && !(at.i in told)) { hold += dt; if (hold < 6) v = 0; else told[at.i] = false; } else hold = 0;
+        const lim = typeof opts.hold === 'function' ? opts.hold() : opts.hold || 6;
+        if (at && !(at.i in told)) { hold += dt; if (hold < lim) v = 0; else told[at.i] = false; } else hold = 0;
       }
       if (phase === 'run' || phase === 'end') {
         gtex.offset.y += v * dt / (160 / 12);
@@ -6027,6 +6687,8 @@ const Bonus = (() => {
     Game.start(Rules.newState(seats), false);
     return;
   }
+  // öppnades spelet med en inbjudan (#spela-KOD) går vi med i det spelet, annars visas startsidan
+  if (Online.fromHash()) return;
   Menu.showTitle();
   // spelade familjen med mobilerna förra gången kan de ansluta igen direkt
   Remote.resume();

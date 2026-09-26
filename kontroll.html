@@ -481,6 +481,8 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   const $ = id => document.getElementById(id);
   const pick = a => a[Math.floor(Math.random() * a.length)];
   const genitive = n => /[sxz]$/i.test(n) ? n : n + 's';
+  // "ett troll": Rött, Grönt, Blått och Gult troll
+  const trollOf = c => ({Röd: 'Rött', Grön: 'Grönt', Blå: 'Blått', Gul: 'Gult'}[c] || c) + ' troll';
   const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
   function h(tag, attrs, ...kids) {
     const e = document.createElement(tag);
@@ -706,10 +708,10 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     }
     lob.seats.forEach(s => {
       const taken = !free(s);
-      const who = s.mine ? 'Du' : taken ? `${seatName(s)} har det` : s.on ? (s.cpu ? 'Datorn nu' : `${seatName(s)} på skärmen`) : 'Ledigt';
+      const who = s.mine ? 'Du' : taken ? `${seatName(s)} har det` : s.board ? `${seatName(s)} spelar online` : s.on ? (s.cpu ? 'Datorn nu' : `${seatName(s)} på skärmen`) : 'Ledigt';
       grid.append(h('button', {class: 'troll', type: 'button', style: {'--c': s.color}, 'aria-pressed': String(chosen === s.i), disabled: taken,
         onclick: () => { chosen = s.i; tap(); renderJoin(st.lobby); }},
-        thumbImg('full:' + s.i, null, s.cname + ' troll'), h('b', {text: s.cname}), h('small', {text: who})));
+        thumbImg('full:' + s.i, null, trollOf(s.cname)), h('b', {text: s.cname}), h('small', {text: who})));
     });
     if (!$('nameInput').value && profile.name) $('nameInput').value = profile.name;
     const s = chosen != null ? lob.seats[chosen] : null;
@@ -734,14 +736,14 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   function renderLobby(lob) {
     const me = lob.seats[lob.mine];
     $('lobbyMe').innerHTML = '';
-    $('lobbyMe').append(thumbImg('full:' + me.i), h('div', null, h('h1', {text: `Du är ${me.name}!`}), h('small', {text: `${me.cname} troll · börjar i ${me.track}`})));
+    $('lobbyMe').append(thumbImg('full:' + me.i), h('div', null, h('h1', {text: `Du är ${me.name}!`}), h('small', {text: `${trollOf(me.cname)} · börjar i ${me.track}`})));
     $('lobbyMe').style.setProperty('--c', me.color);
     $('lobbyNote').textContent = (st.phase === 'title' ? 'Den stora skärmen visar startsidan just nu. ' : '')
       + 'När spelet börjar blir mobilen din Hugo-telefon. Knapparna 2, 4, 6 och 8 är dina kort, precis som när man styrde Hugo i tv:n.';
     const list = $('lobbyList');
     list.innerHTML = '';
     lob.seats.filter(s => s.on).forEach(s => list.append(h('div', {class: 'pl', style: {'--c': s.color}}, thumbImg('head:' + s.i),
-      h('span', null, h('b', {text: s.name}), h('small', {text: `${s.phone ? (s.online ? 'Mobil' : 'Mobilen är borta') : s.cpu ? 'Dator' : 'Spelar på skärmen'} · ${s.track}`})),
+      h('span', null, h('b', {text: s.name}), h('small', {text: `${s.phone ? (s.online ? 'Mobil' : 'Mobilen är borta') : s.board ? 'Spelar online' : s.cpu ? 'Dator' : 'Spelar på skärmen'} · ${s.track}`})),
       s.mine ? h('span', {class: 'tag mine', text: 'Du'}) : null)));
     $('bStart').hidden = !st.leader;
     $('bStart').disabled = lob.n < 2;
@@ -765,7 +767,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     g.players.filter(p => p.human).forEach(p => {
       const busy = p.phone && p.online;
       list.append(h('button', {class: 'pl', type: 'button', style: {'--c': p.color}, disabled: busy, onclick: () => { unlockAudio(); $('claimErr').textContent = ''; send({t: 'claim', i: p.i}); tap(); }},
-        thumbImg('head:' + p.seat), h('span', null, h('b', {text: p.name}), h('small', {text: busy ? 'Spelar redan med en mobil' : 'Tryck om det är du'})), null));
+        thumbImg('head:' + p.seat), h('span', null, h('b', {text: p.name}), h('small', {text: busy ? 'Spelar redan med en mobil' : p.board ? 'Spelar online. Tryck om det är du' : 'Tryck om det är du'})), null));
     });
     if (!g.players.some(p => p.human)) list.append(h('p', {class: 'note', text: 'Bara datorn spelar just nu.'}));
     if (!$('watchName').value && profile.name) $('watchName').value = profile.name;
