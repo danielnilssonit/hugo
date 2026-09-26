@@ -260,6 +260,8 @@ h3{margin:14px 0 4px; font-size:17px}
 .bKey.k2{grid-area:1 / 2} .bKey.k4{grid-area:2 / 1} .bKey.k6{grid-area:2 / 3} .bKey.k8{grid-area:3 / 2}
 .bKey:active,.bKey.hit{transform:translateY(4px); box-shadow:0 1px 0 var(--ink)}
 .bKey.need{background:linear-gradient(#FFF6CF,#FFE079); animation:glow .7s ease-in-out infinite alternate}
+/* någon annans runda (online): knapparna behövs inte här */
+.bonus.watch .bonusPad{display:none}
 @media (max-width:820px), (orientation:portrait){
   .bonusTop{top:calc(10px + var(--safe-t)); flex-wrap:wrap; justify-content:center}
   .bonusTop b{font-size:22px}
@@ -1060,11 +1062,28 @@ const Rules = (() => {
     const dc = shuffle(DOOR_CARDS());
     return {v: 2, players, turn: 0, phase: 'start', deck, discard: [], doors: [dc.slice(0, 4), dc.slice(4, 8), dc.slice(8, 12)],
       spin: {bergsstigen: 0, jarnvagen: 0, skogen: 0, gruvan: 0}, last: null, freedN: 0, turns: 0, started: Date.now(),
-      tracks: clamp(Math.round(opts.tracks || 4), 1, 4), tips: {}};
+      tracks: clamp(Math.round(opts.tracks || 4), 1, 4), tips: {},
+      // Online: allt som slumpas under spelet går via S.rng (samma på alla skärmar), seq räknar besluten,
+      // och bonus följer med i spelet så att alla skärmar kör samma sak
+      rng: (Math.random() * 4294967296) | 0, seq: 0, bonus: opts.bonus !== false};
+  };
+  // Slumptal från spelets eget frö (samma följd på alla skärmar som spelar samma parti)
+  R.rand = S => {
+    if (S.rng == null) S.rng = 12345;
+    let a = S.rng = (S.rng + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
   // hur många banor som ska gås i det här spelet (äldre sparade spel har alltid fyra)
   R.tracks = S => (S && S.tracks) || 4;
-  R.draw = S => { if (!S.deck.length) { S.deck = shuffle(S.discard); S.discard = []; } return S.deck.pop(); };
+  R.draw = S => {
+    if (!S.deck.length) {
+      const a = S.discard.slice();
+      for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(R.rand(S) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+      S.deck = a; S.discard = [];
+    }
+    return S.deck.pop();
+  };
   R.occupied = (S, t, p) => S.players.some(q => q !== p && q.status === 'track' && q.track === t);
   // Nästa lediga bana medurs som spelaren inte har gått
   R.pickNext = (S, p, from) => {
@@ -3053,14 +3072,17 @@ const Pieces = (() => {
 /* ================= 3D-tärningen (1–3): släpps bredvid trollet och studsar ================= */
 // En liten fysikmotor för en kub: tyngdkraft, studs mot brädets relief, friktion och rullning.
 // Sidan som hamnar uppåt blir slaget. Tärningen har 1, 2 och 3 prickar två gånger.
+// Kastet räknas fram i förväg med fast tidssteg (D.record) och spelas sedan upp (D.play). Då kan värden i ett
+// onlinespel skicka exakt samma kast till alla skärmar, och alla ser tärningen studsa och landa likadant.
 const Dice = (() => {
   const D = {};
   const SIZE = .15, H = SIZE / 2, G = 24, MASS = 1, INERTIA = MASS * SIZE * SIZE / 6;
+  const FPS = 60, SUB = 6, KEEP = 2;   // 60 steg per sekund med 6 delsteg; var andra bild sparas
   // Sidornas normaler i spelet (Blender +Z=1, -Z=1, +X=3, -X=3, -Y=2, +Y=2)
   const FACES = [[1, 0, 1, 0], [1, 0, -1, 0], [3, 1, 0, 0], [3, -1, 0, 0], [2, 0, 0, 1], [2, 0, 0, -1]].map(([v, x, y, z]) => ({v, n: new THREE.Vector3(x, y, z)}));
   const CORNERS = [];
   for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) CORNERS.push(new THREE.Vector3(x * H, y * H, z * H));
-  let obj = null, sim = null, fade = null;
+  let obj = null, play = null, fade = null;
   const tmp = new THREE.Vector3(), r = new THREE.Vector3(), vc = new THREE.Vector3(), nrm = new THREE.Vector3(), t1 = new THREE.Vector3(), rn = new THREE.Vector3();
 
   function model() {
@@ -3090,22 +3112,7 @@ const Dice = (() => {
     if (out) out.set(0, 1, 0);
     return Math.abs(x) < 5.2 && Math.abs(z) < 5.2 ? .1 : -.31;
   }
-  // Släpper tärningen ovanför en punkt och låter den rulla mot kameran
-  D.throw = target => new Promise(resolve => {
-    D.clear();
-    obj = model();
-    S3.root().add(obj);
-    const cam = S3.camera(), toCam = tmp.copy(cam.position).sub(target).setY(0).normalize();
-    const start = target.clone().addScaledVector(toCam, .1).add(new THREE.Vector3(0, .7, 0));
-    obj.position.copy(start);
-    obj.quaternion.setFromEuler(new THREE.Euler(Math.random() * 6.3, Math.random() * 6.3, Math.random() * 6.3));
-    const side = new THREE.Vector3(-toCam.z, 0, toCam.x).multiplyScalar((Math.random() - .5) * .5);
-    sim = {p: obj.position, q: obj.quaternion, v: toCam.clone().multiplyScalar(.55 + Math.random() * .25).add(side).add(new THREE.Vector3(0, .6, 0)),
-      w: new THREE.Vector3((Math.random() - .5) * 26, (Math.random() - .5) * 18, (Math.random() - .5) * 26), still: 0, time: 0, resolve, lastHit: 0};
-    Sound.play('whoosh');
-  });
-  function step(dt) {
-    const s = sim;
+  function step(s, dt) {
     s.v.y -= G * dt;
     s.p.addScaledVector(s.v, dt);
     const wl = s.w.length();
@@ -3132,36 +3139,82 @@ const Dice = (() => {
           s.v.addScaledVector(vt, -jt / MASS);
           s.w.add(rxt.multiplyScalar(-jt / INERTIA));
         }
-        if (-vn > .6 && s.time - s.lastHit > .06) { Sound.play('hit', Math.min(1, -vn / 3)); s.lastHit = s.time; }
+        // studsljudet sparas med tiden, så att det hörs på rätt ställe när kastet spelas upp
+        if (-vn > .6 && s.time - s.lastHit > .06) { s.hits.push([+s.time.toFixed(3), +Math.min(1, -vn / 3).toFixed(2)]); s.lastHit = s.time; }
       }
       s.p.addScaledVector(nrm, pen * .6);
     }
     if (contact) { s.v.multiplyScalar(1 - 1.8 * dt); s.w.multiplyScalar(1 - 2.4 * dt); }
   }
   function upFace(q) { let best = FACES[0], by = -2; for (const f of FACES) { const y = tmp.copy(f.n).applyQuaternion(q).y; if (y > by) { by = y; best = f; } } return best; }
-  function settle(s) {
-    const face = upFace(s.q), n = tmp.copy(face.n).applyQuaternion(s.q);
-    const fix = new THREE.Quaternion().setFromUnitVectors(n, new THREE.Vector3(0, 1, 0));
-    const q0 = s.q.clone(), q1 = fix.multiply(q0), y0 = s.p.y, y1 = ground(s.p.x, s.p.z) + H;
-    Anim.tween(160, t => { s.q.copy(q0).slerp(q1, t); s.p.y = lerp(y0, y1, t); }, easeOut);
-    return face.v;
+  const r4 = x => Math.round(x * 1e4) / 1e4;
+
+  // Räknar fram ett kast som landar bredvid target och rullar mot kameran. Ger {v: slaget, f: bilderna, h: studsarna}.
+  // En bild är [tid, x, y, z, qx, qy, qz, qw, marken]. Marken behövs när kastet visas på en skärm med platt bräde.
+  D.record = target => {
+    const cam = S3.camera(), toCam = new THREE.Vector3().copy(cam.position).sub(target).setY(0).normalize();
+    const start = target.clone().addScaledVector(toCam, .1).add(new THREE.Vector3(0, .7, 0));
+    const side = new THREE.Vector3(-toCam.z, 0, toCam.x).multiplyScalar((Math.random() - .5) * .5);
+    const s = {p: start, q: new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.random() * 6.3, Math.random() * 6.3, Math.random() * 6.3)),
+      v: toCam.clone().multiplyScalar(.55 + Math.random() * .25).add(side).add(new THREE.Vector3(0, .6, 0)),
+      w: new THREE.Vector3((Math.random() - .5) * 26, (Math.random() - .5) * 18, (Math.random() - .5) * 26), still: 0, time: 0, lastHit: -1, hits: []};
+    const f = [], dt = 1 / FPS, frame = t => f.push([r4(t), r4(s.p.x), r4(s.p.y), r4(s.p.z), r4(s.q.x), r4(s.q.y), r4(s.q.z), r4(s.q.w), r4(ground(s.p.x, s.p.z))]);
+    frame(0);
+    for (let n = 1; ; n++) {
+      for (let i = 0; i < SUB; i++) { s.time = (n - 1) * dt + i * dt / SUB; step(s, dt / SUB); }
+      const t = n * dt;
+      const calm = s.v.length() < .06 && s.w.length() < .8;
+      s.still = calm ? s.still + dt : 0;
+      const end = s.still > .18 || t > 3 || s.p.y < -1;
+      if (n % KEEP === 0 || end) frame(t);
+      if (end) break;
+    }
+    // till sist lägger sig tärningen rakt med den översta sidan uppåt
+    const face = upFace(s.q), up = tmp.copy(face.n).applyQuaternion(s.q);
+    const q0 = s.q.clone(), q1 = new THREE.Quaternion().setFromUnitVectors(up, new THREE.Vector3(0, 1, 0)).multiply(q0);
+    const y0 = s.p.y, y1 = ground(s.p.x, s.p.z) + H, t0 = f[f.length - 1][0];
+    for (let k = 1; k <= 5; k++) { const e = easeOut(k / 5); s.q.copy(q0).slerp(q1, e); s.p.y = lerp(y0, y1, e); frame(t0 + .032 * k); }
+    return {v: face.v, f, h: s.hits};
+  };
+
+  // Spelar upp ett uträknat kast. Ger slaget när tärningen ligger still.
+  D.play = rec => new Promise(resolve => {
+    D.clear();
+    obj = model();
+    S3.root().add(obj);
+    play = {rec, t: 0, hit: 0, resolve, done: false};
+    apply(0);
+    Sound.play('whoosh');
+  });
+  const qa = new THREE.Quaternion(), qb = new THREE.Quaternion();
+  function apply(t) {
+    const f = play.rec.f;
+    let i = 0;
+    while (i < f.length - 2 && f[i + 1][0] < t) i++;
+    const a = f[i], b = f[Math.min(f.length - 1, i + 1)], k = b[0] > a[0] ? clamp((t - a[0]) / (b[0] - a[0]), 0, 1) : 1;
+    const x = lerp(a[1], b[1], k), z = lerp(a[3], b[3], k);
+    // brädet här kan vara platt fast kastet räknades på ett bräde med kullar: flytta tärningen till markhöjden här
+    const g = lerp(a[8], b[8], k), off = ground(x, z) - g;
+    obj.position.set(x, lerp(a[2], b[2], k) + off, z);
+    qa.set(a[4], a[5], a[6], a[7]); qb.set(b[4], b[5], b[6], b[7]);
+    obj.quaternion.copy(qa).slerp(qb, k);
   }
-  // Tvingar ett visst resultat (tester) genom att vrida kuben när den har landat
-  D.force = null;
   D.tick = dt => {
     if (fade) { fade.t += dt; const k = Math.max(0, 1 - fade.t / .35); if (obj) obj.scale.setScalar(SIZE * k); if (k <= 0) D.clear(); }
-    if (!sim) return;
-    const s = sim, n = 6, hh = Math.min(dt, .05) / n;
-    for (let i = 0; i < n; i++) step(hh);
-    s.time += Math.min(dt, .05);
-    const calm = s.v.length() < .06 && s.w.length() < .8;
-    s.still = calm ? s.still + dt : 0;
-    if (s.still > .18 || s.time > 3 || s.p.y < -1) { sim = null; const v = settle(s); setTimeout(() => s.resolve(v), 180 * Time.scale); }
+    if (!play || play.done || !obj) return;
+    play.t += Math.min(dt, .1) / Math.max(.05, Time.scale);
+    const h = play.rec.h;
+    while (play.hit < h.length && h[play.hit][0] <= play.t) { Sound.play('hit', h[play.hit][1]); play.hit++; }
+    const f = play.rec.f, end = f[f.length - 1][0];
+    apply(Math.min(play.t, end));
+    if (play.t >= end) { play.done = true; const p = play; setTimeout(() => p.resolve(p.rec.v), 180 * Time.scale); }
   };
+  // Kastar direkt (en skärm utan onlinespel)
+  D.throw = target => D.play(D.record(target));
   // Snabbt resultat utan fysik (tester eller när sidan inte ritas)
   D.quick = () => 1 + Math.floor(Math.random() * 3);
   D.hide = () => { if (obj && !fade) fade = {t: 0}; };
-  D.clear = () => { if (obj && obj.parent) obj.parent.remove(obj); obj = null; sim = null; fade = null; };
+  D.clear = () => { if (obj && obj.parent) obj.parent.remove(obj); obj = null; play = null; fade = null; };
   D.object = () => obj;
   Bus.on('frame', dt => D.tick(dt));
   return D;
@@ -3896,14 +3949,16 @@ const UI = (() => {
   };
   /* ---------- Bonusrundan ---------- */
   // Skärmens del av bonusrundan: rubrik, fem stjärnor, stora meddelanden och knapparna 2, 4, 6 och 8 som på en telefon
-  U.bonusOpen = (p, trackName, n) => {
+  // watch: rundan spelas på en annan skärm (online), här visas den bara
+  U.bonusOpen = (p, trackName, n, watch) => {
     const box = $('bonus'), hudWas = !$('hud').hidden;
     $('hud').hidden = true;
     box.hidden = false;
+    box.classList.toggle('watch', !!watch);
     box.style.setProperty('--c', p.color);
     $('bonusPic').src = Portraits.get(p.color, 'head');
     $('bonusTitle').textContent = `Bonusrunda på ${trackName}!`;
-    $('bonusSub').textContent = Remote.has(p) ? `${p.name}, tryck på knapparna i mobilen när hindren kommer` : `${p.name}, tryck på rätt knapp när hindret kommer`;
+    $('bonusSub').textContent = watch ? `${p.name} springer på sin egen skärm. Heja!` : Remote.has(p) ? `${p.name}, tryck på knapparna i mobilen när siffran syns` : `${p.name}, tryck på siffran så fort den syns`;
     $('bonusStars').innerHTML = Array.from({length: n}, (_, i) => `<span class="bStar" data-i="${i}">★</span>`).join('');
     // knapparna i telefonens ordning: 2 upp, 4 vänster, 6 höger, 8 ner
     $('bonusPad').innerHTML = ['2', '4', '6', '8'].map(s => `<button class="bKey k${s}" type="button" data-k="${s}" aria-label="${s} ${VERB[s]}"><svg viewBox="-18 -18 36 36" aria-hidden="true">${Art.keycap(s)}</svg><span>${VERB[s]}</span></button>`).join('');
@@ -4251,7 +4306,7 @@ const Menu = (() => {
     const list = seats.map((s, i) => Object.assign({}, s, {seat: i, name: (s.name || '').trim() || COLOR_NAMES[i]})).filter(s => s.on);
     if (list.length < 2) { const t = 'Det behövs minst två spelare.'; $('setupHint').textContent = t; return t; }
     $('setupHint').textContent = '';
-    startGame(Rules.newState(list, {tracks: Settings.tracks}), false);
+    startGame(Rules.newState(list, {tracks: Settings.tracks, bonus: Settings.bonus}), false);
     return null;
   }
   function startGame(state, resumed) {
@@ -5101,6 +5156,9 @@ const Remote = (() => {
 // på rätt knapp innan hindret är framme, på skärmen, med tangentbordet eller i sin mobil: 2 hoppa, 8 ducka, 4 vänster
 // och 6 höger. Fem hinder: tre klarade ger en guldsäck och alla fem ger två. Datorspelarna springer inte på riktigt,
 // de får ett slumpat resultat så att spelet inte blir för långt.
+// Knappen räknas så fort siffran syns ovanför hindret (då har barnen gott om tid), och ett rätt tryck syns direkt:
+// siffran blir grön med en bock. Online: samma frö ger samma hinder på alla skärmar. Den som spelar skickar varje
+// tryck och varje klarat hinder (opts.onEvent), och de andra skärmarna visar rundan med det som kommer in (opts.feed).
 const Bonus = (() => {
   const B = {};
   const N = 5, GAP = 14, SHOW = 17, WIN = 13, HIT = -.25, PATH = 4.8;
@@ -5122,8 +5180,9 @@ const Bonus = (() => {
   B.key = k => { if (cur) cur.key(String(k)); };
   B.simulate = () => { let ok = 0; for (let i = 0; i < N; i++) if (Math.random() < .72) ok++; return {ok, n: N}; };
   B.reward = r => r.ok >= r.n ? 2 : r.ok >= 3 ? 1 : 0;
-  // Spelas med Flow.ask så att rundan avbryts om spelet avslutas
-  B.play = (p, gen) => Flow.ask(gen, res => start(p, res));
+  // Spelas med Flow.ask så att rundan avbryts om spelet avslutas.
+  // opts.seed: samma hinder på alla skärmar. opts.onEvent(ev): varje händelse (den som spelar). opts.feed: visa någon annans runda.
+  B.play = (p, gen, opts = {}) => Flow.ask(gen, res => start(p, res, opts));
 
   /* ---------- Byggstenar ---------- */
   const std = (color, rough = .8, extra) => Mat(Object.assign({color, roughness: rough}, extra || {}));
@@ -5169,14 +5228,23 @@ const Bonus = (() => {
     return t;
   }
   // tangenten som visas ovanför hindret (samma som på korten)
-  function keySprite(sym) {
+  // Två bilder: gul (tryck nu) och grön med en bock (trycket är taget)
+  function keyTexture(sym, armed) {
     const c = document.createElement('canvas'); c.width = c.height = 128;
     const g = c.getContext('2d');
-    g.fillStyle = 'rgba(255,240,170,.95)'; g.beginPath(); g.arc(64, 64, 60, 0, 7); g.fill();
+    g.fillStyle = armed ? 'rgba(120,214,96,.97)' : 'rgba(255,240,170,.95)'; g.beginPath(); g.arc(64, 64, 60, 0, 7); g.fill();
     g.lineWidth = 5; g.strokeStyle = '#241A15'; g.stroke();
     Art.keycapCanvas(g, sym, 64, 66, 3.1);
-    const s = new THREE.Sprite(new THREE.SpriteMaterial({map: new THREE.CanvasTexture(c), transparent: true, depthTest: false}));
+    if (armed) {
+      g.beginPath(); g.arc(100, 26, 22, 0, 7); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 4; g.strokeStyle = '#241A15'; g.stroke();
+      g.beginPath(); g.moveTo(89, 27); g.lineTo(97, 36); g.lineTo(112, 17); g.lineWidth = 6; g.strokeStyle = '#23884A'; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke();
+    }
+    return new THREE.CanvasTexture(c);
+  }
+  function keySprite(sym) {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({map: keyTexture(sym, false), transparent: true, depthTest: false}));
     s.scale.set(1.1, 1.1, 1); s.renderOrder = 10;
+    s.userData.arm = () => { if (s.userData.armed) return; s.userData.armed = true; s.material.map.dispose(); s.material.map = keyTexture(sym, true); s.material.needsUpdate = true; };
     return s;
   }
 
@@ -5221,8 +5289,9 @@ const Bonus = (() => {
   }
 
   /* ---------- Rundan ---------- */
-  function start(p, res) {
-    const th = THEME[p.track] || THEME.skogen, r3 = S3.renderer();
+  function start(p, res, opts = {}) {
+    const th = THEME[p.track] || THEME.skogen;
+    const puppet = !!opts.feed, emit = ev => { if (!puppet && opts.onEvent) { try { opts.onEvent(ev); } catch (e) { console.error(e); } } };
     const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(52, 16 / 9, .05, 120);
     const sky = new THREE.Color(th.sky);
     scene.background = sky; scene.fog = new THREE.Fog(new THREE.Color(th.fog), 16, th.tunnel ? 34 : 52);
@@ -5268,28 +5337,31 @@ const Bonus = (() => {
     if (hadBase) hugo.children[0].position.y -= .25 * hugo.children[0].scale.y;
     const shadow = blob(1, .8, 0x000000, .35);
     scene.add(hugo, shadow);
-    // fem hinder från banans egen snurra
+    // fem hinder från banans egen snurra (samma följd på alla skärmar när fröet är detsamma)
     const kinds = SPIN[p.track].filter(s => s.t === 'hinder').map(s => [s.o, s.s]);
+    const rnd = opts.seed != null ? seeded(opts.seed) : Math.random, choose = () => kinds[Math.floor(rnd() * kinds.length)];
     // inte samma hinder med samma knapp tre gånger i rad (om banan har fler sorter att välja på)
     const seq = [], same = (a, b) => a[0] === b[0] && a[1] === b[1], sorts = new Set(kinds.map(k => k.join())).size;
-    for (let i = 0; i < N; i++) { let c; do { c = pick(kinds); } while (sorts > 1 && i >= 2 && same(c, seq[i - 1]) && same(c, seq[i - 2])); seq.push(c); }
+    for (let i = 0; i < N; i++) { let c, guard = 0; do { c = choose(); } while (sorts > 1 && i >= 2 && same(c, seq[i - 1]) && same(c, seq[i - 2]) && ++guard < 50); seq.push(c); }
     const obst = seq.map(([o, s], i) => {
       const obj = obstacle(o, s), spr = keySprite(s);
       spr.position.set(0, o === 'eagle' || DUCK.includes(o) ? 2.25 : 1.85, 0); spr.visible = false;
       obj.add(spr);
       const z = -(SHOW + 4 + i * GAP);
       obj.position.z = z; scene.add(obj);
-      return {o, s, kind: kind(o), z, obj, spr, state: 'wait', fired: false};
+      return {i, o, s, kind: kind(o), z, obj, spr, state: 'wait', fired: false};
     });
 
     // Hugos rörelser
-    const H = {x: 0, tx: 0, y: 0, jumpT: -1, duck: 0, duckT: 0, bonkT: 0, sideFor: null};
-    let speed = 4.4, t = 0, phase = 'intro', introT = 2.4, endT = 0, running = true;
-    const results = [];
-    const hud = UI.bonusOpen(p, th.name, N);
+    const H = {x: 0, tx: 0, y: 0, jumpT: -1, duck: 0, duckT: 0, bonkT: 0, sideFor: null, ready: 0};
+    let speed = 4.4, t = 0, phase = 'intro', introT = 2.4, endT = 0, running = true, hold = 0;
+    const results = [], told = {};
+    const hud = UI.bonusOpen(p, th.name, N, puppet);
     Sound.mood('tension');
-    Remote.bonus(p, {on: true, track: p.track, n: N});
-    const need = () => { const o = obst.find(x => x.state === 'wait' && x.z > -WIN); return o ? o.s : null; };
+    if (!puppet) Remote.bonus(p, {on: true, track: p.track, n: N});
+    // siffran syns och går att trycka så fort hindret är inom synhåll
+    const visible = o => (o.state === 'wait' || o.state === 'armed') && o.z > -SHOW;
+    const need = () => { const o = obst.find(x => x.state === 'wait' && x.z > -SHOW); return o ? o.s : null; };
     let lastNeed = null;
 
     function act(o) {
@@ -5300,12 +5372,23 @@ const Bonus = (() => {
     }
     // när i rörelsen ska Hugo göra sitt: hoppet har sin högsta punkt när hindret passerar
     const trigger = o => o.kind === 'jump' ? -speed * .3 : o.kind === 'duck' ? -1.7 : -2.8;
+    // Rätt knapp: siffran blir grön med en bock, Hugo gör sig redo och gör sitt när hindret är framme
+    function arm(o) {
+      if (o.state !== 'wait') return;
+      o.state = 'armed';
+      o.spr.userData.arm();
+      H.ready = .35;
+      Sound.play('click');
+      emit({type: 'arm', i: o.i});
+      if (o.z >= trigger(o)) act(o);
+    }
     function done(o, ok) {
       o.state = ok ? 'done' : 'fail';
       o.spr.visible = false;
-      results.push(ok);
-      hud.star(results.length - 1, ok);
-      Remote.bonus(p, {star: results.length - 1, ok});
+      results[o.i] = ok;
+      hud.star(o.i, ok);
+      emit({type: 'done', i: o.i, ok});
+      if (!puppet) Remote.bonus(p, {star: o.i, ok});
       if (ok) { Sound.play('coin'); hud.say(pick(['Snyggt!', 'Bra!', 'Hurra!', 'Klarat!']), 'ok'); }
       else { H.bonkT = .9; Sound.play('hurt'); hud.say(o.kind === 'jump' ? 'Aj, Hugo snubblade!' : o.kind === 'duck' ? 'Bonk!' : 'Oj, det small!', 'bad'); }
       if (o.o === 'boom') boom(o, ok);
@@ -5318,23 +5401,31 @@ const Bonus = (() => {
       ball.position.set((o.s === '4' ? 1 : -1) * 1.05, .5, 0); o.obj.add(ball); fx.push({m: ball, t: 0});
       Sound.play('slam');
     }
+    // Någon annans runda: trycken och resultaten kommer från den som spelar
+    if (puppet) opts.feed.on(ev => {
+      if (!ev || !running) return;
+      const o = obst[ev.i];
+      if (ev.type === 'arm' && o) arm(o);
+      else if (ev.type === 'done' && o) { told[o.i] = !!ev.ok; if (ev.ok && o.state === 'wait') arm(o); }
+      else if (ev.type === 'end') told.end = true;
+    });
     cur = {
       pid: p.id, results, phase,
       need,
       key(k) {
-        if (!running || phase !== 'run') return;
+        if (!running || phase !== 'run' || puppet) return;
         if (!['2', '4', '6', '8'].includes(k)) return;
         hud.press(k);
-        const o = obst.find(x => x.state === 'wait' && x.z > -WIN);
-        if (!o) { Sound.play('tick'); return; }
+        const vis = obst.filter(visible), o = vis.find(x => x.state === 'wait');
+        if (!o) { if (!vis.length) { Sound.play('tick'); hud.say('Vänta tills hindret kommer!', ''); } return; }
+        // samma knapp igen för ett hinder som redan är klart att klaras: inget fel, bara lugnt
+        if (k !== o.s && vis.some(x => x.state === 'armed' && x.s === k)) return;
         if (k !== o.s) { Sound.play('miss'); hud.say('Fel knapp, prova igen!', 'bad'); return; }
-        o.state = 'armed';
-        Sound.play('click');
-        if (o.z >= trigger(o)) act(o);
+        arm(o);
       }
     };
     const onKey = e => {
-      if (!running) return;
+      if (!running || puppet) return;
       const map = {'2': '2', '4': '4', '6': '6', '8': '8', ArrowUp: '2', ArrowLeft: '4', ArrowRight: '6', ArrowDown: '8'};
       const k = map[e.key];
       if (k) { e.preventDefault(); cur && cur.key(k); }
@@ -5349,42 +5440,49 @@ const Bonus = (() => {
         hud.count(introT > 1.6 ? 'Klara' : introT > .8 ? 'Färdiga' : 'Spring!');
         if (introT <= 0) { phase = cur.phase = 'run'; hud.count(''); }
       }
-      const v = phase === 'intro' ? 0 : speed;
+      // Visar man någon annans runda väntar hindret vid Hugo tills resultatet har kommit (högst sex sekunder)
+      let v = phase === 'intro' ? 0 : speed;
+      if (puppet && phase === 'run') {
+        const at = obst.find(o => (o.state === 'wait' || o.state === 'armed') && o.z + v * dt >= HIT);
+        if (at && !(at.i in told)) { hold += dt; if (hold < 6) v = 0; else told[at.i] = false; } else hold = 0;
+      }
       if (phase === 'run' || phase === 'end') {
         gtex.offset.y += v * dt / (160 / 12);
         decor.forEach(d => { d.position.z += v * dt; if (d.position.z > 6) d.position.z -= SPAN; });
         obst.forEach(o => {
           o.z += v * dt; o.obj.position.z = o.z;
-          o.spr.visible = (o.state === 'wait' || o.state === 'armed') && o.z > -SHOW;
-          if (o.spr.visible) { const k = o.z > -WIN ? 1.1 + Math.sin(t * 9) * .12 : .8; o.spr.scale.set(k, k, 1); }
+          o.spr.visible = visible(o);
+          if (o.spr.visible) { const k = o.state === 'armed' ? 1 : 1.1 + Math.sin(t * 9) * .12; o.spr.scale.set(k, k, 1); }
           if (o.state === 'armed' && !o.fired && o.z >= trigger(o)) act(o);
-          if ((o.state === 'wait' || o.state === 'armed') && o.z >= HIT) done(o, o.state === 'armed');
+          if ((o.state === 'wait' || o.state === 'armed') && o.z >= HIT) done(o, puppet ? !!told[o.i] : o.state === 'armed');
           const bird = o.obj.userData.bird; if (bird) { bird.position.y = 1 + Math.sin(t * 6) * .08; bird.rotation.z = Math.sin(t * 12) * .15; }
           if (o.obj.userData.roll) o.obj.children.forEach((c, i) => { if (c.isGroup) { c.position.y = Math.abs(Math.sin(t * 7 + i * 1.3)) * .22; c.rotation.z = Math.sin(t * 5 + i) * .25; } });
           const sp = o.obj.userData.spark; if (sp) sp.scale.setScalar(.7 + Math.random() * .8);
         });
         const n = need();
-        if (n !== lastNeed) { lastNeed = n; hud.need(n); Remote.bonus(p, {need: n}); }
-        speed = 4.4 + results.length * .25;
-        if (phase === 'run' && results.length === N) { phase = cur.phase = 'end'; endT = 1.1; }
+        if (n !== lastNeed) { lastNeed = n; if (!puppet) { hud.need(n); Remote.bonus(p, {need: n}); } }
+        const count = results.filter(r => r !== undefined).length;
+        speed = 4.4 + count * .25;
+        if (phase === 'run' && count === N) { phase = cur.phase = 'end'; endT = 1.1; }
       }
       if (phase === 'end') { endT -= dt; if (endT <= 0 && running) finish(); }
-      // Hugo springer, hoppar, duckar och kliver åt sidan
+      // Hugo springer, hoppar, duckar och kliver åt sidan. När ett tryck har tagits gör han sig redo (en liten nigning).
       if (H.jumpT >= 0) { H.jumpT += dt; const k = Math.min(1, H.jumpT / .62); H.y = Math.sin(k * Math.PI) * 1.05; if (k >= 1) { H.jumpT = -1; H.y = 0; } }
       H.duckT = Math.max(0, H.duckT - dt);
       H.duck += ((H.duckT > 0 ? 1 : 0) - H.duck) * Math.min(1, dt * 14);
+      H.ready = Math.max(0, H.ready - dt);
       if (H.sideFor && H.sideFor.z > 1.6) { H.sideFor = null; H.tx = 0; }
       H.x += (H.tx - H.x) * Math.min(1, dt * 11);
       H.bonkT = Math.max(0, H.bonkT - dt);
-      const runBob = phase === 'intro' ? 0 : Math.abs(Math.sin(t * 11)) * .07;
+      const runBob = phase === 'intro' || v === 0 ? 0 : Math.abs(Math.sin(t * 11)) * .07;
       hugo.position.set(H.x, H.y + (H.jumpT >= 0 ? 0 : runBob), 0);
       const body = nodes.body;
-      const squash = -H.duck * .45 + (H.jumpT >= 0 ? .12 : 0);
+      const squash = -H.duck * .45 + (H.jumpT >= 0 ? .12 : 0) - Math.sin(H.ready / .35 * Math.PI) * .12;
       if (body) {
         body.scale.set(1 - squash * .4, 1 + squash, 1 - squash * .4);
         // lutar sig framåt och gungar från sida till sida när han springer
         body.rotation.x = phase === 'intro' ? 0 : .14;
-        body.rotation.z = H.bonkT ? Math.sin(t * 30) * .3 * H.bonkT : (H.tx - H.x) * -.25 + (phase === 'intro' ? 0 : Math.sin(t * 11) * .07);
+        body.rotation.z = H.bonkT ? Math.sin(t * 30) * .3 * H.bonkT : (H.tx - H.x) * -.25 + (phase === 'intro' || v === 0 ? 0 : Math.sin(t * 11) * .07);
       }
       else hugo.scale.y = 1 + squash;
       if (nodes.tail) nodes.tail.rotation.y = Math.sin(t * 14) * .6;
@@ -5402,7 +5500,8 @@ const Bonus = (() => {
       const ok = results.filter(Boolean).length, r = {ok, n: N};
       const sacks = B.reward(r);
       hud.result(ok, N, sacks);
-      Remote.bonus(p, {on: false, ok, n: N, sacks});
+      emit({type: 'end', ok, n: N});
+      if (!puppet) Remote.bonus(p, {on: false, ok, n: N, sacks});
       Sound.play(sacks ? 'fanfare' : 'sad');
       setTimeout(() => res(r), Time.scale < .2 ? 0 : 2400);
     }
@@ -5413,7 +5512,7 @@ const Bonus = (() => {
       if (S3.alt && S3.alt.scene === scene) S3.alt = null;
       hud.close();
       if (cur && cur.pid === p.id) cur = null;
-      Remote.bonus(p, {on: false});
+      if (!puppet) Remote.bonus(p, {on: false});
       disposeOwn(scene);
       Sound.mood('game');
     };
