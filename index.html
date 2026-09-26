@@ -337,6 +337,7 @@ h3{margin:14px 0 4px; font-size:17px}
 
 /* ---------- Hejarop från skärmen (online) ---------- */
 .reactTool{font-size:20px; padding:0 10px; line-height:1}
+.mapTool{min-width:48px; font-family:var(--f-disp); font-weight:400; font-size:18px; background:#D6ECFA}
 .reactBar{position:absolute; right:calc(14px + var(--safe-r)); top:calc(66px + var(--safe-t)); z-index:24; display:flex; gap:6px; padding:8px; border:3px solid var(--ink); border-radius:18px; background:#fff; box-shadow:var(--pop)}
 .reactBar button{width:48px; height:48px; border:2.5px solid var(--ink); border-radius:50%; background:var(--paper-2); font-size:25px; line-height:1; padding:0}
 .reactBar button:active{transform:scale(.92)}
@@ -567,6 +568,7 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
       <button class="tool" id="tMusic" type="button" aria-pressed="true">Musik</button>
       <button class="tool" id="tVoice" type="button" aria-pressed="false">Läs upp</button>
       <button class="tool" id="tView" type="button" title="Visa hela brädet">Hela brädet</button>
+      <button class="tool mapTool" id="tMap" type="button" title="Visa brädet rakt uppifrån (2D)">2D</button>
       <button class="tool" id="tMenu" type="button">Meny</button>
     </div>
     <div class="banner" id="banner" aria-hidden="true"><img id="bannerPic" alt=""><span id="bannerText"></span></div>
@@ -609,8 +611,8 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
       </div>
       <p class="titleTop" id="titleTop" hidden></p>
       <div class="slowAsk panel" id="slowAsk" hidden>
-        <p><b>Går spelet segt?</b> Den platta kartan i 2D har inga tunga effekter. Den passar tv-apparater och äldre plattor.</p>
-        <div class="slowBtns"><button class="big small" id="btnSimple" type="button">Byt till platt karta</button><button class="big alt small" id="btnSlowNo" type="button">Nej tack</button></div>
+        <p><b>Går spelet segt?</b> Den lätta grafiken har ett platt bräde utan tunga effekter. Den passar tv-apparater och äldre plattor.</p>
+        <div class="slowBtns"><button class="big small" id="btnSimple" type="button">Byt till lätt grafik</button><button class="big alt small" id="btnSlowNo" type="button">Nej tack</button></div>
       </div>
       <p class="titleNote">Ett spel för 2–4 spelare från 5 år, efter brädspelet Hugo (Alga 1993).</p>
     </div>
@@ -735,9 +737,13 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
       <label class="check" for="optStory"><input type="checkbox" id="optStory"> Berättelsen om häxan när ett nytt spel börjar</label>
       <label class="check" for="optFollow"><input type="checkbox" id="optFollow"> Kameran följer den som har turen</label>
       <label class="check" for="optDof"><input type="checkbox" id="optDof"> Miniatyrkänsla (suddig bakgrund)</label>
-      <label class="field" for="optQuality">Grafik
-        <select id="optQuality"><option value="auto">Automatisk</option><option value="high">Hög (3D)</option><option value="low">Snabb (3D, för äldre plattor)</option><option value="simple">Platt karta i 2D (snabbast, för tv)</option></select>
+      <label class="field" for="optView">Karta
+        <select id="optView"><option value="3d">3D, snett från sidan</option><option value="2d">2D, rakt uppifrån</option></select>
       </label>
+      <label class="field" for="optQuality">Grafik
+        <select id="optQuality"><option value="auto">Automatisk</option><option value="high">Hög</option><option value="low">Snabbare (för äldre plattor)</option><option value="simple">Lättast (för tv): platt bräde utan skuggor</option></select>
+      </label>
+      <p class="small">Kartan byts direkt. Byter du grafik laddas spelet om, och ett parti som pågår fortsätter.</p>
       <p class="small" id="musicInfo"></p>
       <details class="adv">
         <summary>Mobiler på svåra nätverk (TURN-server)</summary>
@@ -774,7 +780,7 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
         <button class="big alt" id="btnPausePhones" type="button">Spela med mobilerna</button>
         <button class="big alt" id="btnQuit" type="button">Avsluta till startsidan</button>
       </div>
-      <div class="pauseRow"><button class="tool" id="pMusic" type="button" aria-pressed="true">Musik</button><button class="tool" id="pVoice" type="button" aria-pressed="false">Läs upp</button><button class="tool" id="pView" type="button">Hela brädet</button><button class="tool" id="pMap" type="button">Platt karta (2D)</button></div>
+      <div class="pauseRow"><button class="tool" id="pMusic" type="button" aria-pressed="true">Musik</button><button class="tool" id="pVoice" type="button" aria-pressed="false">Läs upp</button><button class="tool" id="pView" type="button">Hela brädet</button><button class="tool" id="pMap" type="button">2D-karta</button></div>
       <div class="pausePlayers" id="pausePlayers"></div>
       <div class="phoneBox" id="pausePhoneBox" hidden></div>
       <p class="small" id="pauseNote">Spelet sparas efter varje tur, så du kan fortsätta senare.</p>
@@ -847,9 +853,10 @@ const Store = {
 
 // tracks: hur många banor man går innan häxan (kort spel 2, mellan 3, hela spelet 4). bonus: bonusrunda när en bana är klar.
 // die: tärningen, 3 (1-3 som i brädspelet) eller 6 (vanlig tärning, snabbare spel). story: berättelsen när ett nytt spel börjar.
+// view: kartan i '3d' (snett från sidan) eller '2d' (rakt uppifrån, med trollen som runda spelpjäser). Byts direkt.
 // turn: egen TURN-server för nätverk där mobilerna inte kommer fram ({url, user, pass}).
 const Settings = Object.assign({
-  music: .5, sfx: .8, voice: false, speed: 'normal', quality: 'auto', dof: true, hints: true, follow: true, tracks: 4, bonus: true, turn: null, die: 3, story: true
+  music: .5, sfx: .8, voice: false, speed: 'normal', quality: 'auto', dof: true, hints: true, follow: true, tracks: 4, bonus: true, turn: null, die: 3, story: true, view: '3d'
 }, Store.get('settings', {}));
 function saveSettings() { Store.set('settings', Settings); }
 
@@ -2201,6 +2208,16 @@ const S3 = (() => {
   const tickers = new Set();
   const pickables = [];     // {obj, fn}
   let flash = 0;
+  // 2D-kartan: kameran tittar rakt ner på brädet med en smal vinkel, så att det ser ut som ett platt spelbräde.
+  // k2d går mjukt mellan 0 (3D) och 1 (2D) när man byter. Berättelsen och häxans final (cine) och startsidan visas
+  // alltid i 3D, så kameran åker ner till borgen och sedan upp igen.
+  let view2d = Settings.view === '2d', k2d = view2d ? 1 : 0;
+  const TOP = 1.54;
+  const want2d = () => view2d && !Cam.cine && !Cam.attract ? 1 : 0;
+  S.view2d = () => k2d > .5;
+  S.setView = v => { view2d = v === '2d'; Bus.emit('view', view2d); };
+  S.cine = on => { Cam.cine = !!on; };
+  const fovFor = () => { const p = camera.aspect < .8; return lerp(p ? 50 : 38, p ? 34 : 24, k2d); };
 
   /* ---------- Koordinater ---------- */
   S.height = (bx, by) => Terrain.at(bx, by);
@@ -2281,7 +2298,7 @@ const S3 = (() => {
     renderer.setSize(w, h, false);
     Post.setSize(w * renderer.getPixelRatio(), h * renderer.getPixelRatio());
     camera.aspect = w / h;
-    camera.fov = w / h < .8 ? 50 : 38;
+    camera.fov = fovFor();
     camera.updateProjectionMatrix();
     Cam.limits();
     Bus.emit('resize');
@@ -2440,7 +2457,8 @@ const S3 = (() => {
     if (Post.enabled) {
       FOCUS.set(Cam.tx, Terrain.at(Cam.tx * 100 + 500, Cam.tz * 100 + 500), Cam.tz).project(camera);
       const zoom = clamp((Cam.d - Cam.dMin) / ((Cam.dFit || 12) - Cam.dMin), 0, 1);
-      Post.render(scene, camera, {focusY: FOCUS.y * .5 + .5, dof: Settings.dof ? lerp(.9, .35, zoom) : 0, bloom: .3, exposure: .92 * (1 + flash * .8), night: .15});
+      // miniatyrskärpan passar inte när man tittar rakt ner (2D-kartan)
+      Post.render(scene, camera, {focusY: FOCUS.y * .5 + .5, dof: Settings.dof ? lerp(.9, .35, zoom) * (1 - k2d) : 0, bloom: .3, exposure: .92 * (1 + flash * .8), night: .15});
     } else renderer.render(scene, camera);
     if (Settings.quality === 'auto' && dt > (SIMPLE ? .05 : .045)) {
       if (++slowFrames > (SIMPLE ? 60 : 90)) {
@@ -2468,8 +2486,8 @@ const S3 = (() => {
 
   /* ---------- Kameran ---------- */
   const Cam = S.cam = {
-    tx: 0, tz: .3, d: 14, yaw: 0, dMin: 1.6, dMax: 16, dFit: 14, anim: null, userT: 0, followFn: null, attract: false,
-    tilt(d = this.d) { const k = clamp((d - this.dMin) / (this.dMax - this.dMin), 0, 1); return lerp(.62, 1.2, Math.pow(k, .8)); },
+    tx: 0, tz: .3, d: 14, yaw: 0, dMin: 1.6, dMax: 16, dFit: 14, anim: null, userT: 0, followFn: null, attract: false, cine: false,
+    tilt(d = this.d) { const k = clamp((d - this.dMin) / (this.dMax - this.dMin), 0, 1); return lerp(lerp(.62, 1.2, Math.pow(k, .8)), TOP, k2d); },
     limits() {
       if (!camera) return;
       const v = THREE.MathUtils.degToRad(camera.fov) / 2, hfov = Math.atan(Math.tan(v) * camera.aspect);
@@ -2501,6 +2519,14 @@ const S3 = (() => {
     stop() { const a = this.anim; this.anim = null; if (a) a.res(); },
     overview(ms = 900) { return this.to(0, .25, this.dFit, ms, 0); },
     update(dt) {
+      // byte mellan 3D och 2D: vinkeln, synfältet och dimman glider över
+      const w2 = want2d();
+      if (k2d !== w2) {
+        k2d = Math.abs(w2 - k2d) < .002 || reduceMotion || Time.scale < .2 ? w2 : k2d + (w2 - k2d) * Math.min(1, dt * 4.5);
+        camera.fov = fovFor(); camera.updateProjectionMatrix(); this.limits();
+        scene.fog.near = lerp(18, 70, k2d); scene.fog.far = lerp(46, 140, k2d);
+        this.d = Math.min(this.d, this.dMax);
+      }
       if (this.anim) {
         const a = this.anim, t = Math.min(1, (performance.now() - a.t0) / a.ms), e = easeInOut(t);
         this.tx = lerp(a.from.x, a.x, e); this.tz = lerp(a.from.z, a.z, e); this.d = lerp(a.from.d, a.d, e);
@@ -3256,7 +3282,7 @@ const Decor = (() => {
 /* ================= Pjäserna: små Hugo-troll i spelarnas färger ================= */
 const Pieces = (() => {
   const P = {};
-  const SCALE = .13;
+  const SCALE = .13, TOK = .46;   // trollets storlek i 3D och pjäsens storlek i 2D
   let list = [], ring = null, curId = -1;
   // Klassisk pjäs när trollmodellen saknas
   function fallback(color) {
@@ -3271,14 +3297,48 @@ const Pieces = (() => {
     g.userData.nodes = {body, head: hd};
     return g;
   }
+  // 2D-kartan: en rund pjäs i spelarens färg med trollets ansikte, som alltid vänder sig mot kameran
+  const faces = {};
+  function faceTex(color) {
+    if (faces[color]) return faces[color];
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+    const draw = img => {
+      const g = c.getContext('2d'); g.clearRect(0, 0, 128, 128);
+      // ansiktet förstorat på spelarens färg (lite ljusare inuti), så att det syns även när hela brädet visas
+      const n = parseInt(color.slice(1), 16), lt = k => Math.round(k + (255 - k) * .28);
+      g.beginPath(); g.arc(64, 64, 63, 0, 7); g.fillStyle = '#241A15'; g.fill();
+      g.beginPath(); g.arc(64, 64, 58, 0, 7); g.fillStyle = color; g.fill();
+      g.beginPath(); g.arc(64, 64, 49, 0, 7); g.fillStyle = `rgb(${lt(n >> 16)},${lt((n >> 8) & 255)},${lt(n & 255)})`; g.fill();
+      if (img) { g.save(); g.beginPath(); g.arc(64, 64, 49, 0, 7); g.clip(); g.drawImage(img, -22, -30, 172, 172); g.restore(); }
+      g.beginPath(); g.arc(64, 64, 49, 0, 7); g.lineWidth = 3; g.strokeStyle = 'rgba(255,255,255,.85)'; g.stroke();
+      t.needsUpdate = true;
+    };
+    draw(null);
+    const img = new Image(); img.onload = () => draw(img); img.src = Portraits.get(color, 'head');
+    return (faces[color] = t);
+  }
+  function token(color) {
+    const g = new THREE.Group();
+    const foot = new THREE.Mesh(new THREE.CylinderGeometry(.22, .235, .04, 36), Mat({color, roughness: .45}));
+    foot.position.y = .02; foot.castShadow = true; foot.receiveShadow = true;
+    const face = new THREE.Sprite(new THREE.SpriteMaterial({map: faceTex(color), transparent: true}));
+    face.position.y = .12; face.scale.set(TOK, TOK, 1);
+    g.add(foot, face);
+    g.userData.face = face;
+    g.visible = false;
+    return g;
+  }
   P.build = players => {
-    list.forEach(e => e.obj.parent && e.obj.parent.remove(e.obj));
+    list.forEach(e => { if (e.obj.parent) e.obj.parent.remove(e.obj); if (e.tok && e.tok.parent) e.tok.parent.remove(e.tok); });
     list = players.map(p => {
       const obj = ModelLib.ok() && ModelLib.has('troll') ? ModelLib.create('troll', {colors: {body: p.color}}) : fallback(p.color);
       obj.scale.setScalar(SCALE);
       S3.root().add(obj);
+      const tok = token(p.color);
+      S3.root().add(tok);
       const n = obj.userData.nodes || {};
-      return {id: p.id, obj, n, pos: new THREE.Vector3(), yaw: 0, busy: 0, squash: 0, lean: 0, look: 0, t0: Math.random() * 10, mood: 0};
+      return {id: p.id, obj, tok, n, pos: new THREE.Vector3(), yaw: 0, busy: 0, squash: 0, lean: 0, look: 0, t0: Math.random() * 10, mood: 0, hop: 0, twirl: 0, tintW: 0, tintC: null};
     });
     if (!ring) {
       ring = new THREE.Mesh(new THREE.TorusGeometry(.13, .018, 8, 40), new THREE.MeshBasicMaterial({color: 0xffe066, transparent: true, opacity: .9}));
@@ -3300,6 +3360,9 @@ const Pieces = (() => {
   function apply(e, hop = 0) {
     e.obj.position.set(e.pos.x, e.pos.y + hop, e.pos.z);
     e.obj.rotation.y = e.yaw;
+    // pjäsen i 2D: ett skutt syns som att den blir större en stund
+    if (e.tok) e.tok.position.set(e.pos.x, e.pos.y, e.pos.z);
+    e.hop = hop;
   }
   function turnTo(e, ang) {
     let d = ang - e.yaw; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
@@ -3376,21 +3439,39 @@ const Pieces = (() => {
       });
     }
     const c = new THREE.Color(hex);
+    e.tintC = c;
     return Anim.tween(ms, k => {
       const w = k < .12 ? k / .12 : 1 - (k - .12) / .88;
       e.tints.forEach(t => { t.m.emissive.copy(t.e0).lerp(c, w); t.m.emissiveIntensity = t.i0 + w * .8; });
-    });
+      e.tintW = w;
+    }).then(() => { e.tintW = 0; });
   };
   P.spin = (id, ms = 1200) => {
     const e = E(id); if (!e) return Promise.resolve();
     e.busy++; const y0 = e.yaw;
-    return Anim.tween(ms, k => { e.yaw = y0 + k * Math.PI * 4; apply(e, Math.abs(Math.sin(k * Math.PI * 4)) * .12); }).then(() => { e.busy--; e.yaw = y0; apply(e); });
+    return Anim.tween(ms, k => { e.yaw = y0 + k * Math.PI * 4; e.twirl = k * Math.PI * 4; apply(e, Math.abs(Math.sin(k * Math.PI * 4)) * .12); }).then(() => { e.busy--; e.yaw = y0; e.twirl = 0; apply(e); });
   };
   P.face = (id, v) => { const e = E(id); if (!e) return; e.yaw = Math.atan2(v.x - e.pos.x, v.z - e.pos.z); apply(e); };
 
   // Varje bild: svansen viftar, trollet andas, tittar sig omkring och den som har turen står i en ring
+  const WHITE = new THREE.Color(1, 1, 1);
   Bus.on('frame', (dt, t) => {
+    const flat = S3.view2d();
     list.forEach(e => {
+      // 2D: den runda pjäsen i stället för trollet. Skutt gör den större, hopp och duck trycker ihop ansiktet,
+      // och när den snubblar eller jublar vickar den.
+      e.obj.visible = !flat;
+      if (e.tok) {
+        e.tok.visible = flat;
+        if (flat) {
+          const f = e.tok.userData.face, tt2 = t + e.t0;
+          e.tok.scale.setScalar(1 + Math.min(.75, e.hop * 2.4));
+          f.scale.set(TOK * (1 - e.squash * .35), TOK * (1 + e.squash * .5), 1);
+          f.material.rotation = e.lean * 1.3 + e.twirl + (e.mood > .05 ? Math.sin(tt2 * 14) * .14 * e.mood : 0) + (e.busy ? 0 : Math.sin(tt2 * 2.2) * .03);
+          f.material.color.copy(WHITE);
+          if (e.tintW > 0 && e.tintC) f.material.color.lerp(e.tintC, e.tintW * .65);
+        }
+      }
       const b = e.n.body, hd = e.n.head, tl = e.n.tail, tt = t + e.t0;
       const breathe = e.busy ? 0 : Math.sin(tt * 2.2) * .025;
       if (b) { b.scale.set(1 - e.squash * .5, 1 + e.squash + breathe, 1 - e.squash * .5); b.rotation.z = e.lean; }
@@ -3401,11 +3482,11 @@ const Pieces = (() => {
     if (ring) {
       const e = E(curId);
       ring.visible = !!e;
-      if (e) { ring.position.set(e.obj.position.x, e.pos.y + .012, e.obj.position.z); const k = 1 + Math.sin(t * 5) * .12; ring.scale.set(k, k, k); ring.material.opacity = .65 + Math.sin(t * 5) * .25; }
+      if (e) { ring.position.set(e.pos.x, e.pos.y + .012, e.pos.z); const k = (1 + Math.sin(t * 5) * .12) * (flat ? 2.2 : 1); ring.scale.set(k, k, k); ring.material.opacity = .65 + Math.sin(t * 5) * .25; }
     }
   });
   P.all = () => list;
-  P.clear = () => { list.forEach(e => e.obj.parent && e.obj.parent.remove(e.obj)); list = []; curId = -1; if (ring) ring.visible = false; };
+  P.clear = () => { list.forEach(e => { if (e.obj.parent) e.obj.parent.remove(e.obj); if (e.tok && e.tok.parent) e.tok.parent.remove(e.tok); }); list = []; curId = -1; if (ring) ring.visible = false; };
   return P;
 })();
 
@@ -4033,13 +4114,14 @@ const GoldFX = (() => {
     if (Time.scale < .2) return Promise.resolve();
     const s = new THREE.Sprite(new THREE.SpriteMaterial({map: numberTexture(n, color), transparent: true, depthTest: false}));
     s.renderOrder = 20;
-    const y0 = pos.y + .5;
-    s.position.set(pos.x, y0, pos.z);
+    const y0 = pos.y + .5, flat = S3.view2d(), z0 = pos.z - (flat ? .42 : 0), big = flat ? 1.35 : 1;
+    s.position.set(pos.x, y0, z0);
     root().add(s);
     return Anim.tween(1000, k => {
-      const sc = .36 * (k < .22 ? easeOutBack(k / .22) : 1);
+      const sc = .36 * big * (k < .22 ? easeOutBack(k / .22) : 1);
       s.scale.set(sc, sc, 1);
       s.position.y = y0 + k * .16;
+      if (flat) s.position.z = z0 - k * .2;
       s.material.opacity = k < .7 ? 1 : 1 - (k - .7) / .3;
     }).then(() => { root().remove(s); s.material.dispose(); });
   };
@@ -4590,14 +4672,21 @@ const Menu = (() => {
     const bind = (id, key, after) => {
       const el = $(id);
       const read = () => { if (el.type === 'checkbox') el.checked = !!Settings[key]; else el.value = Settings[key]; };
-      el.addEventListener('input', () => { Settings[key] = el.type === 'checkbox' ? el.checked : el.type === 'range' ? +el.value : el.value; saveSettings(); after && after(); });
+      const ev = el.type === 'range' || el.type === 'text' ? 'input' : 'change';
+      el.addEventListener(ev, () => {
+        const v = el.type === 'checkbox' ? el.checked : el.type === 'range' ? +el.value : el.value;
+        if (Settings[key] === v) return;
+        Settings[key] = v; saveSettings(); after && after();
+      });
       return read;
     };
     const readers = [bind('volMusic', 'music', () => { Sound.unlock(); Sound.setVolumes(); syncTools(); }), bind('volSfx', 'sfx', () => { Sound.unlock(); Sound.setVolumes(); Sound.play('coin'); }),
       bind('optVoice', 'voice', syncTools), bind('optHints', 'hints', () => Game.state() && UI.render(Game.state())), bind('optFollow', 'follow'), bind('optDof', 'dof'),
-      bind('optBonus', 'bonus'), bind('optStory', 'story'), bind('optQuality', 'quality', () => M.restart(true))];
-    // snabbknappen i menyn: platt karta (2D) eller 3D-kartan
-    $('pMap').addEventListener('click', () => { Settings.quality = SIMPLE ? (IS_TV ? 'high' : 'auto') : 'simple'; saveSettings(); M.restart(true); });
+      bind('optBonus', 'bonus'), bind('optStory', 'story'), bind('optQuality', 'quality', () => M.restart(true)),
+      bind('optView', 'view', () => M.setView(Settings.view))];
+    // 2D- och 3D-kartan byts direkt: knappen i verktygsraden och i menyn
+    $('tMap').addEventListener('click', () => { Sound.play('click'); M.setView(Settings.view === '2d' ? '3d' : '2d'); });
+    $('pMap').addEventListener('click', () => { close('pause'); M.setView(Settings.view === '2d' ? '3d' : '2d'); });
     // förslaget på startsidan när spelet går segt
     $('btnSimple').addEventListener('click', () => { Settings.quality = 'simple'; saveSettings(); M.restart(true); });
     $('btnSlowNo').addEventListener('click', () => { Store.set('slowAsked', true); $('slowAsk').hidden = true; setTimeout(() => $('btnPlay').focus(), 30); });
@@ -4676,7 +4765,21 @@ const Menu = (() => {
     return false;
   };
   M.trapBack = trapBack;
+  // 2D-kartan (rakt uppifrån, med runda spelpjäser) eller 3D-kartan. Byts direkt, utan att sidan laddas om.
+  M.setView = v => {
+    Settings.view = v === '2d' ? '2d' : '3d';
+    saveSettings();
+    S3.setView(Settings.view);
+    syncTools();
+    if ($('optView')) $('optView').value = Settings.view;
+    // utan kameran som följer med visas hela brädet i den nya vinkeln
+    if (Game.running() && !Settings.follow) setTimeout(() => S3.overview(800), 250);
+  };
   function syncTools() {
+    const two = Settings.view === '2d';
+    $('tMap').textContent = two ? '3D' : '2D';
+    $('tMap').title = two ? 'Visa brädet i 3D' : 'Visa brädet rakt uppifrån (2D)';
+    $('pMap').textContent = two ? '3D-karta' : '2D-karta';
     ['tMusic', 'pMusic'].forEach(id => $(id).setAttribute('aria-pressed', String(Settings.music > 0)));
     ['tVoice', 'pVoice'].forEach(id => $(id).setAttribute('aria-pressed', String(!!Settings.voice)));
   }
@@ -4688,7 +4791,6 @@ const Menu = (() => {
       // online hos någon annan: spelet sparas där, och här lämnar man bara
       const g = Online.guest();
       $('btnQuit').textContent = g ? 'Lämna onlinespelet' : 'Avsluta till startsidan';
-      $('pMap').textContent = SIMPLE ? '3D-karta' : 'Platt karta (2D)';
       $('pauseNote').textContent = g ? 'Spelet sparas hos den som bjöd in.' : 'Spelet sparas efter varje tur, så du kan fortsätta senare.';
     }
     $(id).hidden = false; Sound.play('click');
@@ -4727,7 +4829,7 @@ const Menu = (() => {
   M.openSettings = () => {
     const files = typeof MUSIC_FILES !== 'undefined' ? MUSIC_FILES : [];
     $('musicInfo').textContent = (files.length ? `Musiken kommer från ${files.length} låtfiler.` : 'Musiken skapas i webbläsaren. Lägg mp3-filer från Suno i mappen music för riktig musik.')
-      + (SIMPLE ? ' Spelet visar den platta kartan just nu.' : '') + ' Byter du grafik laddas spelet om direkt, och ett parti som pågår fortsätter.';
+      + (SIMPLE ? ' Spelet har lätt grafik just nu.' : '');
     // miniatyrkänslan finns inte på den enkla kartan
     $('optDof').closest('label').hidden = SIMPLE;
     open('settings');
@@ -4983,6 +5085,7 @@ const Game = (() => {
     UI.showHUD(true);
     UI.hideDoors();
     UI.finale(false);
+    S3.cine(false);
     UI.render(S);
     S3.setAttract(false);
     Sound.mood('game');
@@ -4992,7 +5095,7 @@ const Game = (() => {
     Bus.emit('gameStart', S);
     loop(Flow.gen, intro);
   };
-  G.stop = () => { if (!running) return; running = false; Flow.cancelAll(); Online.gameStop(); Dice.clear(); UI.hideDoors(); UI.finale(false); Spinners.setActive(null); Spinners.hideBadges(); Pieces.clear(); Table.clear(); Decor.resetDoors(); S3.dim(0, 0); Bus.emit('gameStop'); };
+  G.stop = () => { if (!running) return; running = false; Flow.cancelAll(); Online.gameStop(); Dice.clear(); UI.hideDoors(); UI.finale(false); S3.cine(false); Spinners.setActive(null); Spinners.hideBadges(); Pieces.clear(); Table.clear(); Decor.resetDoors(); S3.dim(0, 0); Bus.emit('gameStop'); };
 
   /* ---------- Var pjäserna står ---------- */
   function spot(p) {
@@ -5355,6 +5458,7 @@ const Game = (() => {
       timers.add(done);
     });
     const stop = UI.skipper(() => { skipped = true; [...timers].forEach(f => f()); });
+    S3.cine(true);
     const cam = (v, span, ms) => Settings.follow ? S3.focus(v, 3, ms, 0, span) : Promise.resolve();
     try {
       UI.finale(true);
@@ -5381,6 +5485,7 @@ const Game = (() => {
       Flow.alive(gen);
     } finally {
       stop();
+      S3.cine(false);
       Decor.witchHover(false);
       Decor.doorLabels(true);
       S3.dim(0, 600);
@@ -5407,6 +5512,7 @@ const Game = (() => {
   async function doorTurn(p, gen) {
     S.phase = 'door'; UI.render(S);
     UI.finale(true);
+    S3.cine(true);
     Sound.mood('witch');
     Spinners.setActive(null);
     const fast = Time.scale < .2 || document.hidden, cpu = !p.human, slow = ms => wait(cpu ? ms * .6 : ms, gen);
@@ -5508,6 +5614,7 @@ const Game = (() => {
     await Decor.closeDoor(d);
     UI.hideDoors();
     UI.finale(false);
+    S3.cine(false);
     Decor.doorLabels(true);
     // Till nästa spelare: familjen trollas tillbaka i buren och häxan går tillbaka till sin plats
     if (S.players.some(q => q.status !== 'finished')) {
