@@ -280,6 +280,27 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
 .float{position:fixed; left:50%; top:30%; z-index:30; transform:translateX(-50%); font-family:var(--f-disp); font-size:44px; color:#fff; text-shadow:3px 3px 0 var(--ink), -1px -1px 0 var(--ink), 1px -1px 0 var(--ink), -1px 1px 0 var(--ink); pointer-events:none; animation:floatUp 1.6s ease-out forwards; white-space:nowrap}
 @keyframes floatUp{0%{opacity:0; transform:translate(-50%,20px) scale(.6)} 20%{opacity:1; transform:translate(-50%,0) scale(1.1)} 100%{opacity:0; transform:translate(-50%,-80px) scale(1)}}
 
+/* Guld! Hela mobilen blir gyllene en stund */
+.goldBurst{position:fixed; inset:0; z-index:40; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; pointer-events:none; overflow:hidden;
+  background:radial-gradient(circle at 50% 42%, rgba(255,226,120,.95), rgba(246,189,44,.9) 45%, rgba(200,120,20,.88) 100%); animation:gbFade 2.4s ease forwards}
+.gbRays{position:absolute; left:50%; top:42%; width:160vmax; height:160vmax; transform:translate(-50%,-50%);
+  background:repeating-conic-gradient(rgba(255,255,255,.35) 0deg 8deg, rgba(255,255,255,0) 8deg 20deg); animation:gbSpin 2.4s linear}
+.gbSack{position:relative; line-height:0; animation:gbDrop .6s cubic-bezier(.3,1.6,.5,1) both}
+.gbSack svg{width:min(46vw, 210px); height:auto; filter:drop-shadow(0 8px 0 rgba(36,26,21,.35))}
+.gbNum{position:relative; font-family:var(--f-disp); font-size:min(30vw, 150px); line-height:.9; color:#fff; animation:gbPop .5s .15s cubic-bezier(.3,1.8,.5,1) both;
+  text-shadow:5px 5px 0 var(--ink), -2px -2px 0 var(--ink), 2px -2px 0 var(--ink), -2px 2px 0 var(--ink)}
+.gbText{position:relative; font-family:var(--f-disp); font-size:min(10vw, 46px); color:var(--ink)}
+.gbTotal{position:relative; margin-top:6px; padding:4px 16px; border:3px solid var(--ink); border-radius:99px; background:var(--paper); font-weight:700; font-size:18px}
+.gbCoin{position:absolute; left:50%; top:42%; width:34px; height:34px; margin:-17px; border-radius:50%; border:3px solid var(--ink);
+  background:radial-gradient(circle at 35% 35%, #FFF6B8, #F6BD2C 55%, #C98A00); animation:gbCoin 1.3s var(--d) cubic-bezier(.2,.8,.4,1) both}
+.goldBurst.big .gbSack svg{width:min(56vw, 260px)}
+@keyframes gbFade{0%{opacity:0} 8%{opacity:1} 78%{opacity:1} 100%{opacity:0}}
+@keyframes gbSpin{to{transform:translate(-50%,-50%) rotate(60deg)}}
+@keyframes gbDrop{from{transform:translateY(-60vh) scale(.6)} to{transform:none}}
+@keyframes gbPop{from{transform:scale(0)} to{transform:none}}
+@keyframes gbCoin{0%{transform:translate(0,0) rotate(0) scale(.4); opacity:0} 15%{opacity:1} 100%{transform:translate(var(--x), 60vh) rotate(var(--r)) scale(1); opacity:0}}
+@media (prefers-reduced-motion: reduce){ .gbRays,.gbCoin{animation:none; display:none} }
+
 /* Låga mobiler: tätare */
 @media (max-height:700px){
   .lcd{min-height:64px; padding:6px 10px}
@@ -604,7 +625,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
       setTimeout(render, 3750);
     }
     else if (e.kind === 'hurt') { buzz([200, 80, 200]); ouch(); toast('Aj! Ett Hugo-kort vändes.', e.lives === 1 ? 'Nu har du bara ett Hugo-kort kvar på banan.' : e.lives > 0 ? `Du har ${e.lives} Hugo-kort kvar på banan.` : 'Alla tre Hugo-korten är vända.', thumbImg('hugo')); }
-    else if (e.kind === 'sack') { buzz([30, 40, 30]); coin(); floatText(`+${e.n || 1}`); }
+    else if (e.kind === 'sack') goldBurst(e.n || 1, e.total, e.streak || 0);
     else if (e.kind === 'trackOk') { buzz([60, 40, 120]); ding(); toast('Hurra! Du klarade banan!', 'Nu går du vidare till nästa bana.'); }
     else if (e.kind === 'trackLost') toast('Banan är slut för den här gången.', 'Guldet från banan går tillbaka, men du får tre nya Hugo-kort på nästa bana.');
     else if (e.kind === 'door') buzz(e.card === 'fail' ? [240, 80, 240] : [60, 40, 60, 40, 200]);
@@ -1230,6 +1251,31 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     clearTimeout(toastT);
     toastT = setTimeout(() => { t.hidden = true; }, text && text.length > 60 ? 7000 : 4000);
   }
+  // Guld! Ett gyllene utbrott över hela mobilen: strålar, en säck som studsar in, +1 och hur många säckar man har nu.
+  // Vibrationen låter som ett "pling-kaching" och slingan går upp ett tonsteg för varje guld i rad.
+  function goldBurst(n, total, streak) {
+    buzz([40, 50, 40, 50, 120]);
+    unlockAudio();
+    const k = Math.pow(2, Math.max(0, streak - 1) * 2 / 12);
+    [[1047, 0], [1319, .08], [1568, .16], [2093, .24]].forEach(([f, t]) => beep(f * k, t, .22, .06, 'triangle'));
+    beep(2637 * k, .34, .6, .05, 'sine'); coin();
+    document.querySelectorAll('.goldBurst').forEach(el => el.remove());
+    const el = h('div', {class: 'goldBurst' + (n > 1 ? ' big' : ''), 'aria-hidden': 'true'},
+      h('div', {class: 'gbRays'}), h('div', {class: 'gbSack', html: art ? art.sack : ''}),
+      h('div', {class: 'gbNum', text: '+' + n}),
+      h('div', {class: 'gbText', text: streak >= 2 ? `${streak} i rad!` : n > 1 ? 'guldsäckar!' : 'guldsäck!'}),
+      total != null ? h('div', {class: 'gbTotal', text: `Nu har du ${total}`}) : null);
+    for (let i = 0; i < 14; i++) {
+      const c = h('i', {class: 'gbCoin'});
+      c.style.setProperty('--x', (Math.random() * 2 - 1) * 46 + 'vw');
+      c.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
+      c.style.setProperty('--d', (Math.random() * .25) + 's');
+      el.append(c);
+    }
+    document.body.append(el);
+    setTimeout(() => el.remove(), 2400);
+    say(n > 1 ? `Du fick ${n} guldsäckar!` : pick(['En guldsäck till dig!', 'Guld! Bra jobbat!', 'Plopp! En guldsäck!']));
+  }
   function floatText(text) {
     const el = h('div', {class: 'float', text});
     document.body.append(el);
@@ -1237,7 +1283,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   }
 
   // Till testerna
-  window.HugoPhone = {state: () => st, offer: () => offer, bonus: () => bonus, tip: () => tipState, dev: () => dev, connected: () => connected, send, throwDie, spinNow, pressKey: k => { const b = document.querySelector(`.key[data-k="${k}"]`); if (b) pressKey(k, b); }, setRead, offerText};
+  window.HugoPhone = {state: () => st, offer: () => offer, bonus: () => bonus, tip: () => tipState, goldBurst: (n, total, streak) => goldBurst(n, total, streak), dev: () => dev, connected: () => connected, send, throwDie, spinNow, pressKey: k => { const b = document.querySelector(`.key[data-k="${k}"]`); if (b) pressKey(k, b); }, setRead, offerText};
   syncMotion();
   connect();
 })();

@@ -333,6 +333,31 @@ h3{margin:14px 0 4px; font-size:17px}
   .life .in{transition-duration:.2s}
 }
 
+/* ---------- Guldögonblicket: stort "+1" med en säck och strålar ---------- */
+.goldPop{position:fixed; left:50%; top:27%; z-index:26; display:grid; justify-items:center; pointer-events:none; transform:translate(-50%,-50%); animation:gpIn 2.3s cubic-bezier(.2,1.2,.3,1) forwards}
+.gpRays{position:absolute; left:50%; top:40%; width:clamp(220px, 36vmin, 440px); aspect-ratio:1; border-radius:50%; transform:translate(-50%,-50%);
+  background:repeating-conic-gradient(rgba(255,214,70,.6) 0deg 9deg, rgba(255,214,70,0) 9deg 22deg);
+  -webkit-mask:radial-gradient(circle, #000 18%, rgba(0,0,0,.6) 45%, transparent 70%); mask:radial-gradient(circle, #000 18%, rgba(0,0,0,.6) 45%, transparent 70%);
+  animation:gpSpin 2.3s linear}
+.gpSack{position:relative; line-height:0}
+.gpSack svg{width:clamp(96px, 16vmin, 190px); height:auto; filter:drop-shadow(0 6px 0 rgba(36,26,21,.35))}
+.gpNum{position:relative; margin-top:-.15em; font-family:var(--f-disp); font-size:clamp(66px, 12vmin, 150px); line-height:.9; color:#FFD84A;
+  text-shadow:5px 5px 0 var(--ink), -2px -2px 0 var(--ink), 2px -2px 0 var(--ink), -2px 2px 0 var(--ink), 0 0 24px rgba(255,200,60,.8)}
+.gpLabel{position:relative; margin-top:.12em; font-family:var(--f-disp); font-size:clamp(26px, 4.6vmin, 58px); color:#fff; white-space:nowrap;
+  text-shadow:3px 3px 0 var(--ink), -2px -2px 0 var(--ink), 2px -2px 0 var(--ink), -2px 2px 0 var(--ink)}
+.goldPop.big .gpNum{font-size:clamp(80px, 15vmin, 190px)}
+.goldPop.big .gpRays{width:clamp(280px, 46vmin, 560px)}
+@keyframes gpIn{0%{opacity:0; transform:translate(-50%,-50%) scale(.3)} 13%{opacity:1; transform:translate(-50%,-50%) scale(1.14)} 22%{transform:translate(-50%,-50%) scale(1)}
+  80%{opacity:1; transform:translate(-50%,-56%) scale(1)} 100%{opacity:0; transform:translate(-50%,-78%) scale(.9)}}
+@keyframes gpSpin{to{transform:translate(-50%,-50%) rotate(100deg)}}
+.goldPill.shine{animation:bump .5s ease, goldShine 1.3s ease-out}
+@keyframes goldShine{0%{box-shadow:0 0 0 0 rgba(255,210,60,.95)} 100%{box-shadow:0 0 0 22px rgba(255,210,60,0)}}
+body.simple .gpSack svg{filter:none}
+body.compact .goldPop{top:24%}
+
+/* ---------- Stora skärmar: allt ovanpå brädet skalas upp (--ui sätts i 11-main) ---------- */
+#hud,.screen,.overlay,#bonus{zoom:var(--ui, 1)}
+
 /* ---------- Förslaget om den enkla kartan på startsidan ---------- */
 .slowAsk{display:flex; flex-direction:column; gap:10px; padding:12px 14px; text-align:left; width:min(460px, 90vw)}
 .slowAsk p{margin:0; font-size:15px}
@@ -1328,11 +1353,39 @@ const Sound = (() => {
     },
     pop(t) { osc('sine', 500, t, .08, .1, sfxBus, {slide: 2}); },
     train(t) { [0, .18].forEach(d => { osc('sine', 740, t + d, .5, .04, reverbIn, {a: .04}); osc('sine', 932, t + d, .5, .03, reverbIn, {a: .04}); }); },
+    // Guldet: säcken stiger med ett glittrande uppåtgående arpeggio, ett "pling-kaching" när trollet fångar den
+    // och en glad slinga (step höjer tonarten, till exempel när någon får guld flera gånger i rad)
+    goldRise(t) {
+      [1047, 1319, 1568, 2093, 2637, 3136].forEach((f, i) => { osc('sine', f, t + i * .045, .35, .045, reverbIn); osc('triangle', f, t + i * .045, .09, .035, sfxBus); });
+      noise(t, .5, .025, reverbIn, {type: 'highpass', f: 6000, to: 9000});
+    },
+    goldCatch(t) {
+      osc('square', 1568, t, .06, .05, sfxBus, {filter: 5000}); osc('square', 2093, t + .05, .08, .045, sfxBus, {filter: 6000});
+      osc('sine', 2637, t + .05, .9, .06, reverbIn); osc('sine', 3951, t + .08, .6, .025, reverbIn);
+      for (let i = 0; i < 7; i++) noise(t + .04 + i * .045 + Math.random() * .02, .05, .05, sfxBus, {type: 'highpass', f: 5000 + Math.random() * 3000});
+    },
+    goldJingle(t, step = 0) {
+      const k = Math.pow(2, step / 12);
+      [[523, 0, .12], [659, .1, .12], [784, .2, .12], [1047, .3, .2], [784, .48, .1], [1047, .56, .5]].forEach(([f, d, len]) => {
+        osc('triangle', f * k, t + d, len, .09, sfxBus); osc('sine', f * 2 * k, t + d, len * 1.5, .025, reverbIn);
+      });
+      [1568, 2093, 2637].forEach((f, i) => osc('sine', f * k, t + .56 + i * .03, .8, .03, reverbIn));
+    },
+    coinRain(t, n = 8) { for (let i = 0; i < n; i++) { const tt = t + Math.random() * .7; osc('square', 2200 + Math.random() * 1600, tt, .03, .018, sfxBus, {filter: 7000}); noise(tt, .03, .03, sfxBus, {type: 'highpass', f: 6500}); } },
     eagle(t) { osc('sine', 1800, t, .35, .03, reverbIn, {slide: .6, a: .02}); osc('sine', 1500, t + .3, .45, .025, reverbIn, {slide: .55, a: .02}); }
   };
   A.play = (name, ...args) => {
     if (Settings.sfx <= 0 || Time.scale < .2) return;
     try { if (!ensure()) return; FX[name] && FX[name](ctx.currentTime + .01, ...args); } catch (e) { /* ljud är valfritt */ }
+  };
+  // Musiken sänks en stund så att guldslingan hörs ordentligt
+  let duckT = 0;
+  A.duck = (sec = 2) => {
+    if (!ctx || !musicBus || Settings.music <= 0) return;
+    const g = musicBus.gain, now = ctx.currentTime, full = Settings.music * .45;
+    g.cancelScheduledValues(now); g.setTargetAtTime(full * .3, now, .08);
+    clearTimeout(duckT);
+    duckT = setTimeout(() => { if (ctx) musicBus.gain.setTargetAtTime(Settings.music * .45, ctx.currentTime, .4); }, sec * 1000);
   };
 
   /* ---------- Uppläsning ---------- */
@@ -2287,6 +2340,16 @@ const S3 = (() => {
   };
   // Avståndet när kameran följer den som har turen
   S.turnDist = () => safe ? S.fitDist(...turnSpan()) : 5.2;
+  // Kameran som visar alla punkterna (med marginal) i den fria delen av skärmen, sedd rakt från söder (yaw 0).
+  // Ger null när den fria delen inte är känd.
+  S.boxView = (pts, margin = .4) => {
+    if (!safe || !pts.length) return null;
+    let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+    pts.forEach(p => { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); z0 = Math.min(z0, p.z); z1 = Math.max(z1, p.z); });
+    const w = x1 - x0 + margin * 2, h = z1 - z0 + margin * 2, c = new THREE.Vector3((x0 + x1) / 2, 0, (z0 + z1) / 2);
+    const d = S.fitDist(Math.max(w, 1.6), Math.max(h, 1.6)), t = S.frameTarget(c, d, 0);
+    return {x: t.x, z: t.z, d};
+  };
   S.overview = ms => Cam.overview(ms);
   S.follow = fn => { Cam.followFn = fn; };
   S.setAttract = on => { Cam.attract = on; if (!on) Cam.yaw = Cam.yaw || 0; };
@@ -2916,10 +2979,13 @@ const Pieces = (() => {
   };
   P.walk = async (id, pts, ms = 260) => { for (const b of pts) await P.hopTo(id, b, ms); };
   // Hindret klarat: hoppa, ducka eller kliva åt sidan (i trollets egen riktning)
-  P.jump = id => {
+  // joy: ett glädjeskutt (när trollet fångar en guldsäck), högre och med svansen som viftar
+  P.jump = (id, joy) => {
     const e = E(id); if (!e) return Promise.resolve();
-    e.busy++; Sound.play('jump');
-    return Anim.tween(620, k => { const up = Math.sin(k * Math.PI); e.squash = k < .15 ? -k * 2 : up * .25; apply(e, up * .32); e.obj.rotation.x = Math.sin(k * Math.PI * 2) * .15; })
+    e.busy++; Sound.play(joy ? 'hop' : 'jump');
+    if (joy) e.mood = 1;
+    const H = joy ? .42 : .32;
+    return Anim.tween(joy ? 680 : 620, k => { const up = Math.sin(k * Math.PI); e.squash = k < .15 ? -k * 2 : up * .25; apply(e, up * H); e.obj.rotation.x = Math.sin(k * Math.PI * 2) * .15; })
       .then(() => { e.busy--; e.squash = 0; e.obj.rotation.x = 0; apply(e); });
   };
   P.duck = id => {
@@ -3205,6 +3271,8 @@ const Spinners = (() => {
     const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
   }
   SP.setActive = id => ORDER.forEach(t => { items[t] && (items[t].active = t === id); });
+  // guld: ringen runt snurran blinkar gyllene en stund
+  SP.flashGold = id => { const it = items[id]; if (it) it.gold = 1; };
   SP.hideBadges = () => ORDER.forEach(t => { const it = items[t]; if (it) { it.pop = 0; it.badge.scale.set(.001, .001, .001); } });
   // Snurrar pilen till fält idx. Tickar när pilen passerar en gräns mellan fälten.
   SP.spin = (id, idx) => {
@@ -3233,7 +3301,13 @@ const Spinners = (() => {
   Bus.on('frame', (dt, t) => {
     ORDER.forEach(id => {
       const it = items[id]; if (!it) return;
-      it.glow.material.opacity = it.active ? .35 + Math.sin(t * 4) * .2 : Math.max(0, it.glow.material.opacity - dt * 2);
+      if (it.gold > 0) {
+        it.gold = Math.max(0, it.gold - dt * .7);
+        it.glow.material.color.setHex(0xffc21a);
+        it.glow.material.opacity = .45 + .45 * Math.abs(Math.sin(t * 12)) * Math.min(1, it.gold * 2);
+        const sc = 1 + .08 * Math.sin(t * 12); it.glow.scale.set(sc, sc, 1);
+        if (it.gold === 0) { it.glow.material.color.setHex(0xffe066); it.glow.scale.set(1, 1, 1); }
+      } else it.glow.material.opacity = it.active ? .35 + Math.sin(t * 4) * .2 : Math.max(0, it.glow.material.opacity - dt * 2);
       if (it.pop > 0) { it.pop = Math.min(1, it.pop + dt * 3.2); const s = .42 * easeOutBack(it.pop); it.badge.scale.set(s, s, s); it.badge.position.y = SP.center(id).y + .42 + Math.sin(t * 3) * .02; }
     });
   });
@@ -3301,16 +3375,19 @@ const Table = (() => {
   };
   T.pileWorld = i => { const P = piles[i]; return P ? P.g.localToWorld(slot(P.sacks.length).clone()) : new THREE.Vector3(); };
   // En säck flyger från en punkt (t.ex. snurran) till spelarens hög
-  T.flySack = (i, from) => {
+  // trail: säcken lämnar ett glitterspår efter sig (när någon just har fått guld)
+  T.flySack = (i, from, trail) => {
     const P = piles[i]; if (!P) return Promise.resolve();
     const o = sackObj(); S3.root().add(o);
     const to = T.pileWorld(i), a = from.clone(), top = Math.max(a.y, to.y) + 1.4;
     const ry = Math.random() * 6;
+    let last = 0;
     Sound.play('coin');
     return Anim.tween(900, k => {
       o.position.set(lerp(a.x, to.x, k), lerp(a.y, to.y, k) + Math.sin(k * Math.PI) * (top - Math.max(a.y, to.y)), lerp(a.z, to.z, k));
       o.rotation.set(k * 5, ry + k * 7, 0);
       o.scale.setScalar(SACK * (1 + Math.sin(k * Math.PI) * .6));
+      if (trail && k - last > .1 && k < .9) { last = k; GoldFX.sparkle(o.position, 4, .12, .3, 550); }
     }).then(() => {
       S3.root().remove(o);
       // spelet kan ha avslutats (eller ett nytt startats) medan säcken flög
@@ -3385,6 +3462,154 @@ const Table = (() => {
   T.setDeck = n => { if (!deckStack) return; const hh = Math.max(.004, n * .0035); deckStack.scale.y = hh; deckStack.position.y = -.31 + hh / 2; };
   T.deckWorld = () => deckStack ? deckStack.position.clone().setY(deckStack.position.y + deckStack.scale.y / 2) : new THREE.Vector3(6, 0, -1.6);
   return T;
+})();
+
+/* ---- 07f-goldfx.js ---- */
+/* ================= Guldögonblicket i 3D: glitter, en glödande säck och mynt som sprutar ================= */
+// När någon får guld ska det kännas: säcken studsar upp ur snurran (eller dörren) med glitter och gyllene glöd,
+// flyger till trollet som fångar den, och mynt sprutar ut och studsar på brädet. Den enkla kartan får färre partiklar.
+const GoldFX = (() => {
+  const G = {};
+  const LOT = SIMPLE ? .5 : 1;
+  let sparkTex = null, glowTex = null;
+  const root = () => S3.root();
+
+  // glittret: en fyruddig stjärna med mjuk glöd
+  function sparkTexture() {
+    if (sparkTex) return sparkTex;
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const g = c.getContext('2d');
+    const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, 'rgba(255,255,240,1)'); gr.addColorStop(.25, 'rgba(255,230,140,.8)'); gr.addColorStop(1, 'rgba(255,190,40,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+    g.fillStyle = 'rgba(255,255,255,.95)';
+    g.beginPath(); g.moveTo(32, 2); g.lineTo(36, 28); g.lineTo(62, 32); g.lineTo(36, 36); g.lineTo(32, 62); g.lineTo(28, 36); g.lineTo(2, 32); g.lineTo(28, 28); g.closePath(); g.fill();
+    return (sparkTex = new THREE.CanvasTexture(c));
+  }
+  function glowTexture() {
+    if (glowTex) return glowTex;
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gr.addColorStop(0, 'rgba(255,240,170,.95)'); gr.addColorStop(.35, 'rgba(255,200,60,.45)'); gr.addColorStop(1, 'rgba(255,170,20,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+    return (glowTex = new THREE.CanvasTexture(c));
+  }
+
+  /* ---------- Glitter ---------- */
+  // n gnistor som sprids från pos (spread i meter, up = hur högt de flyger) och bleknar på ungefär en sekund
+  G.sparkle = (pos, n = 28, spread = .45, up = 1.2, ms = 1100) => {
+    n = Math.max(3, Math.round(n * LOT));
+    const P = new Float32Array(n * 3), C = new Float32Array(n * 3), V = [], L = [];
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, r = Math.random() * spread;
+      P[i * 3] = pos.x + Math.cos(a) * r * .3; P[i * 3 + 1] = pos.y + Math.random() * .1; P[i * 3 + 2] = pos.z + Math.sin(a) * r * .3;
+      V.push(new THREE.Vector3(Math.cos(a) * r * 1.6, up * (.5 + Math.random()), Math.sin(a) * r * 1.6));
+      L.push(.55 + Math.random() * .45);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(P, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(C, 3));
+    const mat = new THREE.PointsMaterial({map: sparkTexture(), size: .2, sizeAttenuation: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, vertexColors: true});
+    const pts = new THREE.Points(geo, mat);
+    pts.frustumCulled = false;
+    root().add(pts);
+    const t0 = performance.now();
+    const stop = S3.addTicker(dt => {
+      const k = (performance.now() - t0) / ms;
+      for (let i = 0; i < n; i++) {
+        V[i].y -= 1.6 * dt; V[i].multiplyScalar(1 - dt * .8);
+        P[i * 3] += V[i].x * dt; P[i * 3 + 1] += V[i].y * dt; P[i * 3 + 2] += V[i].z * dt;
+        // blinkar lite och bleknar mot slutet av sitt liv
+        const life = clamp(1 - k / L[i], 0, 1), tw = .75 + .25 * Math.sin(k * 40 + i);
+        const v = life * tw; C[i * 3] = v; C[i * 3 + 1] = v * .92; C[i * 3 + 2] = v * .7;
+      }
+      geo.attributes.position.needsUpdate = true; geo.attributes.color.needsUpdate = true;
+      if (k >= 1) { stop(); root().remove(pts); geo.dispose(); mat.dispose(); }
+    });
+  };
+
+  /* ---------- Mynt ---------- */
+  function coinObj() {
+    const o = ModelLib.ok() && ModelLib.has('coin') ? ModelLib.create('coin') : Decor.make('coin');
+    const b = new THREE.Box3().setFromObject(o), s = b.getSize(new THREE.Vector3());
+    o.scale.setScalar(.085 / Math.max(.001, s.x, s.y, s.z));
+    return o;
+  }
+  // Mynt sprutar ut från pos, studsar på brädet och krymper bort
+  G.coins = (pos, n = 10, power = 1) => {
+    n = Math.max(3, Math.round(n * LOT));
+    const list = [];
+    for (let i = 0; i < n; i++) {
+      const o = coinObj(), a = Math.random() * Math.PI * 2, sp = (.5 + Math.random() * .9) * power;
+      o.position.copy(pos);
+      root().add(o);
+      list.push({o, v: new THREE.Vector3(Math.cos(a) * sp, (1.6 + Math.random() * 1.2) * power, Math.sin(a) * sp), spin: new THREE.Vector3(Math.random() * 14, Math.random() * 10, Math.random() * 14), s0: o.scale.x, bounced: 0});
+    }
+    Sound.play('coinRain', Math.min(12, n));
+    const t0 = performance.now();
+    const stop = S3.addTicker(dt => {
+      const age = (performance.now() - t0) / 1000;
+      list.forEach(c => {
+        c.v.y -= 7 * dt;
+        c.o.position.addScaledVector(c.v, dt);
+        c.o.rotation.x += c.spin.x * dt; c.o.rotation.y += c.spin.y * dt; c.o.rotation.z += c.spin.z * dt;
+        const ground = S3.height(c.o.position.x * 100 + 500, c.o.position.z * 100 + 500) + .012;
+        if (c.o.position.y < ground && c.v.y < 0) {
+          c.o.position.y = ground; c.v.y = -c.v.y * .38; c.v.x *= .55; c.v.z *= .55; c.spin.multiplyScalar(.5); c.bounced++;
+        }
+        const shrink = clamp((age - 1.15) / .35, 0, 1);
+        c.o.scale.setScalar(c.s0 * (1 - shrink));
+      });
+      if (age > 1.55) { stop(); list.forEach(c => root().remove(c.o)); }
+    });
+  };
+
+  /* ---------- Säcken ---------- */
+  // Säcken studsar upp ur from med glöd och glitter. Ger en grupp som sedan kan flyga med G.arc.
+  G.rise = (from, ms = 520) => {
+    const grp = new THREE.Group();
+    const sack = Decor.make('sack');
+    const b = new THREE.Box3().setFromObject(sack), s = b.getSize(new THREE.Vector3());
+    sack.scale.setScalar(.3 / Math.max(.001, s.y));
+    sack.position.y = -.15;
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTexture(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending}));
+    glow.scale.set(1.15, 1.15, 1);
+    grp.add(glow, sack);
+    grp.position.copy(from);
+    grp.scale.setScalar(.01);
+    root().add(grp);
+    grp.userData.glow = glow;
+    Sound.play('goldRise');
+    G.sparkle(from, 34, .55, 1.6);
+    const y0 = from.y;
+    return Anim.tween(ms, k => {
+      const e = easeOutBack(k);
+      grp.position.y = y0 + .7 * e;
+      grp.scale.setScalar(Math.max(.01, e));
+      sack.rotation.y = k * Math.PI * 2;
+      glow.material.opacity = .6 + .4 * Math.sin(k * Math.PI);
+    }).then(() => grp);
+  };
+  // Säcken flyger i en båge till to och lämnar ett glitterspår
+  G.arc = (grp, to, ms = 540) => {
+    const a = grp.position.clone(), top = Math.max(a.y, to.y) + .6;
+    let last = 0;
+    return Anim.tween(ms, k => {
+      grp.position.set(lerp(a.x, to.x, k), lerp(a.y, to.y, k) + Math.sin(k * Math.PI) * (top - Math.max(a.y, to.y)), lerp(a.z, to.z, k));
+      grp.rotation.y += .25;
+      if (k - last > .12) { last = k; G.sparkle(grp.position, 7, .18, .4, 650); }
+    });
+  };
+  // Trollet fångar säcken: den försvinner i en gyllene smäll av mynt och glitter
+  G.pop = (grp, n = 1) => {
+    const at = grp.position.clone();
+    root().remove(grp);
+    grp.traverse(o => { if (o.isSprite) o.material.dispose(); });
+    G.sparkle(at, 36 + n * 4, .8, 1.6, 1300);
+    G.coins(at, 8 + n * 3, 1 + Math.min(1, n * .12));
+    S3.flash(.35);
+  };
+  return G;
 })();
 
 /* ---- 08-ui.js ---- */
@@ -3478,18 +3703,28 @@ const UI = (() => {
       const map = {'2': '2', '4': '4', '6': '6', '8': '8', ArrowUp: '2', ArrowLeft: '4', ArrowRight: '6', ArrowDown: '8'};
       if (input.kind === 'card' && map[k] && !secret) { const i = input.hand().indexOf(map[k]); if (i >= 0) { e.preventDefault(); input.handle(i); } }
       if (input.kind === 'door' && /^[123]$/.test(k)) { e.preventDefault(); input.handle(+k - 1); }
+      // tv-fjärrkontrollen: pilarna flyttar mellan dörrarna och OK öppnar den som är vald
+      if (input.kind === 'door' && /^Arrow/.test(k)) {
+        const doors = [...document.querySelectorAll('.doorBtn:not(:disabled)')];
+        if (doors.length) {
+          e.preventDefault();
+          const i = doors.indexOf(document.activeElement), step = k === 'ArrowLeft' || k === 'ArrowUp' ? -1 : 1;
+          doors[i < 0 ? 0 : (i + step + doors.length) % doors.length].focus();
+        }
+      }
     });
   };
   U.showHUD = on => { $('hud').hidden = !on; U.updateSafe(); };
   // Den fria delen av skärmen i kompakt läge (telefoner): mellan raden överst och korten längst ner.
   // Kameran ramar in trollet där i stället för mitt på skärmen, där det skulle hamna bakom knapparna.
+  // På stora skärmar räknas pratbubblan in, på telefoner får den ligga över brädet (den är kort).
   U.updateSafe = () => {
-    if (!S3.compact() || $('hud').hidden) { S3.setSafe(null); return; }
-    const W = innerWidth, H = innerHeight, land = document.body.classList.contains('land');
+    if ($('hud').hidden) { S3.setSafe(null); return; }
+    const W = innerWidth, H = innerHeight, compact = S3.compact(), land = document.body.classList.contains('land');
     let top = 0, bottom = H;
     [$('who'), document.querySelector('.tools')].forEach(el => { const r = el.getBoundingClientRect(); if (r.height && r.top < H * .4) top = Math.max(top, r.bottom + 6); });
-    [...document.querySelectorAll('.bottom > *')].filter(e => !e.hidden && !e.classList.contains('talk')).forEach(e => {
-      const r = e.getBoundingClientRect(); if (r.height) bottom = Math.min(bottom, r.top - (land ? 8 : 52));
+    [...document.querySelectorAll('.bottom > *')].filter(e => !e.hidden && (!compact || !e.classList.contains('talk'))).forEach(e => {
+      const r = e.getBoundingClientRect(); if (r.height) bottom = Math.min(bottom, r.top - (!compact ? 10 : land ? 8 : 52));
     });
     S3.setSafe({l: 0, t: top, r: W, b: Math.max(top + 100, bottom)});
   };
@@ -3540,7 +3775,18 @@ const UI = (() => {
     b.style.setProperty('--c', p.color);
     b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
   };
-  U.bumpGold = () => { const g = $('goldPill'); g.classList.remove('bump'); void g.offsetWidth; g.classList.add('bump'); };
+  U.bumpGold = (gold) => { const g = $('goldPill'); g.classList.remove('bump', 'shine'); void g.offsetWidth; g.classList.add('bump'); if (gold) g.classList.add('shine'); };
+  // Stort "+1" med en guldsäck och strålar mitt på skärmen när någon får guld
+  U.goldPop = (n, p, label) => {
+    if (Time.scale < .2) return;
+    document.querySelectorAll('.goldPop').forEach(e => e.remove());
+    const el = h('div', {class: 'goldPop' + (n > 1 ? ' big' : ''), 'aria-hidden': 'true'},
+      h('div', {class: 'gpRays'}), h('div', {class: 'gpSack', html: Art.sack()}),
+      h('div', {class: 'gpNum', text: '+' + n}), h('div', {class: 'gpLabel', text: label || (n > 1 ? 'guldsäckar!' : 'guldsäck!')}));
+    el.style.setProperty('--c', p.color);
+    $('app').append(el);
+    setTimeout(() => el.remove(), 2300);
+  };
 
   /* ---------- Pratbubblan ---------- */
   U.say = (html, speech, icon) => {
@@ -3598,8 +3844,8 @@ const UI = (() => {
     else { btn.disabled = true; btn.textContent = kind === 'card' ? 'Välj ett kort' : 'Välj en dörr'; }
     if (kind === 'door') U.doors(S, true);
     lastHandKey = ''; U.hand(S);
-    if (!IS_TV && !isTouch) setTimeout(() => { try { (kind === 'card' ? document.querySelector('#hand .card.match, #hand .card') : kind === 'door' ? document.querySelector('.doorBtn:not(:disabled)') : btn)?.focus({preventScroll: true}); } catch (e) { /* fokus är valfritt */ } }, 50);
-    else if (IS_TV) setTimeout(() => btn.focus(), 50);
+    // tangentbord och tv-fjärrkontroll: fokus på det man ska trycka på (kortet som passar, dörren eller knappen)
+    if (!isTouch || IS_TV) setTimeout(() => { try { (kind === 'card' ? (document.querySelector('#hand .card.match:not(:disabled)') || document.querySelector('#hand .card.tip:not(:disabled)') || document.querySelector('#hand .card:not(:disabled)')) : kind === 'door' ? document.querySelector('.doorBtn:not(:disabled)') : btn)?.focus({preventScroll: true}); } catch (e) { /* fokus är valfritt */ } }, 50);
     return () => { if (input && input.kind === kind) input = null; U.lock(S); };
   };
   U.lock = S => {
@@ -3644,6 +3890,8 @@ const UI = (() => {
     $('resAwards').innerHTML = aw.map(a => `<div class="award"><span class="awIco">${Art.AWARD[a.icon] || ''}</span><span class="awText"><b>${esc(a.title)}</b><span>${esc(and(a.names))} ${esc(a.text)}</span></span></div>`).join('');
     $('resAwards').hidden = !aw.length;
     $('results').hidden = false;
+    // tangentbord och tv-fjärrkontroll: "Spela igen" är valt direkt
+    if (!isTouch || IS_TV) setTimeout(() => $('btnAgain').focus({preventScroll: true}), 60);
     if (win) U.confetti();
   };
   /* ---------- Bonusrundan ---------- */
@@ -3781,11 +4029,18 @@ const Menu = (() => {
     M.wireSeats();
     Remote.render($('phoneBox'));
     Remote.render($('pausePhoneBox'));
+    // Escape och tv-fjärrkontrollens tillbaka-knapp (Samsung skickar 10009, andra GoBack eller BrowserBack)
     document.addEventListener('keydown', e => {
-      if (e.key !== 'Escape') return;
-      const o = document.querySelector('.overlay:not([hidden])');
-      if (o && o.id !== 'results') { close(o.id); e.preventDefault(); }
-      else if (!$('hud').hidden && !o) { open('pause'); e.preventDefault(); }
+      const back = e.key === 'Escape' || e.key === 'GoBack' || e.key === 'BrowserBack' || e.keyCode === 10009 || e.keyCode === 461;
+      if (!back || Bonus.active()) return;
+      if (M.back()) e.preventDefault();
+    });
+    // Webbläsarens tillbaka (tv-fjärrkontroll, Android): i spelet och i spelarvalet öppnas menyn eller startsidan i stället
+    // för att sidan lämnas. En extra historikpost läggs till först när man har tryckt på något (annars hoppar webbläsaren över den).
+    addEventListener('popstate', () => {
+      if (!trapped) return;
+      trapped = false;
+      if (M.back()) trapBack();
     });
     // Piltangenterna flyttar mellan knapparna i menyerna (tv-fjärrkontroller och tangentbord).
     // Under spelet lägger pilarna kort, och i bonusrundan styr de Hugo, så där gör de ingenting här.
@@ -3825,6 +4080,20 @@ const Menu = (() => {
     if (best.scrollIntoView) best.scrollIntoView({block: 'nearest'});
     return true;
   }
+  // Ett steg tillbaka: stäng det som är öppet, öppna menyn under spelet, eller gå från spelarvalet till startsidan.
+  // Svarar false när det inte finns något att gå tillbaka från (startsidan), då får webbläsaren göra sitt.
+  let trapped = false;
+  function trapBack() { if (trapped || !history.pushState) return; try { history.pushState({hugo: 1}, ''); trapped = true; } catch (e) { /* frivilligt */ } }
+  M.back = () => {
+    const o = document.querySelector('.overlay:not([hidden])');
+    if (o && o.id === 'results') return true;
+    if (o) { close(o.id); return true; }
+    if (!$('hud').hidden) { open('pause'); return true; }
+    if (!$('setup').hidden) { M.showTitle(); return true; }
+    if (!$('slowAsk').hidden) { $('btnSlowNo').click(); return true; }
+    return false;
+  };
+  M.trapBack = trapBack;
   function syncTools() {
     ['tMusic', 'pMusic'].forEach(id => $(id).setAttribute('aria-pressed', String(Settings.music > 0)));
     ['tVoice', 'pVoice'].forEach(id => $(id).setAttribute('aria-pressed', String(!!Settings.voice)));
@@ -3955,6 +4224,7 @@ const Menu = (() => {
   M.showSetup = () => {
     $('title').hidden = true;
     $('setup').hidden = false;
+    trapBack();
     $('speedSel').value = Settings.speed;
     $('lengthSel').value = String(Settings.tracks);
     renderSeats();
@@ -3986,6 +4256,7 @@ const Menu = (() => {
   }
   function startGame(state, resumed) {
     $('title').hidden = true; $('setup').hidden = true; $('results').hidden = true;
+    trapBack();
     showTitleTrolls(false);
     Sound.play('turn');
     Game.start(state, resumed);
@@ -4090,15 +4361,25 @@ const Game = (() => {
     const pp = Pieces.worldPos(p.id);
     return p.status === 'track' ? pp.clone().lerp(Spinners.center(p.track), .45) : pp;
   }
+  // Det som ska synas under turen: trollet och hela snurran (på banan), annars trollet med lite runt om
+  function viewBox(p) {
+    const pp = Pieces.worldPos(p.id), pts = [pp];
+    if (p.status === 'track') { const c = Spinners.center(p.track); pts.push(c.clone().add(new THREE.Vector3(-1.05, 0, -1.05)), c.clone().add(new THREE.Vector3(1.05, 0, 1.05))); }
+    return S3.boxView(pts, .45);
+  }
   function focusTurn(p) {
     if (!Settings.follow) return Promise.resolve();
     if (p.status === 'witch' || p.status === 'finished') return S3.focus(Decor.lairFocus(), 4.4, 900, 0, 4);
+    const v = viewBox(p);
+    if (v) return S3.cam.to(v.x, v.z, v.d, 900, 0);
     return S3.focus(viewPoint(p), p.status === 'track' ? 5.2 : 5, 900, 0);
   }
   // Kameran följer den som har turen medan trollet går (om man inte själv har flyttat kameran nyss)
   function followTurn(p) {
     S3.follow(() => {
       if (!Settings.follow || !running || !S || S.players[S.turn] !== p || p.status === 'witch' || p.status === 'finished' || Bonus.active()) return null;
+      const v = viewBox(p);
+      if (v) return v;
       const d = S3.turnDist(), t = S3.frameTarget(viewPoint(p), d, 0);
       return {x: t.x, z: t.z, d};
     });
@@ -4212,15 +4493,14 @@ const Game = (() => {
     const ok = sym === sec.s;
     if (sec.t === 'guld') {
       if (ok) {
-        p.gold++; p.trackGold++; p.stats.sacks++;
-        say(pick(['Guldsäcken är din!', 'Plopp! En guldsäck till.', 'Mer guld till Hugo!']), undefined, Art.sack());
-        const from = Spinners.center(p.track); from.y += .35;
-        Bus.emit('sack', p, 1);
-        await Table.flySack(p.id, from);
-        UI.render(S); UI.bumpGold(); Pieces.cheer(p.id, 700);
-      } else { Sound.play('miss'); say('Guldsäcken blev kvar den här gången.'); }
+        p.trackGold++; p.stats.sacks++;
+        p.streak = (p.streak || 0) + 1;
+        const from = Spinners.center(p.track); from.y += .12;
+        await celebrateGold(p, from, 1, gen, {spinner: p.track});
+      } else { p.streak = 0; Sound.play('miss'); say('Guldsäcken blev kvar den här gången.'); }
     } else {
       const ob = OBST[sec.o];
+      p.streak = 0;
       if (ok) {
         p.stats.jumps++;
         say(txt(ob.ok, sec.s), undefined, Art.icon(sec.o, sec.s));
@@ -4277,12 +4557,61 @@ const Game = (() => {
     const sacks = Bonus.reward(r);
     if (sacks) {
       say(sacks === 2 ? `Alla hinder! ${nm(p)} får två guldsäckar.` : `${nm(p)} får en guldsäck för bonusrundan.`, undefined, Art.sack());
-      Bus.emit('sack', p, sacks);
-      const from = Pieces.worldPos(p.id); from.y += .5;
-      for (let k = 0; k < sacks; k++) { p.gold++; Table.flySack(p.id, from); await wait(260, gen); }
-      UI.render(S); UI.bumpGold();
+      const from = Pieces.worldPos(p.id); from.y += .1;
+      await celebrateGold(p, from, sacks, gen, {label: sacks === 2 ? 'Bonus! Två säckar!' : 'Bonus!', quiet: true});
     } else say(p.human ? 'Ingen guldsäck den här gången, men bra kämpat!' : `Ingen guldsäck för ${nm(p)} den här gången.`);
     await wait(1100, gen);
+  }
+
+  // Guldögonblicket. Säcken studsar upp ur snurran (eller dörren) med glitter, flyger till trollet som hoppar och fångar
+  // den, mynt sprutar och en glad slinga spelas medan musiken tystnar lite. Ett stort "+1" poppar upp, räknaren lyser,
+  // och sedan flyger säckarna med glitterspår till högen vid bordet. Guld flera gånger i rad ger en ljusare slinga
+  // och ett eget utrop, och 5, 10 och 15 säckar firas extra. quiet: ingen pratbubbla (den som anropar säger något själv).
+  const GOLD_LINES = ['Guldsäcken är din!', 'Plopp! En guldsäck till Hugo!', 'Hurra! Mer guld!', 'Titta, en guldsäck!', 'Glitter och guld!'];
+  const STREAK_LINES = {2: 'Två guldsäckar i rad!', 3: 'Tre i rad! Vilken guldtur!', 4: 'Fyra i rad! Guldkungen!'};
+  async function celebrateGold(p, from, n, gen, opts = {}) {
+    const before = p.gold, fast = Time.scale < .2 || document.hidden;
+    if (fast) {
+      p.gold += n;
+      Bus.emit('sack', p, n);
+      for (let k = 0; k < n; k++) Table.setGold(p.id, before + k + 1);
+      UI.render(S);
+      return;
+    }
+    const streak = !opts.spinner ? 0 : p.streak || 0;
+    if (!opts.quiet) say(STREAK_LINES[Math.min(4, streak)] || pick(GOLD_LINES), undefined, Art.sack());
+    Sound.duck(3);
+    // märket ovanför snurran (vilket kort som behövdes) tas bort, så att säcken syns när den studsar upp
+    if (opts.spinner) { Spinners.hideBadges(); Spinners.flashGold(opts.spinner); }
+    const sack = await GoldFX.rise(from);
+    if (gen !== Flow.gen) { S3.root().remove(sack); throw new Cancel(); }
+    // trollet hoppar upp och fångar säcken
+    const catchAt = Pieces.worldPos(p.id); catchAt.y += .34;
+    Pieces.face(p.id, from);
+    const hop = Pieces.jump(p.id, true);
+    await GoldFX.arc(sack, catchAt, 460);
+    GoldFX.pop(sack, n);
+    // kameran gör ett litet ryck in mot fångsten och glider sedan tillbaka
+    if (Settings.follow && !reduceMotion) { const c = S3.cam; c.to(lerp(c.tx, catchAt.x, .35), lerp(c.tz, catchAt.z, .35), c.d * .84, 260); }
+    Sound.play('goldCatch');
+    Sound.play('goldJingle', Math.min(7, Math.max(0, streak - 1) * 2 + (n >= 5 ? 5 : 0)));
+    p.gold += n;
+    Bus.emit('sack', p, n);
+    UI.render(S); UI.bumpGold(true);
+    UI.goldPop(n, p, opts.label || (streak >= 2 ? `${streak} i rad!` : null));
+    await hop;
+    Pieces.cheer(p.id, 1300);
+    await wait(380, gen);
+    for (let k = 0; k < n; k++) { Table.flySack(p.id, catchAt, true); await wait(n > 1 ? 160 : 0, gen); }
+    await wait(900, gen);
+    // milstolpar: 5, 10, 15 och 20 säckar
+    const mile = [20, 15, 10, 5].find(m => before < m && p.gold >= m);
+    if (mile) {
+      Sound.play('fanfare');
+      say({5: `${nm(p)} har fem guldsäckar! Hugo börjar bli rik!`, 10: `Tio guldsäckar! ${nm(p)} är en riktig guldgrävare!`, 15: `Femton guldsäckar! Vilken skatt, ${nm(p)}!`, 20: `Tjugo guldsäckar! ${nm(p)} är guldkung!`}[mile], undefined, Art.sack());
+      Pieces.spin(p.id, 900);
+      await wait(1200, gen);
+    }
   }
 
   async function leaveTrack(p, ok, gen) {
@@ -4353,10 +4682,8 @@ const Game = (() => {
       p.freed = true; p.freedAt = ++S.freedN;
       Pieces.cheer(p.id, 1500);
       if (card === 'gold') {
-        const from = Decor.doorPos(d); from.y += .4;
-        Bus.emit('sack', p, 5);
-        for (let k = 0; k < 5; k++) { p.gold++; Table.flySack(p.id, from); await wait(220, gen); }
-        UI.bumpGold();
+        const from = Decor.doorPos(d); from.y += .2;
+        await celebrateGold(p, from, 5, gen, {label: 'Skatten!', quiet: true});
       }
     }
     p.door = card; p.status = 'finished';
@@ -4688,7 +5015,7 @@ const Remote = (() => {
   Bus.on('rolled', (p, v) => R.event(p, {kind: 'roll', v}));
   Bus.on('spun', (p, idx) => R.event(p, {kind: 'spin', track: p.track, idx}));
   Bus.on('hurt', p => R.event(p, {kind: 'hurt', lives: p.lives}));
-  Bus.on('sack', (p, n) => R.event(p, {kind: 'sack', n: n || 1}));
+  Bus.on('sack', (p, n) => R.event(p, {kind: 'sack', n: n || 1, total: p.gold, streak: p.streak || 0}));
   Bus.on('trackDone', (p, ok) => R.event(p, {kind: ok ? 'trackOk' : 'trackLost'}));
   Bus.on('doorResult', (p, card) => R.event(p, {kind: 'door', card}));
   Bus.on('gameStart', () => { R.clearOffers(); pickLeader(); changed(); });
@@ -5116,6 +5443,10 @@ const Bonus = (() => {
   const TEST = /autotest/.test(location.hash);
   if (TEST) { Time.scale = .02; Settings.music = 0; Settings.sfx = 0; Settings.voice = false; }
   document.body.classList.toggle('simple', SIMPLE);
+  // Stora skärmar (tv i soffan, stora bildskärmar): knappar och text skalas upp så att allt syns på avstånd
+  const uiScale = () => document.documentElement.style.setProperty('--ui', clamp(Math.min(innerWidth / 1440, innerHeight / 820), 1, 2).toFixed(3));
+  addEventListener('resize', uiScale);
+  uiScale();
   try {
     setLoad(.08, SIMPLE ? 'Bygger den enkla kartan …' : 'Bygger brädet …');
     ModelLib.init();
