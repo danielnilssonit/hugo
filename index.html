@@ -335,6 +335,19 @@ h3{margin:14px 0 4px; font-size:17px}
   .life .in{transition-duration:.2s}
 }
 
+/* ---------- Handen som visar vad man ska trycka på ---------- */
+.pointer{position:fixed; z-index:28; width:58px; height:76px; pointer-events:none; transform:translate(-50%,-100%); filter:drop-shadow(3px 4px 0 rgba(36,26,21,.35))}
+.pointer svg{width:100%; height:100%; display:block; animation:pointBob .8s ease-in-out infinite}
+@keyframes pointBob{0%,100%{transform:translateY(-10px)} 50%{transform:translateY(2px)}}
+.pointer.small{width:44px; height:58px}
+body.compact .pointer{width:44px; height:58px}
+body.compact .pointer.small{width:36px; height:48px}
+@media (prefers-reduced-motion: reduce){ .pointer svg{animation:none} }
+/* ---------- Guldkronan ---------- */
+.pcrown{display:inline-block; width:20px; height:15px; margin-right:3px; vertical-align:-1px}
+.pcrown svg,.crownIco{display:block; width:100%; height:100%}
+.bIco .crownIco{width:34px; height:26px}
+
 /* ---------- Hejarop från skärmen (online) ---------- */
 .reactTool{font-size:20px; padding:0 10px; line-height:1}
 .mapTool{min-width:48px; font-family:var(--f-disp); font-weight:400; font-size:18px; background:#D6ECFA}
@@ -574,6 +587,7 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
     <div class="banner" id="banner" aria-hidden="true"><img id="bannerPic" alt=""><span id="bannerText"></span></div>
     <button class="skipBtn" id="btnSkip" type="button" hidden>Hoppa över ▸</button>
     <div class="reactBar" id="reactBar" hidden></div>
+    <div class="pointer" id="pointer" hidden aria-hidden="true"><svg viewBox="0 0 64 84"><rect x="10" y="2" width="46" height="13" rx="5" fill="#fff" stroke="#241A15" stroke-width="3"/><g fill="#FFE0C2" stroke="#241A15" stroke-width="3" stroke-linejoin="round"><rect x="12" y="11" width="42" height="36" rx="13"/><ellipse cx="13" cy="31" rx="7" ry="10"/><rect x="25" y="34" width="14" height="46" rx="7"/></g><path d="M41 22q8 0 8 8M41 33q7 0 7 7" fill="none" stroke="#241A15" stroke-width="2.5" stroke-linecap="round"/></svg></div>
     <div class="bottom">
       <div class="talk" id="talk"><div class="talkFace" id="talkFace"></div><div class="bubble" id="bubble" aria-live="polite"><p id="msg">Hej kompis!</p></div></div>
       <div class="doorBar panel" id="doorBar" hidden>
@@ -733,6 +747,7 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
       <label class="field" for="volSfx">Ljudeffekter <input type="range" id="volSfx" min="0" max="1" step=".05"></label>
       <label class="check" for="optVoice"><input type="checkbox" id="optVoice"> Läs upp vad som händer</label>
       <label class="check" for="optHints"><input type="checkbox" id="optHints"> Visa vilket kort som passar</label>
+      <label class="check" for="optGuide"><input type="checkbox" id="optGuide"> Visa med en hand vad man ska trycka på</label>
       <label class="check" for="optBonus"><input type="checkbox" id="optBonus"> Bonusrunda när en bana är klar</label>
       <label class="check" for="optStory"><input type="checkbox" id="optStory"> Berättelsen om häxan när ett nytt spel börjar</label>
       <label class="check" for="optFollow"><input type="checkbox" id="optFollow"> Kameran följer den som har turen</label>
@@ -856,7 +871,7 @@ const Store = {
 // view: kartan i '3d' (snett från sidan) eller '2d' (rakt uppifrån, med trollen som runda spelpjäser). Byts direkt.
 // turn: egen TURN-server för nätverk där mobilerna inte kommer fram ({url, user, pass}).
 const Settings = Object.assign({
-  music: .5, sfx: .8, voice: false, speed: 'normal', quality: 'auto', dof: true, hints: true, follow: true, tracks: 4, bonus: true, turn: null, die: 3, story: true, view: '3d'
+  music: .5, sfx: .8, voice: false, speed: 'normal', quality: 'auto', dof: true, hints: true, follow: true, tracks: 4, bonus: true, turn: null, die: 3, story: true, view: '3d', guide: true
 }, Store.get('settings', {}));
 function saveSettings() { Store.set('settings', Settings); }
 
@@ -3454,6 +3469,27 @@ const Pieces = (() => {
   P.face = (id, v) => { const e = E(id); if (!e) return; e.yaw = Math.atan2(v.x - e.pos.x, v.z - e.pos.z); apply(e); };
 
   // Varje bild: svansen viftar, trollet andas, tittar sig omkring och den som har turen står i en ring
+  // Guldkronan över den som har mest guld
+  let crown = null, crownId = -1;
+  function crownSprite() {
+    const c = document.createElement('canvas'); c.width = 128; c.height = 96;
+    const g = c.getContext('2d');
+    g.lineJoin = 'round'; g.lineWidth = 7; g.strokeStyle = '#241A15';
+    g.beginPath(); g.moveTo(14, 82); g.lineTo(8, 26); g.lineTo(38, 50); g.lineTo(64, 12); g.lineTo(90, 50); g.lineTo(120, 26); g.lineTo(114, 82); g.closePath();
+    g.fillStyle = '#FFD43B'; g.fill(); g.stroke();
+    g.fillStyle = '#F2A81D'; g.fillRect(14, 70, 100, 14); g.lineWidth = 6; g.strokeRect(14, 70, 100, 14);
+    [[64, 46, 8, '#E23B2E'], [36, 60, 6, '#2F7FD1'], [92, 60, 6, '#2F9E4F']].forEach(([x, y, r, col]) => { g.beginPath(); g.arc(x, y, r, 0, 7); g.fillStyle = col; g.fill(); g.lineWidth = 3; g.stroke(); });
+    [[8, 26], [64, 12], [120, 26]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 7, 0, 7); g.fillStyle = '#FFF3B0'; g.fill(); g.lineWidth = 4; g.stroke(); });
+    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({map: t, transparent: true, depthTest: false}));
+    s.renderOrder = 16; s.visible = false;
+    return s;
+  }
+  P.setLeader = id => {
+    if (!crown) { crown = crownSprite(); S3.root().add(crown); }
+    crownId = id;
+  };
+  P.leader = () => crownId;
   const WHITE = new THREE.Color(1, 1, 1);
   Bus.on('frame', (dt, t) => {
     const flat = S3.view2d();
@@ -3479,6 +3515,17 @@ const Pieces = (() => {
       if (tl) tl.rotation.y = Math.sin(tt * (e.mood > 0 ? 12 : 3.2)) * (e.mood > 0 ? .7 : .35);
       e.mood *= Math.pow(.6, dt);
     });
+    if (crown) {
+      const e = crownId >= 0 ? E(crownId) : null;
+      crown.visible = !!e;
+      if (e) {
+        const bob = Math.sin(t * 3) * .02;
+        // 3D: ovanför trollets huvud. 2D: på pjäsens överkant (norr om den på skärmen).
+        if (flat) { const k = 1 + Math.min(.75, e.hop * 2.4); crown.position.set(e.pos.x, e.pos.y + .3, e.pos.z - .24 * k + bob); crown.scale.set(.24, .18, 1); }
+        else { crown.position.set(e.obj.position.x, e.obj.position.y + .5 + bob, e.obj.position.z); crown.scale.set(.2, .15, 1); }
+        crown.material.rotation = Math.sin(t * 2) * .08;
+      }
+    }
     if (ring) {
       const e = E(curId);
       ring.visible = !!e;
@@ -3486,7 +3533,7 @@ const Pieces = (() => {
     }
   });
   P.all = () => list;
-  P.clear = () => { list.forEach(e => { if (e.obj.parent) e.obj.parent.remove(e.obj); if (e.tok && e.tok.parent) e.tok.parent.remove(e.tok); }); list = []; curId = -1; if (ring) ring.visible = false; };
+  P.clear = () => { list.forEach(e => { if (e.obj.parent) e.obj.parent.remove(e.obj); if (e.tok && e.tok.parent) e.tok.parent.remove(e.tok); }); list = []; curId = -1; crownId = -1; if (ring) ring.visible = false; if (crown) crown.visible = false; };
   return P;
 })();
 
@@ -4277,6 +4324,8 @@ const UI = (() => {
   // jordglob: spelaren sitter vid en annan skärm (online)
   const GLOBE = '<svg class="globeIco" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="#7FC4F0" stroke="#241A15" stroke-width="1.5"/><path d="M4.2 5.2c1.4.3 2 1.3 1.6 2.4-.4 1 .7 1.6 1.4 2.3.6.6.2 1.8-.4 2.6M9.4 1.8c-.4 1.2.3 2 1.4 2.1 1.2.1 1.6 1.2 1 2.1-.5.8.3 1.7 1.4 1.6" fill="none" stroke="#2F9E4F" stroke-width="1.6" stroke-linecap="round"/></svg>';
   U.GLOBE = GLOBE;
+  const CROWN = '<svg class="crownIco" viewBox="0 0 40 30" aria-hidden="true"><path d="M4 26 L2 8 L12 16 L20 4 L28 16 L38 8 L36 26 Z" fill="#FFD43B" stroke="#241A15" stroke-width="2.6" stroke-linejoin="round"/><rect x="4" y="22" width="32" height="5" rx="2" fill="#F2A81D" stroke="#241A15" stroke-width="2.2"/><circle cx="20" cy="15" r="2.6" fill="#E23B2E"/><circle cx="11" cy="19" r="2" fill="#2F7FD1"/><circle cx="29" cy="19" r="2" fill="#2F9E4F"/></svg>';
+  U.CROWN = CROWN;
   const genitive = n => /[sxz]$/i.test(n) ? n : n + 's';
 
   U.init = () => {
@@ -4356,7 +4405,8 @@ const UI = (() => {
       const pon = Remote.online(q.dev) || Online.phoneOn(q), bon = Online.guest() || Online.boardOnline(q.board);
       const ph = (q.dev ? `<span class="pphone ${pon ? '' : 'away'}" title="${pon ? 'Spelar med mobilen' : 'Mobilen är inte ansluten'}">${PHONE}</span>` : '')
         + (q.board ? `<span class="pphone ${bon ? '' : 'away'}" title="${bon ? 'Spelar online' : 'Skärmen är inte ansluten'}">${GLOBE}</span>` : '');
-      return `<div class="prow ${S.phase !== 'over' && q === p ? 'cur' : ''}" style="--c:${q.color}"><img src="${Portraits.get(q.color, 'head')}" alt=""><span class="pname">${esc(q.name)}${ph}<small>${esc(sub)}</small></span><span class="ptracks">${tr}</span><span class="pgold">${Art.sack()}${q.gold}</span></div>`;
+      const crown = Game.crown() === q.id ? `<span class="pcrown" title="Mest guld">${CROWN}</span>` : '';
+      return `<div class="prow ${S.phase !== 'over' && q === p ? 'cur' : ''}" style="--c:${q.color}"><img src="${Portraits.get(q.color, 'head')}" alt=""><span class="pname">${esc(q.name)}${ph}<small>${esc(sub)}</small></span><span class="ptracks">${tr}</span><span class="pgold">${crown}${Art.sack()}${q.gold}</span></div>`;
     }).join('');
     U.hand(S);
     // på telefoner döljs datorns kort och knapp under datorns tur, så att brädet får mer plats
@@ -4469,6 +4519,31 @@ const UI = (() => {
   U.cardIn = i => { const el = document.querySelector(`#hand .card[data-i="${i}"]`); if (el) el.classList.add('enter'); };
   U.nudge = i => { const el = document.querySelector(`#hand .card[data-i="${i}"]`); if (!el) return; el.classList.remove('nudge'); void el.offsetWidth; el.classList.add('nudge'); };
 
+  /* ---------- Handen som visar vad man ska trycka på ---------- */
+  // För de minsta: en hand studsar över knappen, kortet som passar eller dörrarna. De första gångerna för varje spelare
+  // visas den direkt, sedan bara om ingen har tryckt på en stund. Stängs av i inställningarna.
+  const guided = new Map();
+  Bus.on('gameStart', () => guided.clear());
+  let pointT = 0, pointRAF = 0, pointKind = null;
+  const pointTarget = kind => kind === 'card' ? (document.querySelector('#hand .card.match:not(:disabled)') || document.querySelector('#hand .card.tip:not(:disabled)') || document.querySelector('#hand .card:not(:disabled)'))
+    : kind === 'door' ? (() => { const d = [...document.querySelectorAll('.doorBtn:not(:disabled)')]; return d[Math.floor((d.length - 1) / 2)] || null; })()
+    : $('btnMain');
+  function pointLoop() {
+    const el = $('pointer'), t = pointKind && pointTarget(pointKind);
+    const r = t && t.getBoundingClientRect();
+    if (!r || !r.width || $('hud').hidden || document.querySelector('.overlay:not([hidden])') || !$('bonus').hidden) el.hidden = true;
+    // fingertoppen en bit in på det man ska trycka på, så att handen inte skymmer pratbubblan ovanför korten
+    else { el.hidden = false; el.classList.toggle('small', pointKind === 'card'); el.style.left = (r.left + r.width / 2) + 'px'; el.style.top = (r.top + Math.min(pointKind === 'card' ? 30 : 10, r.height * .4)) + 'px'; }
+    pointRAF = requestAnimationFrame(pointLoop);
+  }
+  U.hidePointer = () => { clearTimeout(pointT); cancelAnimationFrame(pointRAF); pointKind = null; $('pointer').hidden = true; };
+  function guide(kind, p) {
+    U.hidePointer();
+    if (!Settings.guide || Time.scale < .2 || Remote.has(p)) return;
+    const n = guided.get(p.id) || 0;
+    pointT = setTimeout(() => { guided.set(p.id, n + 1); pointKind = kind; pointLoop(); }, n < 3 ? 900 : 7000);
+  }
+
   /* ---------- Vad spelaren ska göra nu ---------- */
   // Returnerar en städfunktion. resolve(värde) när spelaren har valt.
   U.enable = (kind, S, p, resolve) => {
@@ -4482,7 +4557,8 @@ const UI = (() => {
     lastHandKey = ''; U.hand(S);
     // tangentbord och tv-fjärrkontroll: fokus på det man ska trycka på (kortet som passar, dörren eller knappen)
     if (!isTouch || IS_TV) setTimeout(() => { try { (kind === 'card' ? (document.querySelector('#hand .card.match:not(:disabled)') || document.querySelector('#hand .card.tip:not(:disabled)') || document.querySelector('#hand .card:not(:disabled)')) : kind === 'door' ? document.querySelector('.doorBtn:not(:disabled)') : btn)?.focus({preventScroll: true}); } catch (e) { /* fokus är valfritt */ } }, 50);
-    return () => { if (input && input.kind === kind) input = null; U.lock(S); };
+    guide(kind, p);
+    return () => { U.hidePointer(); if (input && input.kind === kind) input = null; U.lock(S); };
   };
   U.lock = S => {
     const btn = $('btnMain'), ph = S && S.phase;
@@ -4681,7 +4757,7 @@ const Menu = (() => {
       return read;
     };
     const readers = [bind('volMusic', 'music', () => { Sound.unlock(); Sound.setVolumes(); syncTools(); }), bind('volSfx', 'sfx', () => { Sound.unlock(); Sound.setVolumes(); Sound.play('coin'); }),
-      bind('optVoice', 'voice', syncTools), bind('optHints', 'hints', () => Game.state() && UI.render(Game.state())), bind('optFollow', 'follow'), bind('optDof', 'dof'),
+      bind('optVoice', 'voice', syncTools), bind('optHints', 'hints', () => Game.state() && UI.render(Game.state())), bind('optGuide', 'guide'), bind('optFollow', 'follow'), bind('optDof', 'dof'),
       bind('optBonus', 'bonus'), bind('optStory', 'story'), bind('optQuality', 'quality', () => M.restart(true)),
       bind('optView', 'view', () => M.setView(Settings.view))];
     // 2D- och 3D-kartan byts direkt: knappen i verktygsraden och i menyn
@@ -5059,6 +5135,27 @@ const Game = (() => {
   }
   // Spelet sparas i början av varje tur, så att ett sparat parti alltid fortsätter med en hel tur.
   const save = () => { if (S && S.phase !== 'over' && !Online.guest()) Store.set('save', S); };
+  // Guldkronan: den som har mest guld har en krona över sitt troll. Delar flera på förstaplatsen behåller den som
+  // hade kronan den, annars har ingen kronan. announce: glitter och ett utrop när kronan byter ägare.
+  let crownHolder = -1;
+  G.crown = () => crownHolder;
+  function crown(announce) {
+    const max = Math.max(0, ...S.players.map(q => q.gold));
+    let id = -1;
+    if (max > 0) {
+      const top = S.players.filter(q => q.gold === max);
+      id = top.some(q => q.id === crownHolder) ? crownHolder : top.length === 1 ? top[0].id : -1;
+    }
+    const changed = id !== crownHolder;
+    crownHolder = id;
+    Pieces.setLeader(id);
+    if (changed) UI.render(S);
+    if (!changed || id < 0 || !announce || Time.scale < .2 || document.hidden) return false;
+    const at = Pieces.worldPos(id); at.y += .5;
+    GoldFX.sparkle(at, 30, .35, 1.1, 1100);
+    Sound.play('magic');
+    return true;
+  }
   // Mitt i en tur (en mobil kom eller gick): turens början sparas igen, med spelarnas mobiler som de är nu
   G.save = () => {
     const s = Store.get('save', null);
@@ -5090,6 +5187,7 @@ const Game = (() => {
     S3.setAttract(false);
     Sound.mood('game');
     S3.follow(() => null);
+    crownHolder = -1; crown(false);
     say(resumed === 'online' ? 'Hej! Nu spelar vi online.' : resumed ? 'Välkommen tillbaka! Vi fortsätter där vi slutade.' : 'Hej kompis! Nu börjar äventyret.');
     Online.gameStart(S, intro);
     Bus.emit('gameStart', S);
@@ -5154,6 +5252,7 @@ const Game = (() => {
         // varje tur börjar med samma läge på alla skärmar (online jämförs en kontrollsumma)
         if (!Online.guest()) S.bonus = !!Settings.bonus;
         await Online.checkpoint(S, gen);
+        crown(false);
         if (S.players.every(p => p.status === 'finished')) { await finish(gen); return; }
         const p = cur();
         if (p.status !== 'finished') { save(); await turn(p, gen); }
@@ -5206,7 +5305,8 @@ const Game = (() => {
 
     // 1. Tärningen
     S.phase = 'roll'; UI.render(S);
-    say(you(p) ? `${nm(p)}, slå tärningen!` : `${nm(p)} slår tärningen.`);
+    const careful = p.lives === 1 ? ' Försiktigt, bara ett Hugo-kort kvar!' : '';
+    say(you(p) ? `${nm(p)}, slå tärningen!${careful}` : `${nm(p)} slår tärningen.${careful}`);
     await ask('roll', p, gen, () => true);
     S.phase = 'rolling'; UI.lock(S);
     const n = await roll(p, gen);
@@ -5228,9 +5328,14 @@ const Game = (() => {
     // 2. Snurran. Mobilerna som väntar får tippa vad den visar; datorn väntar en stund så att alla hinner.
     S.phase = 'spin'; UI.render(S);
     Bus.emit('spinAsk', p);
-    if (you(p)) say(`Snurra snurran på ${TR[p.track].name}!`, `Snurra snurran!`);
-    else if (p.human) say(`${nm(p)} snurrar snurran på ${TR[p.track].name}.`);
-    else { const t0 = Date.now(); while (Remote.tipOpen() && Date.now() - t0 < 4500) await Flow.wait(250, gen); }
+    // nära slutet på banan: hur många rutor som är kvar
+    const left = N_SQ - p.pos, near = left <= 0 ? 'Sista rutan! ' : left <= 3 ? `Bara ${['', 'en ruta', 'två rutor', 'tre rutor'][left]} kvar! ` : '';
+    if (you(p)) say(`${near}Snurra snurran på ${TR[p.track].name}!`, `${near}Snurra snurran!`);
+    else if (p.human) say(`${near}${nm(p)} snurrar snurran på ${TR[p.track].name}.`);
+    else {
+      if (near) say(left <= 0 ? `${nm(p)} är på sista rutan!` : `${nm(p)} har bara ${['', 'en ruta', 'två rutor', 'tre rutor'][left]} kvar!`);
+      const t0 = Date.now(); while (Remote.tipOpen() && Date.now() - t0 < 4500) await Flow.wait(250, gen);
+    }
     await ask('spin', p, gen, () => true, {track: p.track});
     S.phase = 'spinning'; UI.lock(S);
     const idx = await Online.decide(S, 'spin', gen, () => Math.floor(Math.random() * 6));
@@ -5305,6 +5410,7 @@ const Game = (() => {
       await Table.returnSacks(p.id, lost);
       UI.render(S);
       await wait(1600, gen);
+      if (crown(true)) { say(`Nu har ${nm(crownHolder >= 0 ? S.players[crownHolder] : p)} mest guld och får guldkronan!`, undefined, UI.CROWN); await wait(1500, gen); }
       await leaveTrack(p, false, gen);
     } else if (p.pos >= N_SQ) {
       Sound.play('fanfare');
@@ -5360,6 +5466,7 @@ const Game = (() => {
       p.gold += n;
       Bus.emit('sack', p, n);
       for (let k = 0; k < n; k++) Table.setGold(p.id, before + k + 1);
+      crown(false);
       UI.render(S);
       return;
     }
@@ -5398,6 +5505,12 @@ const Game = (() => {
       say({5: `${nm(p)} har fem guldsäckar! Hugo börjar bli rik!`, 10: `Tio guldsäckar! ${nm(p)} är en riktig guldgrävare!`, 15: `Femton guldsäckar! Vilken skatt, ${nm(p)}!`, 20: `Tjugo guldsäckar! ${nm(p)} är guldkung!`}[mile], undefined, Art.sack());
       Pieces.spin(p.id, 900);
       await wait(1200, gen);
+    }
+    // guldkronan till den som har mest guld
+    if (crown(true)) {
+      say(S.players.filter(q => q.human).length > 1 || p.human ? `${nm(p)} har mest guld och får guldkronan!` : `${nm(p)} har mest guld och får guldkronan.`, undefined, UI.CROWN);
+      Pieces.cheer(p.id, 900);
+      await wait(1500, gen);
     }
   }
 
