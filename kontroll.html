@@ -129,6 +129,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
 
 /* Speltiden i lobbyn */
 .lenBox{display:flex; flex-direction:column; gap:6px}
+.lenBox .lbl + .seg + .lbl{margin-top:4px}
 .seg{display:flex; gap:6px}
 .seg button{flex:1; min-height:52px; border:2.5px solid var(--ink); border-radius:12px; background:#fff; font-family:var(--f-disp); font-size:19px; line-height:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px}
 .seg button small{font-family:var(--f-ui); font-size:11.5px; font-weight:700; color:var(--ink-soft)}
@@ -184,7 +185,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
 .stage .say{font-weight:700; font-size:17px; max-width:30ch; text-shadow:1px 1px 0 rgba(36,26,21,.7)}
 .hint{font-size:14px; font-weight:700; color:#FFE9C9; text-shadow:1px 1px 0 rgba(36,26,21,.6)}
 .turnPic{width:min(96px, calc(100cqh - 150px)); height:auto; aspect-ratio:1; min-width:56px; object-fit:contain; border-radius:50%; border:4px solid var(--ink); background:radial-gradient(circle at 50% 38%, #fff, var(--c) 110%); box-shadow:var(--pop)}
-.stage .btn{max-width:320px; flex:none}
+.stage .btn{max-width:320px; flex:none; color:var(--ink)}
 
 /* Tärningen (1–3, som i Hugo-spelet) */
 .dieBtn{--s:clamp(64px, calc(100cqh - 120px), 104px); width:calc(var(--s) * 1.45); height:calc(var(--s) * 1.45); flex:none; border:0; background:none; padding:0; perspective:600px; display:grid; place-items:center}
@@ -224,6 +225,35 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
 .door:active:not(:disabled){transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink)}
 .outcome{display:flex; flex-direction:column; align-items:center; gap:6px}
 .outcome img{width:clamp(70px, calc(100cqh - 200px), 170px); height:auto; aspect-ratio:1; object-fit:contain}
+/* Dörren som knackar (i alla mobiler) och sedan guldstrålar eller grön rök */
+.bigDoor{position:relative; flex:none; width:clamp(78px, calc((100cqh - 110px) * .7), 160px); aspect-ratio:.7; border:3px solid var(--ink); border-radius:999px 999px 14px 14px;
+  background:repeating-linear-gradient(90deg,#A8672F 0 22%,#8A4F22 22% 25%); box-shadow:var(--pop), 0 0 0 6px rgba(154,112,255,.5), 0 0 30px 10px rgba(154,112,255,.55); display:grid; place-items:center; animation:bdIdle 1.4s ease-in-out infinite}
+.bigDoor::after{content:""; position:absolute; right:14%; top:54%; width:12%; aspect-ratio:1; border-radius:50%; border:2px solid var(--ink); background:#F6BD2C}
+.bdNum{font-family:var(--f-disp); font-size:clamp(34px, 14cqh, 66px); color:#FFE9A8; text-shadow:2px 2px 0 var(--ink)}
+.bdQ{position:absolute; top:-14px; right:-16px; width:42px; height:42px; display:grid; place-items:center; border-radius:50%; border:3px solid var(--ink); background:#EADCFF; color:var(--ink); font-family:var(--f-disp); font-size:27px; animation:bdQ .9s ease-in-out infinite alternate}
+.bigDoor.knock{animation:bdKnock .45s ease}
+@keyframes bdIdle{50%{transform:scale(1.03)}}
+@keyframes bdKnock{15%{transform:rotate(-6deg) scale(1.07)} 35%{transform:rotate(5deg) scale(1.09)} 55%{transform:rotate(-3deg)} 75%{transform:rotate(2deg)}}
+@keyframes bdQ{to{transform:scale(1.15) rotate(10deg)}}
+.doorRes{position:relative; width:100%; flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px}
+.doorRes > :not(.drFx):not(i){position:relative; z-index:1}
+.drFx{position:absolute; left:50%; top:42%; width:260cqw; aspect-ratio:1; transform:translate(-50%,-50%); pointer-events:none}
+.doorRes.good .drFx{background:repeating-conic-gradient(rgba(255,222,110,.6) 0deg 9deg, rgba(255,222,110,0) 9deg 24deg); -webkit-mask:radial-gradient(circle, #000 8%, transparent 26%); mask:radial-gradient(circle, #000 8%, transparent 26%); animation:drSpin 16s linear infinite}
+.doorRes.bad .drFx{background:radial-gradient(circle, rgba(125,220,110,.7), rgba(125,220,110,.3) 14%, rgba(125,220,110,0) 30%); animation:drSmoke 1.6s ease-in-out infinite alternate}
+@keyframes drSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes drSmoke{to{transform:translate(-50%,-50%) scale(1.18)}}
+.drPic{width:clamp(76px, calc(100cqh - 150px), 200px); height:auto; aspect-ratio:1; object-fit:contain; filter:drop-shadow(0 6px 0 rgba(36,26,21,.35)); animation:drPop .6s cubic-bezier(.3,1.7,.5,1) both}
+.doorRes.bad .drPic{animation:drPop .6s cubic-bezier(.3,1.7,.5,1) both, drCackle .3s .6s ease-in-out 6 alternate}
+.doorRes.calm .drPic{animation:none}
+@keyframes drPop{from{transform:scale(.2) translateY(30px); opacity:0}}
+@keyframes drCackle{to{transform:rotate(-7deg) translateY(-6px)}}
+.drConf{position:absolute; left:50%; top:-6%; width:10px; height:16px; border:1.5px solid var(--ink); border-radius:2px; background:var(--c); z-index:2; pointer-events:none; animation:drFall 1.9s var(--d) cubic-bezier(.3,.6,.6,1) both}
+@keyframes drFall{from{transform:translate(0,0) rotate(0)} to{transform:translate(var(--x), 118cqh) rotate(var(--r))}}
+.drBat{position:absolute; left:50%; top:60%; width:48px; line-height:0; z-index:2; pointer-events:none; animation:drFly 1.9s var(--d) ease-out both}
+.drBat svg{width:100%; height:auto; animation:drFlap .15s ease-in-out infinite alternate}
+@keyframes drFly{0%{transform:translate(-50%,0) scale(.3); opacity:0} 15%{opacity:1} 100%{transform:translate(calc(-50% + var(--x)), -75cqh) scale(1.15); opacity:0}}
+@keyframes drFlap{to{transform:scaleY(.4)}}
+@media (prefers-reduced-motion: reduce){ .drFx,.drPic,.bigDoor,.bdQ{animation:none!important} .drConf,.drBat{display:none} }
 
 /* Hejarop */
 .reacts{display:flex; flex-wrap:wrap; justify-content:center; gap:7px}
@@ -371,6 +401,8 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
       <div class="lenBox" id="lenBox">
         <span class="lbl">Speltid</span>
         <div class="seg" id="lenSeg"><button type="button" data-v="2">Kort<small>2 banor</small></button><button type="button" data-v="3">Mellan<small>3 banor</small></button><button type="button" data-v="4">Hela<small>4 banor</small></button></div>
+        <span class="lbl">Tärning</span>
+        <div class="seg" id="dieSeg"><button type="button" data-v="3">1–3<small>som i spelet</small></button><button type="button" data-v="6">1–6<small>snabbare</small></button></div>
       </div>
       <p class="err" id="startErr"></p>
       <button class="btn" id="bStart" type="button" hidden>Starta spelet</button>
@@ -476,7 +508,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   let peer = null, conn = null, connected = false, retryT = 0, openT = 0, lastMsg = 0;
   let st = null, offer = null, art = null, pending = 0, anim = null, animSeq = 0, stageKey = '', lastGold = null;
   const thumbs = {}, profile = store.get('profile', {name: '', read: false});
-  let picking = false, chosen = null, watching = false, tipState = null, tipT = 0, bonus = null, bonusT = 0;
+  let picking = false, chosen = null, watching = false, tipState = null, tipT = 0, bonus = null, bonusT = 0, doorShow = null;
 
   // Adressen är kontroll.html#KOD, eller #KOD~... när skärmen har en egen TURN-server (base64-kodad efter ~)
   function parseCode() {
@@ -615,7 +647,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
       if (!anim || anim.kind !== 'roll' || anim.v != null) anim = {kind: 'roll', id: 'e' + (++animSeq), v: null, t0: Date.now()};
       anim.v = e.v; anim.until = Date.now() + 2600;
       render();
-      say(`Du slog ${['', 'en etta', 'en tvåa', 'en trea'][e.v] || e.v}!`);
+      say(`Du slog ${NUMW[e.v] || e.v}!`);
       setTimeout(render, 2650);
     }
     else if (e.kind === 'spin') {
@@ -628,7 +660,16 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     else if (e.kind === 'sack') goldBurst(e.n || 1, e.total, e.streak || 0);
     else if (e.kind === 'trackOk') { buzz([60, 40, 120]); ding(); toast('Hurra! Du klarade banan!', 'Nu går du vidare till nästa bana.'); }
     else if (e.kind === 'trackLost') toast('Banan är slut för den här gången.', 'Guldet från banan går tillbaka, men du får tre nya Hugo-kort på nästa bana.');
-    else if (e.kind === 'door') buzz(e.card === 'fail' ? [240, 80, 240] : [60, 40, 60, 40, 200]);
+    else if (e.kind === 'doorPick') {
+      doorShow = {d: e.d, ms: e.ms || 2200, mine: !!e.mine, who: e.who || '', t0: Date.now(), card: null, turn: st && st.game ? st.game.turn : null};
+      knocks(doorShow); render();
+    }
+    else if (e.kind === 'door') {
+      if (!doorShow) doorShow = {d: 0, ms: 0, mine: !!e.mine, who: e.who || '', t0: Date.now(), card: null, turn: st && st.game ? st.game.turn : null};
+      doorShow.card = e.card;
+      doorFanfare(e.card);
+      render();
+    }
     else if (e.kind === 'won') { buzz([80, 40, 80, 40, 240]); ding(); floatText('Du vann!'); say('Grattis! Du vann!'); }
   }
 
@@ -709,8 +750,10 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     // speltiden: spelledaren väljer, de andra ser vad som gäller
     $('lenBox').classList.toggle('ro', !st.leader);
     $('lenSeg').querySelectorAll('button').forEach(b => { b.setAttribute('aria-pressed', String(+b.dataset.v === lob.tracks)); b.disabled = !st.leader; });
+    $('dieSeg').querySelectorAll('button').forEach(b => { b.setAttribute('aria-pressed', String(+b.dataset.v === (lob.die || 3))); b.disabled = !st.leader; });
   }
   $('lenSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && !b.disabled) { tap(); send({t: 'opt', tracks: +b.dataset.v}); } });
+  $('dieSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && !b.disabled) { tap(); send({t: 'opt', die: +b.dataset.v}); } });
   $('bStart').onclick = () => { unlockAudio(); $('startErr').textContent = ''; send({t: 'start'}); buzz(20); };
   $('bSwitch').onclick = () => { picking = true; chosen = null; tap(); render(); };
   $('bLeave').onclick = () => { send({t: 'leave'}); picking = false; chosen = null; tap(); };
@@ -782,6 +825,9 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     if (o && o.kind === 'card') { setStage('card:' + o.id, box => box.append(askBox(o.data))); return; }
     if (o && o.kind === 'door') { setStage('door:' + o.id + ':' + pending, box => doorStage(box, o)); return; }
     if (o && o.kind === 'ok') { setStage('ok:' + o.id + ':' + pending, box => okStage(box, o)); return; }
+    // häxans dörr (i alla mobiler): dörren som knackar och sedan vad som fanns bakom den
+    if (doorShow && (g.turn !== doorShow.turn || Date.now() - doorShow.t0 > 40000)) doorShow = null;
+    if (doorShow) { doorShowStage(doorShow); return; }
     if (anim && anim.kind === 'roll') { dieStage(anim.id, false); return; }
     if (anim && anim.kind === 'spin') { spinStage(anim.id, anim.track, false); return; }
     if (me && g.myTurn) {
@@ -850,12 +896,15 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     return box;
   }
 
-  // Tärningen: tryck, svep eller skaka
-  const PIPS = {1: [5], 2: [3, 7], 3: [3, 5, 7]};
-  const FACE_ROT = {1: [0, 0], 2: [0, -90], 3: [-90, 0]};
+  // Tärningen: tryck, svep eller skaka. Brädspelets tärning har 1-3 två gånger; den vanliga har 1-6.
+  const NUMW = ['', 'en etta', 'en tvåa', 'en trea', 'en fyra', 'en femma', 'en sexa'];
+  const PIPS = {1: [5], 2: [3, 7], 3: [3, 5, 7], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9]};
+  // hur kuben vrids för att visa ett tal (f1 fram, f1b bak, f2 höger, f2b vänster, f3 upp, f3b ner)
+  const FACE_ROT = {1: [0, 0], 2: [0, -90], 3: [-90, 0], 4: [90, 0], 5: [0, 90], 6: [0, 180]};
+  const dieSides = () => (st && st.game && st.game.die) === 6 ? 6 : 3;
   function buildDie() {
     const die = h('div', {class: 'die'});
-    [['f1', 1], ['f1b', 1], ['f2', 2], ['f2b', 2], ['f3', 3], ['f3b', 3]].forEach(([cls, v]) => {
+    (dieSides() === 6 ? [['f1', 1], ['f1b', 6], ['f2', 2], ['f2b', 5], ['f3', 3], ['f3b', 4]] : [['f1', 1], ['f1b', 1], ['f2', 2], ['f2b', 2], ['f3', 3], ['f3b', 3]]).forEach(([cls, v]) => {
       const f = h('div', {class: 'face ' + cls});
       PIPS[v].forEach(k => f.append(h('i', {style: {'grid-area': `${Math.ceil(k / 3)} / ${((k - 1) % 3) + 1}`}})));
       die.append(f);
@@ -863,7 +912,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     return die;
   }
   function dieStage(id, live) {
-    setStage('die:' + id, box => {
+    setStage('die:' + id + ':' + dieSides(), box => {
       const btn = h('button', {class: 'dieBtn', type: 'button', 'aria-label': 'Slå tärningen'}, buildDie());
       let start = null;
       btn.addEventListener('pointerdown', e => { start = {x: e.clientX, y: e.clientY}; });
@@ -875,7 +924,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     if (!btn) return;
     const canThrow = live && offer && offer.kind === 'roll' && !(anim && anim.kind === 'roll');
     btn.disabled = !canThrow;
-    if (anim && anim.kind === 'roll' && anim.v != null) { title.textContent = `Du slog ${['', 'en etta', 'en tvåa', 'en trea'][anim.v]}!`; hint.textContent = 'Hugo går så många rutor.'; }
+    if (anim && anim.kind === 'roll' && anim.v != null) { title.textContent = `Du slog ${NUMW[anim.v] || anim.v}!`; hint.textContent = 'Hugo går så många rutor.'; }
     else if (anim && anim.kind === 'roll') { title.textContent = 'Tärningen rullar …'; hint.textContent = ''; }
     else { title.textContent = 'Slå tärningen!'; hint.textContent = motionOn ? 'Tryck på tärningen eller skaka mobilen!' : 'Tryck på tärningen!'; }
     if (anim && anim.kind === 'roll' && anim.v != null && !anim.shown) { anim.shown = true; showDie(anim.v); }
@@ -1009,10 +1058,38 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
     box.append(row, h('p', {class: 'hint', text: 'Bakom en dörr finns Hugolina och barnen. Men häxan kan lura dig!'}));
   }
   function okStage(box, o) {
-    const card = o.data.card;
-    const txt = card === 'gold' ? 'Du befriade Hugolina och barnen och fick 5 guldsäckar!' : card === 'free' ? 'Du befriade Hugolina och barnen!' : 'Häxan lurade dig. Familjen blev kvar hos henne.';
-    box.append(h('div', {class: 'outcome'}, thumbImg(card === 'fail' ? 'witch' : 'family'), h('h2', {text: card === 'fail' ? 'Oj nej!' : 'Hurra!'}), h('p', {class: 'say', text: txt})),
+    box.append(doorResultBox(o.data.card, true, '', true),
       h('button', {class: 'btn', type: 'button', disabled: !!pending, text: 'Fortsätt', onclick: () => { if (!offer || offer.kind !== 'ok' || pending) return; pending = offer.id; tap(); send({t: 'act', id: offer.id}); render(); }}));
+  }
+  // Dörren knackar tre gånger i takt med skärmen, och sedan visas vad som fanns bakom den
+  function doorShowStage(ds) {
+    setStage('dshow:' + ds.t0 + ':' + (ds.card || ''), box => {
+      if (ds.card) { box.append(doorResultBox(ds.card, ds.mine, ds.who)); return; }
+      box.append(h('h2', {text: ds.mine ? 'Knack, knack …' : `${ds.who} knackar på dörr ${ds.d + 1} …`}),
+        h('div', {class: 'bigDoor', 'aria-hidden': 'true'}, h('span', {class: 'bdNum', text: String(ds.d + 1)}), h('span', {class: 'bdQ', text: '?'})),
+        h('p', {class: 'say', text: ds.mine ? 'Vad finns bakom dörren? Håll tummarna!' : 'Vad finns bakom dörren?'}));
+    });
+  }
+  const BAT = '<svg viewBox="0 0 40 16" aria-hidden="true"><path d="M20 5.5C17 1.8 12 1 6.5 2.6 3.6 3.5 1.5 5.3 0 8c3-1 5.2-.3 6.4 1.8 1.8-1.7 4.4-1.3 5.8.8 1.9-1.6 5-1.4 7.8 2.4 2.8-3.8 5.9-4 7.8-2.4 1.4-2.1 4-2.5 5.8-.8C34.8 7.7 37 7 40 8c-1.5-2.7-3.6-4.5-6.5-5.4C28 1 23 1.8 20 5.5z" fill="#2A1838"/><path d="M18.3 4.6 17.4 1.4 19.4 3.8zM21.7 4.6l.9-3.2-2 2.4z" fill="#2A1838"/><circle cx="19" cy="6" r=".75" fill="#FFD84A"/><circle cx="21" cy="6" r=".75" fill="#FFD84A"/></svg>';
+  // Rätt dörr: familjen i gyllene strålar med konfetti. Fel dörr: häxan skrattar i grön rök och fladdermöss flyger.
+  // calm: utan konfetti och hopp (när samma bild visas igen med Fortsätt-knappen)
+  function doorResultBox(card, mine, who, calm) {
+    const good = card !== 'fail';
+    const text = good
+      ? (mine ? (card === 'gold' ? 'Du befriade Hugolina och barnen och hittade en skatt med 5 guldsäckar!' : 'Du befriade Hugolina och barnen!') : `${who} befriade Hugolina och barnen${card === 'gold' ? ' och hittade en skatt' : ''}!`)
+      : (mine ? 'Häxan lurade dig! Men du har kvar allt ditt guld.' : `Häxan lurade ${who}! Familjen blev kvar hos henne.`);
+    const box = h('div', {class: 'doorRes ' + (good ? 'good' : 'bad') + (calm ? ' calm' : '')}, h('div', {class: 'drFx', 'aria-hidden': 'true'}),
+      thumbImg(good ? 'family' : 'witch', 'drPic', good ? 'Hugolina och barnen' : 'Häxan'),
+      h('h2', {text: good ? (mine ? 'Hurra! Familjen är fri!' : 'Hurra!') : 'Hihihi!'}), h('p', {class: 'say', text}));
+    if (!calm) for (let i = 0; i < (good ? 18 : 6); i++) {
+      const el = h('i', {class: good ? 'drConf' : 'drBat', 'aria-hidden': 'true', html: good ? '' : BAT});
+      el.style.setProperty('--x', ((Math.random() * 2 - 1) * (good ? 48 : 40)).toFixed(1) + 'cqw');
+      el.style.setProperty('--d', (Math.random() * (good ? 1.1 : .7)).toFixed(2) + 's');
+      el.style.setProperty('--r', Math.round(Math.random() * 900 - 450) + 'deg');
+      if (good) el.style.setProperty('--c', pick(['#FFD84A', '#FF6B8A', '#6BD66B', '#5AB0FF', '#FFFFFF', '#FF9A3C']));
+      box.append(el);
+    }
+    return box;
   }
 
   // Hejarop när någon annan spelar
@@ -1170,6 +1247,25 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   const coin = () => { beep(988, 0, .1, .06, 'square'); beep(1319, .08, .25, .06, 'square'); };
   const ouch = () => { beep(420, 0, .18, .08, 'sawtooth'); beep(260, .14, .3, .08, 'sawtooth'); };
   const creak = () => { for (let i = 0; i < 5; i++) beep(140 + i * 22, i * .07, .09, .05, 'sawtooth'); };
+  const knockSnd = k => { beep(150 - k * 12, 0, .1, .14, 'triangle'); beep(88, 0, .15, .12, 'sine'); };
+  const fanfare = () => [[523, 0, .14], [659, .13, .14], [784, .26, .14], [1047, .4, .6]].forEach(([f, t, d]) => { beep(f, t, d, .05, 'square'); beep(f * 2, t, d, .02, 'triangle'); });
+  const cackle = () => { for (let i = 0; i < 8; i++) beep((i % 2 ? 1250 : 930) - i * 28, i * .1, .08, .045, 'sawtooth'); };
+  // Tre knackningar i takt med skärmen: dörren skakar, mobilen knackar, och vibrationen slår som ett hjärta
+  function knocks(ds) {
+    unlockAudio();
+    buzz([45, 110, 45, 420, 45, 110, 45]);
+    [0, 1, 2].forEach(k => setTimeout(() => {
+      if (doorShow !== ds || ds.card) return;
+      knockSnd(k); buzz(60 + k * 45);
+      const el = document.querySelector('.bigDoor');
+      if (el) { el.classList.remove('knock'); void el.offsetWidth; el.classList.add('knock'); }
+    }, ds.ms * (k + .6) / 3.6));
+  }
+  function doorFanfare(card) {
+    unlockAudio();
+    if (card === 'fail') { buzz([240, 80, 240]); cackle(); }
+    else { buzz([60, 40, 60, 40, 60, 40, 260]); fanfare(); }
+  }
   let motionOn = false, lastShake = 0;
   function enableMotion(on) {
     const DME = window.DeviceMotionEvent;
@@ -1283,7 +1379,7 @@ button.pl:active:not(:disabled){transform:translate(1px,1px)}
   }
 
   // Till testerna
-  window.HugoPhone = {state: () => st, offer: () => offer, bonus: () => bonus, tip: () => tipState, goldBurst: (n, total, streak) => goldBurst(n, total, streak), dev: () => dev, connected: () => connected, send, throwDie, spinNow, pressKey: k => { const b = document.querySelector(`.key[data-k="${k}"]`); if (b) pressKey(k, b); }, setRead, offerText};
+  window.HugoPhone = {state: () => st, offer: () => offer, bonus: () => bonus, tip: () => tipState, doorShow: () => doorShow, goldBurst: (n, total, streak) => goldBurst(n, total, streak), dev: () => dev, connected: () => connected, send, throwDie, spinNow, pressKey: k => { const b = document.querySelector(`.key[data-k="${k}"]`); if (b) pressKey(k, b); }, setRead, offerText};
   syncMotion();
   connect();
 })();
