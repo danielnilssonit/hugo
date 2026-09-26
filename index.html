@@ -335,9 +335,24 @@ h3{margin:14px 0 4px; font-size:17px}
   .life .in{transition-duration:.2s}
 }
 
+/* ---------- Hejarop från skärmen (online) ---------- */
+.reactTool{font-size:20px; padding:0 10px; line-height:1}
+.reactBar{position:absolute; right:calc(14px + var(--safe-r)); top:calc(66px + var(--safe-t)); z-index:24; display:flex; gap:6px; padding:8px; border:3px solid var(--ink); border-radius:18px; background:#fff; box-shadow:var(--pop)}
+.reactBar button{width:48px; height:48px; border:2.5px solid var(--ink); border-radius:50%; background:var(--paper-2); font-size:25px; line-height:1; padding:0}
+.reactBar button:active{transform:scale(.92)}
+body.compact .reactBar{top:calc(52px + var(--safe-t)); right:calc(8px + var(--safe-r)); gap:4px; padding:6px}
+body.compact .reactBar button{width:42px; height:42px; font-size:22px}
+
+/* ---------- Berättelsen: hoppa över ---------- */
+body.story #who, body.story .play{visibility:hidden}
+.skipBtn{position:absolute; right:calc(18px + var(--safe-r)); bottom:calc(18px + var(--safe-b)); z-index:26; min-height:48px; padding:0 20px; border:3px solid var(--ink); border-radius:99px; background:#fff; box-shadow:3px 3px 0 var(--ink); font-family:var(--f-disp); font-size:22px; color:var(--ink)}
+.skipBtn:active{transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink)}
+body.compact .skipBtn{bottom:calc(12px + var(--safe-b)); right:calc(12px + var(--safe-r)); min-height:42px; font-size:19px}
+
 /* ---------- Online ---------- */
 .phoneBtn svg,.onlineAsk svg{flex:none}
 .onlineBox{display:flex; flex-direction:column; align-items:flex-start; gap:6px; padding:10px 14px; border:3px solid var(--ink); border-radius:14px; background:#fff}
+.qrList.none{color:var(--ink-soft)}
 .inviteTop{display:flex; align-items:baseline; justify-content:space-between; gap:10px; width:100%; flex-wrap:wrap}
 .onlineBox .qrBig{font-size:24px}
 .onlineBox .qrText{font-size:14px}
@@ -374,7 +389,14 @@ body.compact .netChip{min-height:34px; padding:0 9px; font-size:11.5px}
 .onPhones .phoneBox{margin-top:6px}
 .joinCard{width:min(470px,100%); padding:18px 20px 20px; display:flex; flex-direction:column; gap:10px}
 .joinCard p{margin:0}
-.codeIn{height:66px; width:100%; border:3px solid var(--ink); border-radius:14px; background:#fff; color:var(--ink); font-family:var(--f-disp); font-size:36px; letter-spacing:8px; text-align:center; text-transform:uppercase}
+.joinPart{display:flex; flex-direction:column; gap:6px; padding:12px 14px; border:3px solid var(--ink); border-radius:14px; background:#fff}
+.joinPart > b{font-family:var(--f-disp); font-weight:400; font-size:24px; line-height:1.05}
+.joinRow{display:flex; gap:8px; align-items:stretch}
+.joinRow .codeIn{flex:1; min-width:0; height:60px; font-size:30px; letter-spacing:6px}
+.joinRow .big{flex:none; min-width:120px}
+.onlineBox.flash{animation:inviteFlash 1s ease-in-out 3}
+@keyframes inviteFlash{50%{box-shadow:0 0 0 6px var(--gold), 0 0 22px 6px rgba(246,189,44,.7)}}
+.codeIn{height:66px; width:100%; border:3px solid var(--ink); border-radius:14px; background:var(--paper-2); color:var(--ink); font-family:var(--f-disp); font-size:36px; letter-spacing:8px; text-align:center; text-transform:uppercase}
 #resNote{margin:0; text-align:center}
 body.compact .onSeats{grid-template-columns:1fr}
 body.compact .onSeat img{width:52px; height:52px}
@@ -458,7 +480,7 @@ body.compact .life{width:17px; height:23px}
 body.compact .life .fr,body.compact .life .bk{border-width:2px; border-radius:4px}
 body.compact .players{display:none}
 body.compact .tools{top:calc(8px + var(--safe-t)); bottom:auto; right:calc(8px + var(--safe-r)); flex-direction:row; max-width:none}
-body.compact .tool:not(#tMenu){display:none}
+body.compact .tool:not(#tMenu):not(#tReact){display:none}
 body.compact #tMenu{min-height:48px; padding:0 12px; font-size:15px; border-radius:14px}
 body.compact .banner{top:18%}
 body.compact .banner img{width:52px; height:52px}
@@ -540,6 +562,7 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
     <section class="players panel" id="players" aria-label="Spelare"></section>
     <div class="tools">
       <span class="netChip" id="netChip" hidden><i></i><b id="netText">Online</b></span>
+      <button class="tool reactTool" id="tReact" type="button" hidden aria-label="Heja på de andra" title="Heja på de andra">👏</button>
       <button class="tool" id="tRules" type="button">Regler</button>
       <button class="tool" id="tMusic" type="button" aria-pressed="true">Musik</button>
       <button class="tool" id="tVoice" type="button" aria-pressed="false">Läs upp</button>
@@ -547,6 +570,8 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
       <button class="tool" id="tMenu" type="button">Meny</button>
     </div>
     <div class="banner" id="banner" aria-hidden="true"><img id="bannerPic" alt=""><span id="bannerText"></span></div>
+    <button class="skipBtn" id="btnSkip" type="button" hidden>Hoppa över ▸</button>
+    <div class="reactBar" id="reactBar" hidden></div>
     <div class="bottom">
       <div class="talk" id="talk"><div class="talkFace" id="talkFace"></div><div class="bubble" id="bubble" aria-live="polite"><p id="msg">Hej kompis!</p></div></div>
       <div class="doorBar panel" id="doorBar" hidden>
@@ -584,8 +609,8 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
       </div>
       <p class="titleTop" id="titleTop" hidden></p>
       <div class="slowAsk panel" id="slowAsk" hidden>
-        <p><b>Går spelet segt?</b> Den enkla kartan är ett platt bräde utan tunga effekter. Den passar tv-apparater och äldre plattor.</p>
-        <div class="slowBtns"><button class="big small" id="btnSimple" type="button">Byt till enkel karta</button><button class="big alt small" id="btnSlowNo" type="button">Nej tack</button></div>
+        <p><b>Går spelet segt?</b> Den platta kartan i 2D har inga tunga effekter. Den passar tv-apparater och äldre plattor.</p>
+        <div class="slowBtns"><button class="big small" id="btnSimple" type="button">Byt till platt karta</button><button class="big alt small" id="btnSlowNo" type="button">Nej tack</button></div>
       </div>
       <p class="titleNote">Ett spel för 2–4 spelare från 5 år, efter brädspelet Hugo (Alga 1993).</p>
     </div>
@@ -645,12 +670,21 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
   <div id="joinOnline" class="overlay" hidden>
     <div class="joinCard panel" role="dialog" aria-labelledby="joinTitle">
       <h2 id="joinTitle">Spela online</h2>
-      <p>Har någon bjudit in dig? Öppna länken du fick, eller skriv koden här.</p>
-      <input class="codeIn" id="joinCode" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="KOD" aria-label="Koden från inbjudan">
-      <p class="err" id="joinErr"></p>
-      <p class="small" id="joinWebNote" hidden>Online fungerar när spelet är öppnat på webben. Knappen öppnar det där, med koden.</p>
-      <p class="small">Vill du själv bjuda in någon? Tryck på Spela och sedan på Bjud in.</p>
-      <div class="btnRow"><button class="big alt" id="btnJoinBack" type="button">Tillbaka</button><button class="big" id="btnJoinGo" type="button">Gå med</button><a class="big linkBtn" id="joinWeb" href="#" target="_blank" rel="noopener" hidden>Öppna och gå med</a></div>
+      <p>Spela med någon som är någon annanstans. Var och en spelar på sin egen tv, dator eller platta.</p>
+      <div class="joinPart">
+        <b>Bjud in någon</b>
+        <span class="small">Du väljer vilka som spelar och får en länk att skicka.</span>
+        <button class="big" id="btnHostOnline" type="button">Bjud in</button>
+        <a class="big linkBtn" id="hostWeb" href="#" target="_blank" rel="noopener" hidden>Bjud in (öppnar spelet på webben)</a>
+      </div>
+      <div class="joinPart">
+        <b>Har du fått en kod?</b>
+        <span class="small">Skriv den här, eller öppna länken du fick.</span>
+        <div class="joinRow"><input class="codeIn" id="joinCode" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="KOD" aria-label="Koden från inbjudan"><button class="big" id="btnJoinGo" type="button">Gå med</button><a class="big linkBtn" id="joinWeb" href="#" target="_blank" rel="noopener" hidden>Gå med</a></div>
+        <p class="err" id="joinErr"></p>
+      </div>
+      <p class="small" id="joinWebNote" hidden>Online fungerar när spelet är öppnat på webben. Knapparna öppnar det där.</p>
+      <div class="btnRow"><button class="big alt" id="btnJoinBack" type="button">Tillbaka</button></div>
     </div>
   </div>
 
@@ -698,12 +732,12 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
       <label class="check" for="optVoice"><input type="checkbox" id="optVoice"> Läs upp vad som händer</label>
       <label class="check" for="optHints"><input type="checkbox" id="optHints"> Visa vilket kort som passar</label>
       <label class="check" for="optBonus"><input type="checkbox" id="optBonus"> Bonusrunda när en bana är klar</label>
+      <label class="check" for="optStory"><input type="checkbox" id="optStory"> Berättelsen om häxan när ett nytt spel börjar</label>
       <label class="check" for="optFollow"><input type="checkbox" id="optFollow"> Kameran följer den som har turen</label>
       <label class="check" for="optDof"><input type="checkbox" id="optDof"> Miniatyrkänsla (suddig bakgrund)</label>
       <label class="field" for="optQuality">Grafik
-        <select id="optQuality"><option value="auto">Automatisk</option><option value="high">Hög</option><option value="low">Snabb (för äldre plattor)</option><option value="simple">Enkel karta (för tv)</option></select>
+        <select id="optQuality"><option value="auto">Automatisk</option><option value="high">Hög (3D)</option><option value="low">Snabb (3D, för äldre plattor)</option><option value="simple">Platt karta i 2D (snabbast, för tv)</option></select>
       </label>
-      <button class="tool" id="btnRestart" type="button" hidden>Starta om med den nya grafiken</button>
       <p class="small" id="musicInfo"></p>
       <details class="adv">
         <summary>Mobiler på svåra nätverk (TURN-server)</summary>
@@ -740,7 +774,7 @@ body.compact.land .bonusTop small{display:block; font-size:11px}
         <button class="big alt" id="btnPausePhones" type="button">Spela med mobilerna</button>
         <button class="big alt" id="btnQuit" type="button">Avsluta till startsidan</button>
       </div>
-      <div class="pauseRow"><button class="tool" id="pMusic" type="button" aria-pressed="true">Musik</button><button class="tool" id="pVoice" type="button" aria-pressed="false">Läs upp</button><button class="tool" id="pView" type="button">Hela brädet</button></div>
+      <div class="pauseRow"><button class="tool" id="pMusic" type="button" aria-pressed="true">Musik</button><button class="tool" id="pVoice" type="button" aria-pressed="false">Läs upp</button><button class="tool" id="pView" type="button">Hela brädet</button><button class="tool" id="pMap" type="button">Platt karta (2D)</button></div>
       <div class="pausePlayers" id="pausePlayers"></div>
       <div class="phoneBox" id="pausePhoneBox" hidden></div>
       <p class="small" id="pauseNote">Spelet sparas efter varje tur, så du kan fortsätta senare.</p>
@@ -812,10 +846,10 @@ const Store = {
 };
 
 // tracks: hur många banor man går innan häxan (kort spel 2, mellan 3, hela spelet 4). bonus: bonusrunda när en bana är klar.
-// die: tärningen, 3 (1-3 som i brädspelet) eller 6 (vanlig tärning, snabbare spel).
+// die: tärningen, 3 (1-3 som i brädspelet) eller 6 (vanlig tärning, snabbare spel). story: berättelsen när ett nytt spel börjar.
 // turn: egen TURN-server för nätverk där mobilerna inte kommer fram ({url, user, pass}).
 const Settings = Object.assign({
-  music: .5, sfx: .8, voice: false, speed: 'normal', quality: 'auto', dof: true, hints: true, follow: true, tracks: 4, bonus: true, turn: null, die: 3
+  music: .5, sfx: .8, voice: false, speed: 'normal', quality: 'auto', dof: true, hints: true, follow: true, tracks: 4, bonus: true, turn: null, die: 3, story: true
 }, Store.get('settings', {}));
 function saveSettings() { Store.set('settings', Settings); }
 
@@ -1455,6 +1489,8 @@ const Sound = (() => {
     click(t) { osc('sine', 660, t, .07, .12, sfxBus, {slide: 1.4}); },
     turn(t) { osc('triangle', 784, t, .15, .1, sfxBus); osc('triangle', 1175, t + .1, .25, .1, sfxBus); },
     step(t, i = 0) { osc('sine', 520 + (i % 4) * 45, t, .08, .08, sfxBus, {slide: .75}); noise(t, .02, .035, sfxBus, {f: 2500, q: 2}); },
+    // räkna rutorna: en xylofon som går uppåt för varje ruta (1, 2, 3 …)
+    count(t, i = 0) { const f = [523, 587, 659, 698, 784, 880, 988][Math.min(6, i)]; osc('triangle', f, t, .22, .1, sfxBus); osc('sine', f * 2, t, .3, .03, reverbIn); },
     hop(t) { osc('sine', 300, t, .16, .07, sfxBus, {slide: 2.2}); },
     jump(t) { osc('sine', 260, t, .32, .16, sfxBus, {slide: 3.4}); osc('triangle', 520, t + .05, .25, .04, reverbIn, {slide: 2.4}); },
     duck(t) { osc('sine', 700, t, .22, .12, sfxBus, {slide: .35}); noise(t, .12, .05, sfxBus, {f: 800, to: 300}); },
@@ -3976,6 +4012,38 @@ const GoldFX = (() => {
     G.coins(at, 8 + n * 3, 1 + Math.min(1, n * .12));
     S3.flash(.35);
   };
+  /* ---------- Räkna rutorna ---------- */
+  // Talet ovanför trollet för varje ruta det skuttar fram (1, 2, 3 …), så att barnen kan räkna med
+  const numTex = {};
+  function numberTexture(n, color) {
+    const key = n + color;
+    if (numTex[key]) return numTex[key];
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const g = c.getContext('2d');
+    g.beginPath(); g.arc(64, 64, 52, 0, 7); g.fillStyle = '#FFFDF5'; g.fill();
+    g.lineWidth = 10; g.strokeStyle = color; g.stroke();
+    g.beginPath(); g.arc(64, 64, 58, 0, 7); g.lineWidth = 5; g.strokeStyle = '#241A15'; g.stroke();
+    g.font = '80px Chewy, "Comic Sans MS", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+    g.lineWidth = 9; g.strokeStyle = '#241A15'; g.strokeText(String(n), 64, 70);
+    g.fillStyle = '#FFD84A'; g.fillText(String(n), 64, 70);
+    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+    return (numTex[key] = t);
+  }
+  G.count = (pos, n, color = '#E23B2E') => {
+    if (Time.scale < .2) return Promise.resolve();
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({map: numberTexture(n, color), transparent: true, depthTest: false}));
+    s.renderOrder = 20;
+    const y0 = pos.y + .5;
+    s.position.set(pos.x, y0, pos.z);
+    root().add(s);
+    return Anim.tween(1000, k => {
+      const sc = .36 * (k < .22 ? easeOutBack(k / .22) : 1);
+      s.scale.set(sc, sc, 1);
+      s.position.y = y0 + k * .16;
+      s.material.opacity = k < .7 ? 1 : 1 - (k - .7) / .3;
+    }).then(() => { root().remove(s); s.material.dispose(); });
+  };
+
   /* ---------- Rök och fladdermöss (häxans dörr) ---------- */
   let puffTex = null;
   function puffTexture() {
@@ -4258,6 +4326,22 @@ const UI = (() => {
     $('talkFace').dataset.who = who;
     $('bubble').dataset.who = who;
   };
+  // Knappen "Hoppa över" (berättelsen i början). Enter, mellanslag och Escape hoppar också över. Ger en städfunktion.
+  // U.skipNow() hoppar över det som visas (online, när värden redan har börjat spela).
+  let skipNow = null;
+  U.skipNow = () => { if (skipNow) skipNow(); };
+  U.skipper = onSkip => {
+    const b = $('btnSkip');
+    let on = true;
+    const go = () => { if (!on) return; on = false; skipNow = null; Sound.play('click'); onSkip(); };
+    skipNow = go;
+    const key = e => { if (['Enter', ' ', 'Escape'].includes(e.key) || e.keyCode === 10009 || e.keyCode === 461) { e.preventDefault(); e.stopPropagation(); go(); } };
+    b.onclick = go;
+    b.hidden = false;
+    document.addEventListener('keydown', key, true);
+    if (!isTouch || IS_TV) setTimeout(() => { try { b.focus({preventScroll: true}); } catch (e) { /* valfritt */ } }, 60);
+    return () => { on = false; if (skipNow === go) skipNow = null; b.hidden = true; b.onclick = null; document.removeEventListener('keydown', key, true); };
+  };
   // Stor rubrik mitt på skärmen ("Familjen är fri!" eller "Häxan lurade dig!")
   U.bigNews = (text, kind) => {
     if (Time.scale < .2) return;
@@ -4509,10 +4593,11 @@ const Menu = (() => {
     };
     const readers = [bind('volMusic', 'music', () => { Sound.unlock(); Sound.setVolumes(); syncTools(); }), bind('volSfx', 'sfx', () => { Sound.unlock(); Sound.setVolumes(); Sound.play('coin'); }),
       bind('optVoice', 'voice', syncTools), bind('optHints', 'hints', () => Game.state() && UI.render(Game.state())), bind('optFollow', 'follow'), bind('optDof', 'dof'),
-      bind('optBonus', 'bonus'), bind('optQuality', 'quality', () => { $('musicInfo').textContent = 'Grafiken ändras när spelet startar om. Ett parti som pågår sparas och kan fortsättas.'; $('btnRestart').hidden = false; })];
-    $('btnRestart').addEventListener('click', () => M.restart());
+      bind('optBonus', 'bonus'), bind('optStory', 'story'), bind('optQuality', 'quality', () => M.restart(true))];
+    // snabbknappen i menyn: platt karta (2D) eller 3D-kartan
+    $('pMap').addEventListener('click', () => { Settings.quality = SIMPLE ? (IS_TV ? 'high' : 'auto') : 'simple'; saveSettings(); M.restart(true); });
     // förslaget på startsidan när spelet går segt
-    $('btnSimple').addEventListener('click', () => { Settings.quality = 'simple'; saveSettings(); M.restart(); });
+    $('btnSimple').addEventListener('click', () => { Settings.quality = 'simple'; saveSettings(); M.restart(true); });
     $('btnSlowNo').addEventListener('click', () => { Store.set('slowAsked', true); $('slowAsk').hidden = true; setTimeout(() => $('btnPlay').focus(), 30); });
     M.readSettings = () => {
       readers.forEach(r => r());
@@ -4601,20 +4686,37 @@ const Menu = (() => {
       // online hos någon annan: spelet sparas där, och här lämnar man bara
       const g = Online.guest();
       $('btnQuit').textContent = g ? 'Lämna onlinespelet' : 'Avsluta till startsidan';
+      $('pMap').textContent = SIMPLE ? '3D-karta' : 'Platt karta (2D)';
       $('pauseNote').textContent = g ? 'Spelet sparas hos den som bjöd in.' : 'Spelet sparas efter varje tur, så du kan fortsätta senare.';
     }
     $(id).hidden = false; Sound.play('click');
     const b = $(id).querySelector('.big'); if (b) setTimeout(() => b.focus(), 30);
   }
   function close(id) { $(id).hidden = true; }
-  // Ladda om sidan med den nya grafiken. Ett pågående parti sparas först och kan fortsättas på startsidan,
-  // och mobilerna ansluter igen av sig själva. ?enkel tas bort så att inställningen bestämmer.
-  M.restart = () => {
-    if (Game.running()) Game.save();
+  // Ladda om sidan med den nya grafiken (kartan byts direkt). Ett pågående parti sparas först och fortsätter av sig
+  // självt efter omladdningen (resume), och mobilerna ansluter igen av sig själva. ?enkel tas bort så att inställningen
+  // bestämmer. Online hos någon annan går skärmen med i spelet igen med inbjudan i adressen.
+  M.restart = resume => {
+    // (partiet sparades i början av turen och fortsätter därifrån)
+    if (Game.running() && !Online.guest() && resume) Store.set('autoResume', true);
+    ['settings', 'pause'].forEach(id => { $(id).hidden = true; });
+    $('loadText').textContent = 'Byter karta …'; $('loading').hidden = false; $('loading').classList.remove('done');
     const u = new URL(location.href);
     u.search = u.search.replace(/[?&]enkel\b[^&]*/g, '').replace(/^&/, '?');
-    location.replace(u.toString());
+    const next = u.toString();
+    setTimeout(() => { if (next === location.href) location.reload(); else location.replace(next); }, 60);
   };
+  // Efter omladdningen: fortsätt partiet direkt om det var igång (grafiken byttes mitt i)
+  M.autoResume = () => {
+    if (!Store.get('autoResume', false)) return false;
+    Store.del('autoResume');
+    const s = Store.get('save', null);
+    if (!s) return false;
+    startGame(s, true);
+    return true;
+  };
+  // Öppna spelarvalet med inbjudan igång (från "Spela online" på startsidan)
+  M.hostOnline = () => { M.showSetup(); Online.invite(true); };
   M.suggestSimple = () => {
     if ($('title').hidden) return;
     $('slowAsk').hidden = false;
@@ -4623,10 +4725,9 @@ const Menu = (() => {
   M.openSettings = () => {
     const files = typeof MUSIC_FILES !== 'undefined' ? MUSIC_FILES : [];
     $('musicInfo').textContent = (files.length ? `Musiken kommer från ${files.length} låtfiler.` : 'Musiken skapas i webbläsaren. Lägg mp3-filer från Suno i mappen music för riktig musik.')
-      + (SIMPLE ? ' Spelet visar den enkla kartan just nu.' : '');
+      + (SIMPLE ? ' Spelet visar den platta kartan just nu.' : '') + ' Byter du grafik laddas spelet om direkt, och ett parti som pågår fortsätter.';
     // miniatyrkänslan finns inte på den enkla kartan
     $('optDof').closest('label').hidden = SIMPLE;
-    $('btnRestart').hidden = true;
     open('settings');
   };
 
@@ -4715,7 +4816,8 @@ const Menu = (() => {
     if ($('seats').contains(document.activeElement) && document.activeElement.matches('input,select')) { seatsStale = true; return; }
     renderSeats();
   };
-  M.again = () => { $('results').hidden = true; startFromSeats(); };
+  // Spela igen: samma spelare en gång till, utan berättelsen (den har alla redan sett)
+  M.again = () => { $('results').hidden = true; startFromSeats(false); };
 
   /* ---------- Startsidan ---------- */
   M.showTitle = () => {
@@ -4778,20 +4880,20 @@ const Menu = (() => {
     </div>`;
     }).join('');
   }
-  // null = spelet startade, annars en text om vad som saknas
-  function startFromSeats() {
+  // null = spelet startade, annars en text om vad som saknas. intro: berättelsen i början (standard ja)
+  function startFromSeats(intro) {
     const list = seats.map((s, i) => Object.assign({}, s, {seat: i, name: (s.name || '').trim() || COLOR_NAMES[i]})).filter(s => s.on);
     if (list.length < 2) { const t = 'Det behövs minst två spelare.'; $('setupHint').textContent = t; return t; }
     $('setupHint').textContent = '';
-    startGame(Rules.newState(list, {tracks: Settings.tracks, bonus: Settings.bonus, die: Settings.die}), false);
+    startGame(Rules.newState(list, {tracks: Settings.tracks, bonus: Settings.bonus, die: Settings.die}), false, intro);
     return null;
   }
-  function startGame(state, resumed) {
+  function startGame(state, resumed, intro) {
     $('title').hidden = true; $('setup').hidden = true; $('results').hidden = true;
     trapBack();
     showTitleTrolls(false);
     Sound.play('turn');
-    Game.start(state, resumed);
+    Game.start(state, resumed, intro);
   }
   // händelser i spelarlistan
   M.wireSeats = () => {
@@ -4851,11 +4953,20 @@ const Game = (() => {
       });
     }, mine ? send => UI.enable(kind, S, p, send) : p.human ? () => UI.waitFor(S, p) : null);
   }
+  // Spelet sparas i början av varje tur, så att ett sparat parti alltid fortsätter med en hel tur.
   const save = () => { if (S && S.phase !== 'over' && !Online.guest()) Store.set('save', S); };
-  G.save = save;
+  // Mitt i en tur (en mobil kom eller gick): turens början sparas igen, med spelarnas mobiler som de är nu
+  G.save = () => {
+    const s = Store.get('save', null);
+    if (!S || S.phase === 'over' || Online.guest() || !s || !Array.isArray(s.players) || s.players.length !== S.players.length) return;
+    s.players.forEach((p, i) => { p.dev = S.players[i].dev || null; p.board = S.players[i].board || null; });
+    Store.set('save', s);
+  };
 
   /* ---------- Start och stopp ---------- */
-  G.start = (state, resumed) => {
+  // intro: berättelsen i början (standard: bara i ett nytt parti; online bestämmer värden)
+  G.start = (state, resumed, intro) => {
+    if (intro == null) intro = !resumed;
     Flow.cancelAll();
     S = state;
     running = true;
@@ -4875,9 +4986,9 @@ const Game = (() => {
     Sound.mood('game');
     S3.follow(() => null);
     say(resumed === 'online' ? 'Hej! Nu spelar vi online.' : resumed ? 'Välkommen tillbaka! Vi fortsätter där vi slutade.' : 'Hej kompis! Nu börjar äventyret.');
-    Online.gameStart(S);
+    Online.gameStart(S, intro);
     Bus.emit('gameStart', S);
-    loop(Flow.gen);
+    loop(Flow.gen, intro);
   };
   G.stop = () => { if (!running) return; running = false; Flow.cancelAll(); Online.gameStop(); Dice.clear(); UI.hideDoors(); UI.finale(false); Spinners.setActive(null); Spinners.hideBadges(); Pieces.clear(); Table.clear(); Decor.resetDoors(); S3.dim(0, 0); Bus.emit('gameStop'); };
 
@@ -4930,8 +5041,9 @@ const Game = (() => {
   }
 
   /* ---------- Spelets slinga ---------- */
-  async function loop(gen) {
+  async function loop(gen, intro) {
     try {
+      if (intro) await storyIntro(gen);
       while (true) {
         Flow.alive(gen);
         // varje tur börjar med samma läge på alla skärmar (online jämförs en kontrollsumma)
@@ -4997,7 +5109,14 @@ const Game = (() => {
     say(`${you(p) ? 'Du' : nm(p)} slog ${NUMW[n]}.`);
     await wait(350, gen);
     S.phase = 'moving'; UI.lock(S);
-    for (let k = 0; k < n && p.pos < N_SQ; k++) { p.pos++; await Pieces.hopTo(p.id, GEO[p.track].pts[p.pos], D(310)); Flow.alive(gen); }
+    // trollet skuttar fram och talen räknas högt: 1, 2, 3 …
+    for (let k = 0; k < n && p.pos < N_SQ; k++) {
+      p.pos++;
+      await Pieces.hopTo(p.id, GEO[p.track].pts[p.pos], D(310));
+      Flow.alive(gen);
+      GoldFX.count(Pieces.worldPos(p.id), k + 1, p.color);
+      Sound.play('count', k);
+    }
     Dice.hide();
     UI.render(S);
 
@@ -5160,6 +5279,8 @@ const Game = (() => {
     Bus.emit('sack', p, n);
     UI.render(S); UI.bumpGold(true);
     UI.goldPop(n, p, opts.label || (streak >= 2 ? `${streak} i rad!` : null));
+    // de andra trollen skuttar och jublar med
+    S.players.forEach(q => { if (q !== p) Pieces.cheer(q.id, 800); });
     await hop;
     Pieces.cheer(p.id, 1300);
     await wait(380, gen);
@@ -5214,6 +5335,57 @@ const Game = (() => {
     p.status = 'track'; p.track = t; p.pos = 0; p.lives = 3; p.trackGold = 0; p.waitFrom = null; p.at = null;
     Pieces.place(p.id, JUNC[t][0], JUNC[t][1], GEO[t].dir[0]);
     UI.render(S);
+  }
+
+  /* ---------- Berättelsen ---------- */
+  // Ett nytt parti börjar med en kort berättelse: häxan har fångat Hugolina och barnen i sin borg, familjen ropar på
+  // hjälp, och trollen ger sig av för att rädda dem. Den kan hoppas över (knappen, Enter, mellanslag eller Escape)
+  // och stängas av i inställningarna. Den ändrar inget i spelet, så online spelar varje skärm upp den själv.
+  const STORY_WITCH = ['Hihihi! Nu har jag fångat Hugolina och barnen! De ska bo i min bur för alltid!', 'Hihihi! Hugolina och barnen är mina nu! Ingen kan lura mig!'];
+  async function storyIntro(gen) {
+    if (Time.scale < .2 || document.hidden || Settings.story === false) return;
+    let skipped = false;
+    const timers = new Set();
+    const pause = ms => new Promise(res => {
+      if (skipped) { res(); return; }
+      const done = () => { clearTimeout(t); timers.delete(done); res(); };
+      const t = setTimeout(done, ms * Time.scale);
+      timers.add(done);
+    });
+    const stop = UI.skipper(() => { skipped = true; [...timers].forEach(f => f()); });
+    const cam = (v, span, ms) => Settings.follow ? S3.focus(v, 3, ms, 0, span) : Promise.resolve();
+    try {
+      UI.finale(true);
+      document.body.classList.add('story');
+      Decor.doorLabels(false);
+      Sound.mood('witch');
+      S3.dim(1, 900);
+      Decor.witchHover(true);
+      await Promise.race([cam(Decor.witchPos().add(new THREE.Vector3(0, 0, -.2)), 1.9, 1100), pause(1100)]);
+      Flow.alive(gen);
+      if (!skipped) { Decor.witchTalk(); Decor.witchLaugh(); S3.flash(.3); UI.sayAs('witch', pick(STORY_WITCH)); await pause(3400); }
+      Flow.alive(gen);
+      if (!skipped) { cam(Decor.cagePos(), 1.8, 900); await pause(900); Decor.familyCall(); UI.sayAs('family', 'Hjälp! Hugo, kom och rädda oss!'); await pause(2500); }
+      Flow.alive(gen);
+      if (!skipped) {
+        Decor.witchHover(false); S3.dim(0, 900); Sound.mood('game');
+        if (Settings.follow) S3.overview(1300);
+        const all = Rules.tracks(S);
+        say(`Trollen måste ta sig igenom ${all === 4 ? 'alla fyra banorna' : all === 1 ? 'sin bana' : `${['', '', 'två', 'tre'][all]} banor`}, samla guldsäckar och sedan lura häxan. Nu kör vi!`);
+        Sound.play('fanfare');
+        S.players.forEach(q => Pieces.cheer(q.id, 1500));
+        await pause(3200);
+      }
+      Flow.alive(gen);
+    } finally {
+      stop();
+      Decor.witchHover(false);
+      Decor.doorLabels(true);
+      S3.dim(0, 600);
+      UI.finale(false);
+      document.body.classList.remove('story');
+      Sound.mood('game');
+    }
   }
 
   /* ---------- Häxans final ---------- */
@@ -5866,6 +6038,16 @@ const Online = (() => {
       case 'bev': broadcast({t: 'bev', b: m.b, ev: m.ev}, b); bonusIn(m); break;
       // bonusrundan på en annan skärm: spelarens mobil får veta vilken knapp som behövs
       case 'rb': { const p = S && S.players[+m.pid]; if (p && p.board === b.dev) Remote.bonus(p, m.info || {}); break; }
+      case 'react': {
+        const now = Date.now(), w = m.who || {};
+        if (!running || now - (b.reactT || 0) < 1000) return;
+        b.reactT = now;
+        const p = S && w.id != null ? S.players[+w.id] : null;
+        const who = p && p.board === b.dev ? {id: p.id, name: p.name, color: p.color} : {name: plain(w.name).slice(0, 14) || 'Gäst', color: '#8C7E76', fan: true};
+        UI.react(who, String(m.kind));
+        broadcast({t: 'react', who, kind: String(m.kind)}, b);
+        break;
+      }
       case 'sync': bsend(b, running && snap ? stateMsg() : lobbyMsg(b)); break;
       case 'bye': b.online = false; b.conn = null; if (!running) Menu.boardGone(b.dev); changed(); break;
       case 'ping': bsend(b, {t: 'pong'}); break;
@@ -5903,13 +6085,16 @@ const Online = (() => {
     if (role === 'host') { broadcast(lastCp); O.stats.cps.push([S.turns, lastCp.sum]); }
     return Promise.resolve();
   };
-  O.gameStart = S => {
+  // intro: om partiet börjar med berättelsen (gästerna visar den också, men hoppar över resten när värden börjar spela)
+  O.gameStart = (S, intro) => {
+    netChip();
     if (role === 'guest') return;
     snap = clone(S); log = []; lastCp = null; O.stats.cps = [];
-    if (role === 'host') broadcast({t: 'go', S: snap});
+    if (role === 'host') broadcast({t: 'go', S: snap, intro: !!intro});
   };
   O.gameStop = () => {
     waits.clear();
+    setTimeout(netChip, 0);
     if (role === 'guest') return;
     if (role === 'host') broadcast({t: 'stop'});
     snap = null; log = []; lastCp = null;
@@ -5926,6 +6111,23 @@ const Online = (() => {
   };
   // Hejarop från mobilerna syns på alla skärmar
   O.react = (who, kind) => { if (role === 'host') broadcast({t: 'react', who: {id: who.id, name: who.name, color: who.color, fan: !!who.fan}, kind}); };
+  // Hejarop från skärmen (online): figuren syns över ens troll på alla skärmar. Den som bara tittar syns med namn.
+  let reactT = 0;
+  O.myFace = () => {
+    const S = Game.state();
+    if (!S) return {name: 'Någon', color: '#8C7E76', fan: true};
+    const cur = S.players[S.turn], mine = S.players.filter(p => p.human && O.local(p));
+    const p = mine.includes(cur) ? cur : mine[0];
+    return p ? {id: p.id, name: p.name, color: p.color} : {name: role === 'guest' ? (Store.get('onlineName', '') || 'Gäst') : 'Värden', color: '#8C7E76', fan: true};
+  };
+  O.sendReact = kind => {
+    if (Date.now() - reactT < 1000) return;
+    reactT = Date.now();
+    const w = O.myFace(), who = {id: w.id, name: w.name, color: w.color, fan: !!w.fan};
+    UI.react(w, kind);
+    if (role === 'host') broadcast({t: 'react', who, kind});
+    else if (role === 'guest') hsend({t: 'react', who, kind});
+  };
   // Knapparna i en mobil styr bonusrundan som springs på spelarens egen skärm
   O.sendKey = (dev, k) => bsend(boards.get(dev), {t: 'bkey', k});
 
@@ -6040,9 +6242,14 @@ const Online = (() => {
     switch (m.t) {
       case 'welcome': gErr = ''; break;
       case 'lobby': gLobby = m.lobby; if (!Game.running()) { showLobby(); drawLobby(); } break;
-      case 'go': startFollow(m.S, [], null); break;
+      case 'go': startFollow(m.S, [], null, !!m.intro); break;
       case 'state': startFollow(m.S, m.log || [], m.cp || null); break;
-      case 'd': if (!dq.has(m.seq)) { dq.set(m.seq, m); maxSeq = Math.max(maxSeq, m.seq); } pace(); if (wake) wake(); break;
+      case 'd':
+        if (!dq.has(m.seq)) { dq.set(m.seq, m); maxSeq = Math.max(maxSeq, m.seq); }
+        // värden har börjat spela: berättelsen här hoppas över så att skärmarna håller jämna steg
+        UI.skipNow();
+        pace(); if (wake) wake();
+        break;
       case 'cp': cps.set(m.n, m); if (cpWake) cpWake(); break;
       case 'bev': bonusIn(m); break;
       case 'react': if (m.who && Game.running()) UI.react(m.who, String(m.kind)); break;
@@ -6052,7 +6259,7 @@ const Online = (() => {
     }
   }
   // Ett parti börjar (eller gästen kommer in mitt i): spela från läget S och ta besluten som redan har fattats
-  function startFollow(S, list, cp) {
+  function startFollow(S, list, cp, intro) {
     if (!S || !Array.isArray(S.players)) return;
     if (Game.running()) Game.stop();
     dq = new Map(); cps = new Map(); wake = null; cpWake = null; fast = false;
@@ -6063,7 +6270,7 @@ const Online = (() => {
     gNote = '';
     $('online').hidden = true;
     ['results', 'pause', 'rules', 'settings'].forEach(id => { $(id).hidden = true; });
-    Game.start(S, 'online');
+    Game.start(S, 'online', !!intro);
     pace();
   }
   // Gästen tar värdens beslut nummer S.seq + 1 (kommer det inte direkt visas gästens egna knappar under tiden)
@@ -6175,11 +6382,14 @@ const Online = (() => {
   const turnTail = () => { const t = Settings.turn && Settings.turn.url ? Settings.turn : null; return t ? '~' + btoa(unescape(encodeURIComponent(JSON.stringify({url: t.url, user: t.user || '', pass: t.pass || ''})))) : ''; };
   O.inviteUrl = () => (Remote.possible() ? location.origin + location.pathname : SITE) + '#spela-' + (Remote.code() || '') + turnTail();
   // Bjud in: anslutningen startas (samma kod som mobilerna) och länken visas
-  O.invite = () => {
+  // flash: rutan med länken lyser upp och visas (när man kommer från "Spela online" på startsidan)
+  O.invite = flash => {
     if (role === 'guest') return;
     inviting = true;
     draw();
-    Remote.start().then(draw, draw);
+    const show = () => { draw(); const box = $('onlineBox'); if (flash && box && !box.hidden) { box.classList.remove('flash'); void box.offsetWidth; box.classList.add('flash'); box.scrollIntoView({block: 'nearest', behavior: 'smooth'}); } };
+    show();
+    Remote.start().then(show, show);
   };
   let inviting = false;
   function draw() {
@@ -6208,7 +6418,7 @@ const Online = (() => {
     const row = h('div', {class: 'inviteRow'}, link, copy);
     if (navigator.share) row.append(h('button', {class: 'tool', type: 'button', text: 'Dela', onclick: () => navigator.share({title: 'Hugo', text: 'Spela Hugo med oss!', url}).catch(() => {})}));
     const n = O.boardCount();
-    box.append(h('div', {class: 'inviteTop'}, h('p', {class: 'qrBig', text: 'Skicka länken'}), h('p', {class: 'qrList', text: n ? `${n} ${n === 1 ? 'skärm är ansluten' : 'skärmar är anslutna'}` : 'Ingen annan skärm har anslutit än'})), row,
+    box.append(h('div', {class: 'inviteTop'}, h('p', {class: 'qrBig', text: 'Skicka länken'}), h('p', {class: 'qrList' + (n ? '' : ' none'), text: n ? `${n} ${n === 1 ? 'skärm är ansluten' : 'skärmar är anslutna'}` : 'Ingen annan skärm har anslutit än'})), row,
       h('p', {class: 'qrText', html: `Den som får länken öppnar den på sin tv, dator eller platta och väljer ett troll. Eller: tryck på <b>Spela online</b> i spelet och skriv koden <b class="code">${esc(Remote.code())}</b>.`}));
   }
   O.draw = draw;
@@ -6218,6 +6428,9 @@ const Online = (() => {
     if (!el) return;
     const g = role === 'guest', n = O.boardCount();
     el.hidden = !(g || (role === 'host' && boards.size));
+    // hejarknappen finns när man spelar online
+    const rb = $('tReact');
+    if (rb) { rb.hidden = el.hidden || !Game.running(); if (rb.hidden) $('reactBar').hidden = true; }
     el.classList.toggle('bad', g && !gOn);
     el.classList.toggle('fast', g && fast);
     $('netText').textContent = g ? (gOn ? (fast ? 'Spelar ikapp …' : 'Online') : 'Ansluter …') : `${n} ${n === 1 ? 'skärm' : 'skärmar'} online`;
@@ -6231,18 +6444,26 @@ const Online = (() => {
     const syncJoin = () => {
       const web = !Remote.possible() && !!SITE;
       $('btnJoinGo').hidden = web; $('joinWeb').hidden = !web; $('joinWebNote').hidden = !web;
-      if (web) $('joinWeb').href = webJoin();
+      $('btnHostOnline').hidden = web; $('hostWeb').hidden = !web;
+      if (web) { $('joinWeb').href = webJoin(); $('hostWeb').href = SITE + '#bjud-in'; }
     };
+    $('btnHostOnline').addEventListener('click', () => { Sound.play('click'); $('joinOnline').hidden = true; Menu.hostOnline(); });
     $('joinCode').addEventListener('input', syncJoin);
     const go = () => { const c = $('joinCode').value; if (!O.join(c)) { $('joinErr').textContent = 'Skriv koden från inbjudan (fem tecken).'; return; } $('joinOnline').hidden = true; };
     $('btnJoinGo').addEventListener('click', go);
     $('joinCode').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (Remote.possible()) go(); } });
     $('btnInvite').addEventListener('click', () => { Sound.unlock(); Sound.play('click'); O.invite(); });
     $('btnOnlineLeave').addEventListener('click', () => O.leave());
+    // hejarop: knappen i verktygsraden öppnar sex figurer
+    const REACTS = [['clap', '👏'], ['laugh', '😂'], ['wow', '😮'], ['sad', '😢'], ['party', '🎉'], ['heart', '❤️']];
+    $('reactBar').innerHTML = REACTS.map(([k, e]) => `<button type="button" data-k="${k}" aria-label="Heja">${e}</button>`).join('');
+    $('tReact').addEventListener('click', () => { Sound.play('click'); $('reactBar').hidden = !$('reactBar').hidden; });
+    $('reactBar').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; O.sendReact(b.dataset.k); $('reactBar').hidden = true; });
     draw();
   };
-  // Öppnades spelet med en inbjudan (#spela-KOD)? Då går vi med direkt.
+  // Öppnades spelet med en inbjudan (#spela-KOD)? Då går vi med direkt. (#bjud-in öppnar spelarvalet med inbjudan.)
   O.fromHash = () => {
+    if (location.hash === '#bjud-in') { history.replaceState(null, '', location.pathname + location.search); setTimeout(() => Menu.hostOnline(), 300); return false; }
     const m = location.hash.match(/^#spela-([A-Za-z0-9]{4,8})(?:~(.+))?$/);
     if (!m) return false;
     let turn = null;
@@ -6689,7 +6910,8 @@ const Bonus = (() => {
   }
   // öppnades spelet med en inbjudan (#spela-KOD) går vi med i det spelet, annars visas startsidan
   if (Online.fromHash()) return;
-  Menu.showTitle();
+  // byttes kartan mitt i ett parti fortsätter det direkt
+  if (!Menu.autoResume()) Menu.showTitle();
   // spelade familjen med mobilerna förra gången kan de ansluta igen direkt
   Remote.resume();
   // Går spelet segt (till exempel på en tv som inte känns igen) föreslår startsidan den enkla kartan
